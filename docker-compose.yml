@@ -1,0 +1,94 @@
+# docker-compose version: 3.7 supports multi-stage build
+version: '3.7'
+
+services:
+  main:
+    container_name: main
+    restart: always
+    build:
+      # In the build config, we define the context, which tells Docker which files should be sent to the Docker daemon.
+      # In our case, that’s our whole application, and so we pass in ., which means all of the current directory.
+      context: .
+      # We also define a target property and set it to development. Thanks to this property, Docker will now only build
+      # the first part of our Dockerfile and completely ignore the production part of our build (it will stop before
+      # the second FROM statement).
+      target: development
+
+    # A volume is a way to mount a host directory in a container, and we define two of them.
+    # The first mounts our current directory (.) inside the Docker container (/usr/src/app). This way, when we change a
+    # file on our host machine, the file will also be changed in the container. Now the process, while still running
+    # inside the container, will keep restarting the application on each file change.
+    # The second volume is a hack. By mounting the first volume in the container, we could accidentally also override
+    # the node_modules directory with the one we have locally. Developers usually have node_modules on their host
+    # machine due to the dev tools Visual Studio Code relies on — packages such as eslint or @types, for example.
+    # With that in mind, we can use an anonymous volume that will prevent the node_modules existing in the container
+    # to ever be overridden.
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    # docker containers have their own network, here we expose the ports to be available on host machine: HOST_PORT:CONTAINER_PORT
+    # The ${SERVER_PORT} syntax means that the value will be retrieved from the environment variables
+    # We also add the 9229 port for debugging purposes
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+      - "9229:9229"
+
+    command: npm run start:dev
+
+    # When working with Node.js applications, we normally use the .env file to keep our environment variables in one
+    # place. Since we are using environment variables in our config (like we do above in ports), we also load the
+    # variables from the file just in case they were defined there.
+    env_file:
+      - .env
+
+    # Since each service has its own internal network (due to their being different containers), we also create our own
+    # network that will make it possible for them to communicate.
+    # Note that the network is defined at the bottom of the file; here we are just telling docker-compose to use it in this particular service.
+    networks:
+      - webnet
+    # When our application starts, we expect that both the Postgres database and the Redis storage are ready to be used. Otherwise, our application would probably crash
+    depends_on:
+      - postgres
+  postgres:
+    container_name: edible-garden-db
+    image: postgres:12
+    networks:
+      - webnet
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_NAME}
+      # The PG_DATA variable is used to tell Postgres where it should keep all the Postgres-related data
+      PG_DATA: /var/lib/edible-garden-db/data
+      # Finally, we have to expose the 5432 port, which is the default Postgres port, to make it possible to connect to
+      # the database from our host machine with tools such as pgadmin
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    volumes:
+      # The first part of the volume is not a directory, but rather a named volume that is defined at the bottom of the file
+      - pgdata:/var/lib/edible-garden-db/data
+
+  pgadmin:
+    container_name: edible-garden-pgadmin
+    image: dpage/pgadmin4
+    environment: 
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+       - pgadmin:/root/.pgadmin
+    ports:
+      - ${PGADMIN_PORT}:80
+    networks:
+      - webnet
+    depends_on: 
+      - postgres
+    restart: unless-stopped
+    tty: true
+
+networks:
+  webnet:
+# By using a named value, we make sure that the data stays the same even when the container is removed. It will stay
+# there until we delete the volume ourselves
+volumes:
+  pgdata:
+  pgadmin:
