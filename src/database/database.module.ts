@@ -1,5 +1,5 @@
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -15,9 +15,7 @@ import { Module } from '@nestjs/common';
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
         schema: process.env.DB_SCHEMA,
-        entities: [
-          __dirname + '/../**/infrastructure/entity/*.entity{.ts,.js}',
-        ],
+        entities: [__dirname + '/../**/entity/*.entity{.ts,.js}'],
         migrations: [__dirname + '/../**/database/migration/*{.ts,.js}'],
         migrationsTableName: 'migration',
         migrationsRun:

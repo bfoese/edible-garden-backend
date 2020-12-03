@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { BotanicalFamilyService } from '../service/botanical-family.service';
 import { BotanicalFamilyController } from './botanical-family.controller';
-import { BotanicalFamilyService } from './botanical-family.service';
 
 describe('BotanicalFamilyController', () => {
   let controller: BotanicalFamilyController;

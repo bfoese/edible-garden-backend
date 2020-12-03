@@ -1,9 +1,13 @@
 import {
-  PrimaryGeneratedColumn,
   Column,
-  UpdateDateColumn,
+
   CreateDateColumn,
-  VersionColumn,
+
+  DeleteDateColumn, PrimaryGeneratedColumn,
+
+  UpdateDateColumn,
+
+  VersionColumn
 } from 'typeorm';
 
 /**
@@ -16,14 +20,14 @@ export abstract class EntityInfo {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
-  @Column({ type: 'boolean', default: false })
-  isArchived: boolean;
-
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   created: Date;
 
   @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   lastChanged: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 
   @VersionColumn()
   version: number;

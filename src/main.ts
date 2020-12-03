@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
@@ -13,6 +13,8 @@ async function bootstrap() {
   const env = process.env.NODE_ENV;
   const app: INestApplication = await NestFactory.create(AppModule);
   app.setGlobalPrefix('edible-garden');
+
+  app.useGlobalPipes(new ValidationPipe());
 
   if (env !== 'production') {
     initSwagger(app);
@@ -31,8 +33,8 @@ function initSwagger(app: INestApplication) {
   const document = SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
-      .setTitle('App API')
-      .setDescription('My App API')
+      .setTitle('Edible Garden API')
+      .setDescription('')
       .setVersion('1.0')
       .build(),
   );

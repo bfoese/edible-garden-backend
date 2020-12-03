@@ -7,12 +7,15 @@ export class BotanicalFamilyEntity {
   @Column(() => EntityInfo, { prefix: '' })
   entityInfo: EntityInfo;
 
-  @Column('varchar', { length: 200, nullable: false })
-  public botanicalName: string;
+  @Column('varchar', { length: 200, nullable: false, unique: true })
+  botanicalName: string;
 
   @OneToMany(
     () => BotanicalFamilyI18nEntity,
     (i18nData) => i18nData.botanicalFamily,
+    {
+      cascade: ['insert'],
+    }
   )
   i18nData: BotanicalFamilyI18nEntity[];
 }

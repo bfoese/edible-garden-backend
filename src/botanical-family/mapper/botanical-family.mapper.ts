@@ -1,4 +1,4 @@
-import { BotanicalFamilyEntity } from 'src/botanical-family/botanical-family-data/entity/botanical-family.entity';
+import { BotanicalFamilyEntity } from 'src/botanical-family/entity/botanical-family.entity';
 import { EntityMapper } from 'src/core/core-facade/mapper/entity-mapper.interface';
 import { CreateBotanicalFamilyDto } from '../dto/create-botanical-family.dto';
 
