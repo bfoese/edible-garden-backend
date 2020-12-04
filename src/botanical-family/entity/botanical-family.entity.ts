@@ -1,21 +1,71 @@
-import { EntityInfo } from 'src/core/core-data/entity/entity-info.entity';
+import { EntityInfo } from '@eg-core/entity/entity-info.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { BotanicalFamilyI18nEntity } from './botanical-family-i18n.entity';
 
-@Entity({ name: 'EG_BotanicalFamily' })
+@Entity({ name: 'eg_botanical_family' })
 export class BotanicalFamilyEntity {
   @Column(() => EntityInfo, { prefix: '' })
-  entityInfo: EntityInfo;
+  public entityInfo: EntityInfo;
 
   @Column('varchar', { length: 200, nullable: false, unique: true })
-  botanicalName: string;
+  public botanicalName: string;
 
-  @OneToMany(
-    () => BotanicalFamilyI18nEntity,
-    (i18nData) => i18nData.botanicalFamily,
-    {
-      cascade: ['insert'],
+  @OneToMany(() => BotanicalFamilyI18nEntity, (i18nData) => i18nData.botanicalFamily, {
+    cascade: ['insert'],
+  })
+  public i18nData: BotanicalFamilyI18nEntity[];
+
+  /**
+   * This method will add or update translations for the given entity.
+   * Translations will be checked if their language code is within the set of
+   * supported locales (case insensitive comparison) - if not, we silently
+   * ignore them.topbar-wrapper
+   *
+   * @param languageCodeWhitelist - Locales which are supported by the application.
+   * Makes sure that no nonsense will be added.
+   * @param botanicalFamily - Entity to update
+   * @param i18nNames - Translations to be added to the entity
+   */
+  public addOrUpdateI18nNames(languageCodeWhitelist: string[], i18nNames: { [languageCode: string]: string }): void {
+    if (!languageCodeWhitelist || !i18nNames) {
+      return;
     }
-  )
-  i18nData: BotanicalFamilyI18nEntity[];
+
+    for (const [newLanguageCode, newValue] of Object.entries(i18nNames)) {
+      // case insensitive check wether the new language code is within our set of supported locales
+
+      const matchingLanguageCode = languageCodeWhitelist.find(
+        (whitelistCode) => whitelistCode.toLowerCase() === newLanguageCode.toLowerCase()
+      );
+
+      if (!matchingLanguageCode) {
+        continue; // none of our supported locales: ignore it
+      }
+
+      if (!this.i18nData) {
+        this.i18nData = [];
+      }
+
+      // remove the old translation if present
+      this.i18nData = this.i18nData.filter((i18nData) => i18nData.languageCode !== matchingLanguageCode);
+
+      // add the new translation
+      const newI18nData = new BotanicalFamilyI18nEntity();
+      newI18nData.name = newValue;
+      newI18nData.languageCode = matchingLanguageCode;
+
+      this.i18nData.push(newI18nData);
+    }
+  }
+
+  public removeI18nNames(languageCodes: string[]): void {
+    if (languageCodes && this.i18nData) {
+      languageCodes.forEach((languageCode: string) => {
+        const newI18nData = this.i18nData.filter(
+          (i18nData) => i18nData.languageCode.toLowerCase() !== languageCode.toLocaleLowerCase()
+        );
+        this.i18nData = newI18nData;
+      });
+    }
+  }
 }

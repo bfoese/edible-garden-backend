@@ -45,14 +45,14 @@ After adding/removing libraries in package.json you need to enforce the deletion
 ```bash
 # Enforces an npm install and the -v argument will remove any anonymous volumes and create them again
 
-
+docker-compose up --build -V
 ```
 ## API Documentation
 ```bash
-# Browsing the Swagger Documentation of the exposed Endpoints
+# Browsing the Swagger Documentation of the exposed endpoints
 http://localhost:3000/api
 
-# Downloadable JSON File of the Endpoints
+# Downloadable JSON File of the endpoints
 http://localhost:3000/api-json
 ```
 
@@ -66,7 +66,7 @@ the database based on the model.
 There are two different migration directories configured: 'migration-gen' is used as a sink for the auto-generated 
 migration files. This directory is in the gitignore list as it is only meant to be a holder for untested migration files 
 which are work in progress. The second directory 'migration' is being used as the source directory for the actual 
-migration process. Migration files that needs to be tested as well as the final ones need to be copied into
+migration process. Migration files which need to be tested as well as the final ones need to be copied into
 this directory. Before committing a new migration file, make sure to manually test it by running the 'migration:run' 
 command and afterwards 'migration:revert' for proper cleanup.
 
@@ -87,7 +87,7 @@ $npm run typeorm:cli -- migration:revert
 $npm run typeorm:cli -- <command>
 
 ```
-Auto-generated migration files will be created in a local directory
+Auto-generated migration files will be created in a local directory.
 
 
 ## Test
@@ -121,6 +121,22 @@ Details of a specific table:
 
 Exit the container:
 \q
+
+# Table Name Conventions
+
+Table names should be lowercase. With mixed-case or upper-case names you are required to reference table names with double quotes, e.g. 
+
+```bash
+select * from public."FOO_MyTable"
+```
+
+at least in SQLDeveloper. Also some features, like data view, can't be used at all because of thrown exceptions. Don't know if this is a problem of the Postgres JDBC driver or implementation of SQLDeveloper or both. PGAdmin can handle these table names, but I personally don't like the user experience with that tool.
+
+So with lower-case table names, you can use all features of SQLDeveloper and SQL statements can be done without double quotes, e.g. 
+
+```bash
+select * from public.foo_my_table
+```
 
 ## Helpful Resources
 

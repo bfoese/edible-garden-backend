@@ -1,60 +1,50 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { CreateBotanicalFamilyDto } from '@eg-botanical-family/dto/create-botanical-family.dto';
+import { UpdateBotanicalFamilyDto } from '@eg-botanical-family/dto/update-botanical-family.dto';
+import { BotanicalFamilyEntity } from '@eg-botanical-family/entity/botanical-family.entity';
+import { BotanicalFamilyEntityRepository } from '@eg-botanical-family/repository/botanical-family.repository';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { resolve } from 'path';
-import { BotanicalFamilyEntity } from 'src/botanical-family/entity/botanical-family.entity';
-import { BotanicalFamilyEntityRepository } from 'src/botanical-family/repository/botanical-family.repository';
 import { DeleteResult, UpdateResult } from 'typeorm';
-import { CreateBotanicalFamilyDto } from '../dto/create-botanical-family.dto';
-import { UpdateBotanicalFamilyDto } from '../dto/update-botanical-family.dto';
-import { BotanicalFamilyI18nEntity } from '../entity/botanical-family-i18n.entity';
-import { BotanicalFamilyMapper } from '../mapper/botanical-family.mapper';
-import _ = require('lodash');
 
 @Injectable()
 export class BotanicalFamilyService {
-  private readonly botanicalFamilyMapper = new BotanicalFamilyMapper();
-
+  // TODO refactor into ConfigService
   private readonly supportedLocales = ['de_DE', 'en_US'];
 
-  constructor(
+  public constructor(
     @InjectRepository(BotanicalFamilyEntityRepository)
     private readonly botanicalFamilyRepository: BotanicalFamilyEntityRepository
   ) {}
 
-  create(
-    createBotanicalFamilyDto: CreateBotanicalFamilyDto
-  ): Promise<BotanicalFamilyEntity> {
+  public create(createBotanicalFamilyDto: CreateBotanicalFamilyDto): Promise<BotanicalFamilyEntity> {
     const entity = new BotanicalFamilyEntity();
     entity.botanicalName = createBotanicalFamilyDto.botanicalName;
 
-    BotanicalFamilyService.addOrUpdateI18nNames(
-      this.supportedLocales,
-      entity,
-      createBotanicalFamilyDto.i18nNames
-    );
+    entity.addOrUpdateI18nNames(this.supportedLocales, createBotanicalFamilyDto.i18nNames);
     return this.botanicalFamilyRepository.save(entity);
   }
 
-  findAll(): Promise<BotanicalFamilyEntity[]> {
+  public findAll(): Promise<BotanicalFamilyEntity[]> {
     return this.botanicalFamilyRepository.find();
   }
 
-  findOne(id: string): Promise<BotanicalFamilyEntity> {
+  public findOne(id: string): Promise<BotanicalFamilyEntity> {
     if (!id) {
       throw new BadRequestException('Object ID is required for this operation');
     }
     return this.botanicalFamilyRepository.findOne(id);
   }
 
-  update(
-    id: string,
-    dto: UpdateBotanicalFamilyDto
-  ): Promise<BotanicalFamilyEntity> {
+  public update(id: string, dto: UpdateBotanicalFamilyDto): Promise<BotanicalFamilyEntity> {
     return this.botanicalFamilyRepository
-      .findOne(id, { relations: ['i18nData'] })
+      .findOne(id, { relations: ['i18nData'], withDeleted: true })
       .then((persistedEntity: BotanicalFamilyEntity) => {
-        if (!persistedEntity || !dto) {
-          resolve(null);
+        if (!persistedEntity) {
+          throw new NotFoundException();
+        }
+
+        if (!dto) {
+          throw new BadRequestException();
         }
 
         // update botanical name if requested
@@ -62,87 +52,29 @@ export class BotanicalFamilyService {
           persistedEntity.botanicalName = dto.botanicalName;
         }
 
-        // add or update translations if requested
-        if (typeof dto.addOrUpdateI18nNames !== undefined) {
-          BotanicalFamilyService.addOrUpdateI18nNames(
-            this.supportedLocales,
-            persistedEntity,
-            dto.addOrUpdateI18nNames
-          );
+        // first delete translations if requested
+        if (typeof dto.removeI18nNames !== undefined) {
+          persistedEntity.removeI18nNames(dto.removeI18nNames);
         }
 
-        // delete translations if requested
-        if (typeof dto.removeI18nNames !== undefined) {
-          BotanicalFamilyService.removeI18nNames(
-            this.supportedLocales,
-            persistedEntity,
-            dto.removeI18nNames
-          );
+        // secondly add or update translations if requested
+        if (typeof dto.addOrUpdateI18nNames !== undefined) {
+          persistedEntity.addOrUpdateI18nNames(this.supportedLocales, dto.addOrUpdateI18nNames);
         }
 
         return this.botanicalFamilyRepository.save(persistedEntity);
       });
   }
 
-  softDelete(id: string): Promise<UpdateResult> {
+  public recover(id: string): Promise<UpdateResult> {
+    return this.botanicalFamilyRepository.restore(id);
+  }
+
+  public softDelete(id: string): Promise<UpdateResult> {
     return this.botanicalFamilyRepository.softDelete(id);
   }
 
-  delete(id: string): Promise<DeleteResult> {
+  public delete(id: string): Promise<DeleteResult> {
     return this.botanicalFamilyRepository.delete(id);
-  }
-
-  private static removeI18nNames(
-    supportedLocales: string[],
-    botanicalFamily: BotanicalFamilyEntity,
-    removeI18nNames: { [languageCode: string]: string }
-  ) {
-    if (removeI18nNames && botanicalFamily && botanicalFamily.i18nData) {
-      for (const [languageCode] of Object.entries(removeI18nNames)) {
-        const newI18nData = botanicalFamily.i18nData.filter(
-          (i18nData) => i18nData.languageCode !== languageCode
-        );
-        botanicalFamily.i18nData = newI18nData;
-      }
-    }
-  }
-
-  private static addOrUpdateI18nNames(
-    supportedLocales: string[],
-    botanicalFamily: BotanicalFamilyEntity,
-    i18nNames: { [languageCode: string]: string }
-  ) {
-    if (!supportedLocales || !botanicalFamily || !i18nNames) {
-      return;
-    }
-
-    for (const [newLanguageCode, newValue] of Object.entries(i18nNames)) {
-      const matchingLanguageCode = _.chain(supportedLocales)
-        .filter((x) => {
-          x.toLowerCase() === newLanguageCode.toLowerCase();
-        })
-        .first()
-        .value();
-
-      if (!matchingLanguageCode) {
-        continue;
-      }
-
-      if (!botanicalFamily.i18nData) {
-        botanicalFamily.i18nData = [];
-      }
-
-      // remove the old translation if present
-      botanicalFamily.i18nData = botanicalFamily.i18nData.filter(
-        (i18nData) => i18nData.languageCode !== matchingLanguageCode
-      );
-
-      // add the new translation
-      const newI18nData = new BotanicalFamilyI18nEntity();
-      newI18nData.name = newValue;
-      newI18nData.languageCode = matchingLanguageCode;
-
-      botanicalFamily.i18nData.push(newI18nData);
-    }
   }
 }

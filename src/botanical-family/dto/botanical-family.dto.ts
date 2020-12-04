@@ -1,7 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { BaseDto } from '../../core/core-facade/dto/base.dto';
+import { BaseDto } from '@eg-core/dto/base.dto';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 
-export class BotanicalFamilyDto extends BaseDto {
+export class BotanicalFamilyDto extends PartialType(BaseDto) {
   @ApiProperty()
-  readonly botanicalName: string;
+  public readonly botanicalName: string;
+
+  @ApiProperty()
+  public i18nNames: {
+    [languageCode: string]: string;
+  };
 }

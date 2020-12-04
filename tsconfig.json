@@ -9,7 +9,17 @@
     "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
+    "esModuleInterop": true,
     "baseUrl": "./",
-    "incremental": true
-  }
+    "paths": {
+      "@eg-core/*": ["src/core/*"],
+      "@eg-botanical-family/*": ["src/botanical-family/*"]
+    },
+    "incremental": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "importHelpers": true
+  },
+  "exclude": ["node_modules", "dist"]
 }

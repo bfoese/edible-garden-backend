@@ -1,25 +1,21 @@
-import { EntityInfo } from 'src/core/core-data/entity/entity-info.entity';
+import { EntityInfo } from '@eg-core/entity/entity-info.entity';
 import { Column, Entity, ManyToOne, Unique } from 'typeorm';
 import { BotanicalFamilyEntity } from './botanical-family.entity';
 
-@Entity({ name: 'EG_BotanicalFamilyI18n' })
-@Unique('UQ_BotanicalFamilyI18n_botanicalFamily_langCode', [
-  'languageCode',
-  'botanicalFamily',
-])
+@Entity({ name: 'eg_botanical_family_i18n' })
+@Unique('uq_botanicalfamily_locale', ['languageCode', 'botanicalFamily'])
 export class BotanicalFamilyI18nEntity {
   @Column(() => EntityInfo, { prefix: '' })
-  entityInfo: EntityInfo;
+  public entityInfo: EntityInfo;
 
-  @ManyToOne(
-    () => BotanicalFamilyEntity,
-    (botanicalFamily) => botanicalFamily.i18nData
-  )
-  botanicalFamily: BotanicalFamilyEntity;
+  @ManyToOne(() => BotanicalFamilyEntity, (botanicalFamily: BotanicalFamilyEntity) => botanicalFamily.i18nData, {
+    onDelete: 'CASCADE',
+  })
+  public botanicalFamily: BotanicalFamilyEntity;
 
   @Column('varchar', { length: 5, nullable: false })
-  languageCode: string;
+  public languageCode: string;
 
   @Column('varchar', { length: 200, nullable: false })
-  name: string;
+  public name: string;
 }
