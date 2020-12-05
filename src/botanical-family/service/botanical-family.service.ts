@@ -2,16 +2,17 @@ import { CreateBotanicalFamilyDto } from '@eg-botanical-family/dto/create-botani
 import { UpdateBotanicalFamilyDto } from '@eg-botanical-family/dto/update-botanical-family.dto';
 import { BotanicalFamilyEntity } from '@eg-botanical-family/entity/botanical-family.entity';
 import { BotanicalFamilyEntityRepository } from '@eg-botanical-family/repository/botanical-family.repository';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, UpdateResult } from 'typeorm';
+import appConfig from '../../config/app.config';
 
 @Injectable()
 export class BotanicalFamilyService {
-  // TODO refactor into ConfigService
-  private readonly supportedLocales = ['de_DE', 'en_US'];
-
   public constructor(
+    @Inject(appConfig.KEY)
+    private appConfig1: ConfigType<typeof appConfig>,
     @InjectRepository(BotanicalFamilyEntityRepository)
     private readonly botanicalFamilyRepository: BotanicalFamilyEntityRepository
   ) {}
@@ -19,8 +20,9 @@ export class BotanicalFamilyService {
   public create(createBotanicalFamilyDto: CreateBotanicalFamilyDto): Promise<BotanicalFamilyEntity> {
     const entity = new BotanicalFamilyEntity();
     entity.botanicalName = createBotanicalFamilyDto.botanicalName;
+    const importedLocales = <string[]>this.appConfig1.importedLocales();
 
-    entity.addOrUpdateI18nNames(this.supportedLocales, createBotanicalFamilyDto.i18nNames);
+    entity.addOrUpdateI18nNames(importedLocales, createBotanicalFamilyDto.i18nNames);
     return this.botanicalFamilyRepository.save(entity);
   }
 
@@ -59,7 +61,8 @@ export class BotanicalFamilyService {
 
         // secondly add or update translations if requested
         if (typeof dto.addOrUpdateI18nNames !== undefined) {
-          persistedEntity.addOrUpdateI18nNames(this.supportedLocales, dto.addOrUpdateI18nNames);
+          const importedLocales = <string[]>this.appConfig1.importedLocales();
+          persistedEntity.addOrUpdateI18nNames(importedLocales, dto.addOrUpdateI18nNames);
         }
 
         return this.botanicalFamilyRepository.save(persistedEntity);

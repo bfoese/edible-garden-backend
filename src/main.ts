@@ -35,8 +35,8 @@ async function bootstrap(): Promise<void> {
 
 /**
  * Generates and exposes the Swagger documentation
- * @param app
- * @param configService
+ * @param app -
+ * @param configService -
  */
 function initSwagger(app: INestApplication): void {
   const document = SwaggerModule.createDocument(
