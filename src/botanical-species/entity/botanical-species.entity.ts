@@ -1,19 +1,19 @@
 import { EntityInfo } from '@eg-core/entity/entity-info.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
-import { BotanicalFamilyI18nEntity } from './botanical-family-i18n.entity';
+import { BotanicalSpeciesI18nEntity } from './botanical-species-i18n.entity';
 
-@Entity({ name: 'eg_botanical_family' })
-export class BotanicalFamilyEntity {
+@Entity({ name: 'eg_botanical_species' })
+export class BotanicalSpeciesEntity {
   @Column(() => EntityInfo, { prefix: '' })
   public entityInfo: EntityInfo;
 
   @Column('varchar', { length: 200, nullable: false, unique: true })
   public botanicalName: string;
 
-  @OneToMany(() => BotanicalFamilyI18nEntity, (i18nData) => i18nData.botanicalFamily, {
+  @OneToMany(() => BotanicalSpeciesI18nEntity, (i18nData) => i18nData.botanicalSpecies, {
     cascade: ['insert'],
   })
-  public i18nData: BotanicalFamilyI18nEntity[];
+  public i18nData: BotanicalSpeciesI18nEntity[];
 
   /**
    * This method will add or update translations for the given entity.
@@ -49,7 +49,7 @@ export class BotanicalFamilyEntity {
       this.i18nData = this.i18nData.filter((i18nData) => i18nData.languageCode !== matchingLanguageCode);
 
       // add the new translation
-      const newI18nData = new BotanicalFamilyI18nEntity();
+      const newI18nData = new BotanicalSpeciesI18nEntity();
       newI18nData.name = newValue;
       newI18nData.languageCode = matchingLanguageCode;
 

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { BotanicalFamilyModule } from './botanical-family/botanical-family.module';
+import { BotanicalSpeciesModule } from './botanical-species/botanical-species.module';
 import appConfig from './config/app.config';
 import { DatabaseModule } from './database/database.module';
 import { LoggerModule } from './logger/logger.module';
@@ -14,6 +15,7 @@ import { LoggerModule } from './logger/logger.module';
       isGlobal: true,
       load: [appConfig],
     }),
+    BotanicalSpeciesModule,
   ],
   controllers: [],
   providers: [],

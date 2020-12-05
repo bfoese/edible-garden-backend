@@ -13,7 +13,8 @@
     "baseUrl": "./",
     "paths": {
       "@eg-core/*": ["src/core/*"],
-      "@eg-botanical-family/*": ["src/botanical-family/*"]
+      "@eg-botanical-family/*": ["src/botanical-family/*"],
+      "@eg-botanical-species/*": ["src/botanical-species/*"]
     },
     "incremental": true,
     "noUnusedParameters": true,

@@ -402,3 +402,4 @@ dist
 .env.development
 .env.test
 .eslintcache
+notizen.txt
