@@ -1,31 +1,33 @@
-import { BotanicalFamily } from '@eg-botanical-species/domain/botanical-family.enum';
-import { EdiblePart } from '@eg-botanical-species/domain/edible-part.enum';
-import { NutritionDemand } from '@eg-botanical-species/domain/nutrition-demand.enum';
-import { BotanicalSpeciesI18nEntity } from '@eg-botanical-species/entity/botanical-species-i18n.entity';
 import { EntityInfo } from '@eg-core/entity/entity-info.entity';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { BotanicalFamilyI18n } from './botanical-family-i18n';
 
-@Entity({ name: 'eg_botanical_species' })
-export class BotanicalSpeciesEntity {
-  @Column(() => EntityInfo, { prefix: '' })
-  public entityInfo: EntityInfo;
+export class BotanicalFamily {
+  private _entityInfo: EntityInfo;
+  private _botanicalName: string;
+  private _i18nData: BotanicalFamilyI18n[];
 
-  @Column('varchar', { name: 'botanical_name', length: 200, nullable: false, unique: true })
-  public botanicalName: string;
+  public set entityInfo(entityInfo: EntityInfo) {
+    this._entityInfo = entityInfo;
+  }
+  public get entityInfo(): EntityInfo {
+    return this._entityInfo;
+  }
 
-  @OneToMany(() => BotanicalSpeciesI18nEntity, (i18nData) => i18nData.botanicalSpecies, {
-    cascade: ['insert'],
-  })
-  public i18nData: BotanicalSpeciesI18nEntity[];
+  public set botanicalName(botanicalName: string) {
+    this._botanicalName = botanicalName;
+  }
 
-  @Column({ name: 'botanical_family', type: 'enum', enum: BotanicalFamily, nullable: false })
-  public botanicalFamily: BotanicalFamily;
+  public get botanicalName(): string {
+    return this._botanicalName;
+  }
 
-  @Column({ name: 'edible_parts', type: 'enum', enum: EdiblePart, array: true, nullable: true })
-  public edibleParts: EdiblePart[];
+  public set i18nData(i18nData: BotanicalFamilyI18n[]) {
+    this._i18nData = i18nData;
+  }
 
-  @Column({ name: 'nutrition_demand', type: 'enum', enum: NutritionDemand, nullable: true })
-  public nutritionDemand: NutritionDemand;
+  public get i18nData(): BotanicalFamilyI18n[] {
+    return this._i18nData;
+  }
 
   /**
    * This method will add or update translations for the given entity.
@@ -61,10 +63,10 @@ export class BotanicalSpeciesEntity {
       this.i18nData = this.i18nData.filter((i18nData) => i18nData.languageCode !== matchingLanguageCode);
 
       // add the new translation
-      const newI18nData = <BotanicalSpeciesI18nEntity>{
-        name: newValue,
-        languageCode: matchingLanguageCode,
-      };
+      const newI18nData = new BotanicalFamilyI18n();
+      newI18nData.name = newValue;
+      newI18nData.languageCode = matchingLanguageCode;
+
       this.i18nData.push(newI18nData);
     }
   }

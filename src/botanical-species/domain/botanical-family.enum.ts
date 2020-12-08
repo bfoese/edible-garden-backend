@@ -1,79 +1,81 @@
 export enum BotanicalFamily {
+  unknown = 'unknown',
+
   /**
    * Baldriangewächse - Valerian family
    */
-  'valerianaceae' = 'Valerianaceae',
+  valerianaceae = 'valerianaceae',
   /**
    * Doldenblütler - Umbellifers/carrot family
    */
-  'apiaceae' = 'Apiaceae',
+  apiaceae = 'apiaceae',
   /**
    * Eisenkrautgewächse - Verbena/vervain family
    */
-  'verbenaceae' = 'Verbenaceae',
+  verbenaceae = 'verbenaceae',
 
   /**
    * Gänsefußgewächse - Amaranth family
    */
-  'amaranthaceae' = 'Amaranthaceae',
+  amaranthaceae = 'amaranthaceae',
 
   /**
    * Hülsenfrüchtler - Legume/pea/bean family
    */
-  'fabaceae' = 'Fabaceae',
+  fabaceae = 'fabaceae',
 
   /**
    * Knöterichgewächse - Knotweed/smartweed family
    */
-  'polygonaceae' = 'Polygonaceae',
+  polygonaceae = 'polygonaceae',
 
   /**
    * Korbblütler - Sunflower family
    */
-  'asteraceae' = 'Asteraceae',
+  asteraceae = 'asteraceae',
 
   /**
    * Kreuzblütler - 	Crucifers/cabbage family
    */
-  'brassicaceae' = 'Brassicaceae',
+  brassicaceae = 'brassicaceae',
 
   /**
    * Kürbisgewächse - Melon family
    */
-  'cucurbitaceae' = 'Cucurbitaceae',
+  cucurbitaceae = 'cucurbitaceae',
 
   /**
    * Lauchgewächse - Onion family
    */
-  'alliaceae' = 'Alliaceae',
+  alliaceae = 'alliaceae',
 
   /**
    * Lippenblütler - Mint family
    */
-  'labiatae' = 'Labiatae',
+  labiatae = 'labiatae',
 
   /**
    * Mittagsblumengewächse - Ice plant family
    */
-  'aizoaceae' = 'Aizoaceae',
+  aizoaceae = 'aizoaceae',
 
   /**
    * Nachtschattengewächse - Nightshade/potato family
    */
-  'solanaceae' = 'Solanaceae',
+  solanaceae = 'solanaceae',
 
   /**
    * Portulakgewächse - Purslane family
    */
-  'portulaceae' = 'Portulaceae',
+  portulaceae = 'portulaceae',
 
   /**
    * Spargelgewächse - Asparagus family
    */
-  'asparagaceae' = 'Asparagaceae',
+  asparagaceae = 'asparagaceae',
 
   /**
    * Süßgräser - Grasses family
    */
-  'poaceae ' = 'Poaceae ',
+  poaceae = 'poaceae',
 }

@@ -12,7 +12,12 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
+      "@eg-types-persistence/*": ["src/types-persistence/*"],
+      "@eg-types-api/*": ["src/types-api/*"],
+      "@eg-data-access/*": ["src/data-access/*"],
+      "@eg-common/*": ["src/common/*"],
       "@eg-core/*": ["src/core/*"],
+      "@eg-peristence/*": ["src/persistence/*"],
       "@eg-botanical-family/*": ["src/botanical-family/*"],
       "@eg-botanical-species/*": ["src/botanical-species/*"]
     },

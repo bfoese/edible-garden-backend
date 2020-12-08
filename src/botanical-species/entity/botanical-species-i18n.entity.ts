@@ -1,5 +1,5 @@
 import { EntityInfo } from '@eg-core/entity/entity-info.entity';
-import { Column, Entity, ManyToOne, Unique } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { BotanicalSpeciesEntity } from './botanical-species.entity';
 
 @Entity({ name: 'eg_botanical_species_i18n' })
@@ -11,6 +11,7 @@ export class BotanicalSpeciesI18nEntity {
   @ManyToOne(() => BotanicalSpeciesEntity, (botanicalSpecies: BotanicalSpeciesEntity) => botanicalSpecies.i18nData, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'botanical_species_id' })
   public botanicalSpecies: BotanicalSpeciesEntity;
 
   @Column('varchar', { length: 5, nullable: false })

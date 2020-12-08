@@ -122,9 +122,17 @@ Details of a specific table:
 Exit the container:
 \q
 
+# Postgres Error Handling
+
+During development with TypeORM sync mode turned on, exceptions from postgres can arise. Here are some workarounds.
+
+<ul>
+    <li>Exceptions concerning enum types - enum types are stored in 'pg_catalog.pg_enum' and can be deleted with: 'drop type <enumType> cascade;'</li>
+</ul>
+
 # Table Name Conventions
 
-Table names should be lowercase. With mixed-case or upper-case names you are required to reference table names with double quotes, e.g. 
+Table and column names should be lowercase. With mixed-case or upper-case names you are required to reference table names with double quotes, e.g. 
 
 ```bash
 select * from public."FOO_MyTable"

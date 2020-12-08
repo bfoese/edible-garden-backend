@@ -14,16 +14,16 @@ export abstract class EntityInfo {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ name: 'active', type: 'boolean', default: true })
   public isActive: boolean;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   public created: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ name: 'last_changed', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   public lastChanged: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ name: 'deleted', nullable: true })
   public deletedAt?: Date;
 
   @VersionColumn()

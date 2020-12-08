@@ -403,3 +403,4 @@ dist
 .env.test
 .eslintcache
 notizen.txt
+src/foo/

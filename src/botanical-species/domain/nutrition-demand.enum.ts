@@ -3,20 +3,17 @@
  * soil.
  */
 export enum NutritionDemand {
-  /**
-   * Fallback value
-   */
-  unknown = 0,
+  unknown = 'unknown',
   /**
    * German: Schwachzehrer
    */
-  low = 1,
+  low = 'low',
   /**
    * German: Mittelzehrer
    */
-  moderate = 2,
+  moderate = 'moderate',
   /**
    * German: Starkzehrer
    */
-  high = 2,
+  high = 'high',
 }
