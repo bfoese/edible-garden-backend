@@ -1,4 +1,4 @@
-![build-test](https://github.com/bfoese/edible-garden-backend/workflows/build-test/badge.svg?event=project)
+![lint-test](https://github.com/bfoese/edible-garden-backend/workflows/lint-test/badge.svg)
 
 ## Description
 An extended [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository which integrates the following technologies:
