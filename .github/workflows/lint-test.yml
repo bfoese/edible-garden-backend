@@ -12,12 +12,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14.x, 15.x]
     steps:
       - uses: actions/checkout@v2
-      - name: npm install and test
+      - name: Install, Lint, Test
         run: |
           npm install
           npm run lint
