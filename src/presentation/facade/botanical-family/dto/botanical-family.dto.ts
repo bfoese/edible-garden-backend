@@ -1,4 +1,4 @@
-import { EntityInfoDto } from '@eg-core/dto/entity-info.dto';
+import { EntityInfoDto } from '@eg-presentation-facade/shared/dto/entity-info.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class BotanicalFamilyDto {

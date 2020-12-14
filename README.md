@@ -72,7 +72,17 @@ migration process. Migration files which need to be tested as well as the final 
 this directory. Before committing a new migration file, make sure to manually test it by running the 'migration:run' 
 command and afterwards 'migration:revert' for proper cleanup.
 
+TypeORM Migration Preconditions:
+<ul>
+<li>Build app: TypeORM migration operates on the generated JS code. In order to detect changes, we need to build the project first.</li>
+<li>There should be a ormconfig.js file being generated into the build output dir.</li>
+<li>`npm run schema:log` - This command will display the schema changes. If the result says that there are no changes, but you know there should, it is possible, that the property cli.entitiesDir in the ormconfig file is not properly defined. The path of that property must be relative to the ormconfig file and the general context is the build output directory</li>
+</ul>
+
 ```bash
+# See schema changes which are not reflected within the database yet
+$npm run schema:log
+
 # Auto-generate a migration file after entity changes into the configured migration-gen file directory
 $npm run migration:generate -- -n <migration-file-name>
 

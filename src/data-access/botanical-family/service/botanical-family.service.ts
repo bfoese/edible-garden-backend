@@ -12,7 +12,6 @@ export class BotanicalFamilyService {
   public constructor(@BotanicalFamilyRepo() private readonly botanicalFamilyRepository: BotanicalFamilyRepository) {}
 
   public findAll(): Observable<BotanicalFamily[]> {
-    console.log('find all', this.botanicalFamilyRepository);
     return this.botanicalFamilyRepository.findAll();
   }
 

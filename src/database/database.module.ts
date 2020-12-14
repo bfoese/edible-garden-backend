@@ -1,4 +1,3 @@
-import { CommonModule } from '@eg-common/common.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DomainSnakeCaseNamingStrategy } from './strategy/domain-snake-case-naming.strategy';
@@ -6,7 +5,6 @@ import { DomainSnakeCaseNamingStrategy } from './strategy/domain-snake-case-nami
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      imports: [CommonModule],
       inject: [],
       useFactory: () => ({
         type: 'postgres',
@@ -18,15 +16,15 @@ import { DomainSnakeCaseNamingStrategy } from './strategy/domain-snake-case-nami
         database: process.env.DB_NAME,
         schema: process.env.DB_SCHEMA,
         namingStrategy: new DomainSnakeCaseNamingStrategy(['eg'], false),
-        entities: [__dirname + '/../**/entity/*.entity{.ts,.js}', __dirname + '/../**/schema/*.schema{.ts,.js}'],
-        migrations: [__dirname + '/../**/database/migration/*{.ts,.js}'],
+        entities: [__dirname + '/../**/schema/*.schema{.ts,.js}'],
+        migrations: [__dirname + '/../../**/database/migration/*{.ts,.js}'],
         migrationsTableName: 'migration',
-        migrationsRun: process.env.TYPEORM_MIGRATIONS_RUN === process.env.TYPEORM_MIGRATIONS_RUN,
+        migrationsRun: process.env.TYPEORM_MIGRATIONS_RUN === 'true',
         cli: {
-          entitiesDir: '/../**/entity/*.entity.js',
-          migrationsDir: '/../**/database/migration-gen',
+          entitiesDir: '/../../../**/schema/*.schema{.ts,.js}',
+          migrationsDir: '/../database/migration-gen',
         },
-        synchronize: process.env.TYPEORM_SYNCHRONIZE === process.env.TYPEORM_SYNCHRONIZE,
+        synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
       }),
     }),
   ],

@@ -1,6 +1,6 @@
-import { EntityInfoDto } from '@eg-core/dto/entity-info.dto';
 import { EntityInfo } from '@eg-domain/shared/entity-info.entity';
 import { Injectable } from '@nestjs/common';
+import { EntityInfoDto } from '../dto/entity-info.dto';
 import { DtoMapper } from './dto-mapper.interface';
 
 @Injectable()

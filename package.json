@@ -20,11 +20,14 @@
         "test:cov": "jest --coverage",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
         "test:e2e": "jest --config ./test/jest-e2e.json",
-        "typeorm:cli": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli -f ./ormconfig.json",
+        "typeorm:cli": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli -f dist/database/config/ormconfig.js",
         "migration:create": "npm run typeorm:cli -- migration:create",
         "migration:generate": "npm run typeorm:cli -- migration:generate",
         "migration:run": "npm run typeorm:cli -- migration:run",
-        "migration:revert": "npm run typeorm:cli -- migration:revert"
+        "migration:revert": "npm run typeorm:cli -- migration:revert",
+        "schema:log": "npm run typeorm:cli -- schema:log",
+        "schema:drop": "npm run typeorm:cli -- schema:drop",
+        "migration:show": "npm run typeorm:cli -- migration:show"
     },
     "dependencies": {
         "@nestjs/common": "^7.5.1",
@@ -76,8 +79,8 @@
         "ts-node": "^9.0.0",
         "tsconfig-paths": "^3.9.0",
         "typescript": "^4.0.5",
-        "@commitlint/cli": "^11.0.0",
-        "@commitlint/config-conventional": "^11.0.0",
+        "@commitlint/cli": "9.1.1",
+        "@commitlint/config-conventional": "9.1.1",
         "commitizen": "^4.2.2",
         "cz-conventional-changelog": "^3.3.0",
         "husky": "^4.3.0",
@@ -111,8 +114,7 @@
     },
     "homepage": "https://github.com/bfoese/edible-garden-backend",
     "standard-version": {
-        "types": [
-            {
+        "types": [{
                 "type": "feat",
                 "section": "Features"
             },

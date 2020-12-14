@@ -20,7 +20,6 @@ export class BotanicalFamilyFacadeService {
   }
 
   public findAll(): Observable<Partial<BotanicalFamilyDto>[]> {
-    console.log('facade fidn all', this.botanicalFamilyService);
     return this.botanicalFamilyService
       .findAll()
       .pipe(
