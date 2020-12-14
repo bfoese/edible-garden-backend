@@ -8,7 +8,7 @@ export class EntityInfoDto {
   public readonly isActive: boolean;
 
   @ApiProperty()
-  public readonly deletedAt: Date;
+  public readonly deleted: Date;
 
   @ApiProperty()
   public readonly created: Date;

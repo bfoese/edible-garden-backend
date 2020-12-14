@@ -1,10 +1,10 @@
-import { DataAccessModule } from '@eg-data-access/data-access.module';
-import { RestApiTypesModule } from '@eg-rest-api-types/rest-api-types.module';
 import { Module } from '@nestjs/common';
+import { FacadeModule } from '../facade/facade.module';
 import { BotanicalFamilyController } from './botanical-family/botanical-family.controller';
+import { BotanicalSpeciesController } from './botanical-species/botanical-species.controller';
 
 @Module({
-  imports: [RestApiTypesModule, DataAccessModule],
-  controllers: [BotanicalFamilyController],
+  imports: [FacadeModule],
+  controllers: [BotanicalFamilyController, BotanicalSpeciesController],
 })
 export class RestApiModule {}

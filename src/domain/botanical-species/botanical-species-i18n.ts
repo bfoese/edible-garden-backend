@@ -1,9 +1,9 @@
-import { EntityInfo } from '@eg-domain/shared/entity-info.entity';
-import { BotanicalFamily } from './botanical-family';
+import { EntityInfo } from '../shared/entity-info.entity';
+import { BotanicalSpecies } from './botanical-species';
 
-export class BotanicalFamilyI18n {
+export class BotanicalSpeciesI18n {
   private _entityInfo: EntityInfo;
-  private _botanicalFamily: BotanicalFamily;
+  private _botanicalSpecies: BotanicalSpecies;
 
   private _languageCode: string;
   private _name: string;
@@ -16,12 +16,12 @@ export class BotanicalFamilyI18n {
     return this._entityInfo;
   }
 
-  public set botanicalFamily(botanicalFamily: BotanicalFamily) {
-    this._botanicalFamily = botanicalFamily;
+  public set botanicalSpecies(botanicalSpecies: BotanicalSpecies) {
+    this._botanicalSpecies = botanicalSpecies;
   }
 
-  public get botanicalFamily(): BotanicalFamily {
-    return this._botanicalFamily;
+  public get botanicalSpecies(): BotanicalSpecies {
+    return this._botanicalSpecies;
   }
 
   public set languageCode(languageCode: string) {

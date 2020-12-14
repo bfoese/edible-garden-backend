@@ -1,11 +1,10 @@
+import appConfig from '@eg-app-config/app.config';
+import { RestApiModule } from '@eg-rest-api/rest-api.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { BotanicalSpeciesModule } from './botanical-species/botanical-species.module';
-import appConfig from './config/app.config';
+import { LoggerModule } from './application/logger/logger.module';
 import { DatabaseModule } from './database/database.module';
 import { DomainModule } from './domain/domain.module';
-import { LoggerModule } from './logger/logger.module';
-import { RestApiModule } from './rest-api/rest-api.module';
 
 @Module({
   imports: [
@@ -15,7 +14,6 @@ import { RestApiModule } from './rest-api/rest-api.module';
       isGlobal: true,
       load: [appConfig],
     }),
-    BotanicalSpeciesModule,
     DomainModule,
     RestApiModule,
   ],

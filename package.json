@@ -67,7 +67,6 @@
         "eslint-plugin-prettier": "^3.1.4",
         "eslint-plugin-security": "^1.4.0",
         "eslint-plugin-tsdoc": "^0.2.4",
-        "husky": "^4.2.5",
         "jest": "^26.6.3",
         "lint-staged": "^10.2.2",
         "prettier": "^2.1.2",
@@ -76,20 +75,92 @@
         "ts-loader": "^8.0.9",
         "ts-node": "^9.0.0",
         "tsconfig-paths": "^3.9.0",
-        "typescript": "^4.0.5"
+        "typescript": "^4.0.5",
+        "@commitlint/cli": "^11.0.0",
+        "@commitlint/config-conventional": "^11.0.0",
+        "commitizen": "^4.2.2",
+        "cz-conventional-changelog": "^3.3.0",
+        "husky": "^4.3.0",
+        "standard-version": "^9.0.0"
     },
     "husky": {
         "hooks": {
             "pre-commit": "lint-staged",
-            "pre-push": "npm run test"
+            "pre-push": "npm run test",
+            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
         }
     },
     "lint-staged": {
         "*.ts": [
             "eslint --cache --fix",
-            "git add",
             "npm run test:quick",
             "prettier --write"
+        ]
+    },
+    "config": {
+        "commitizen": {
+            "path": "./node_modules/cz-conventional-changelog"
+        }
+    },
+    "bugs": {
+        "url": "https://github.com/bfoese/edible-garden-backend/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bfoese/edible-garden-backend.git"
+    },
+    "homepage": "https://github.com/bfoese/edible-garden-backend",
+    "standard-version": {
+        "types": [
+            {
+                "type": "feat",
+                "section": "Features"
+            },
+            {
+                "type": "fix",
+                "section": "Bug Fixes"
+            },
+            {
+                "type": "chore",
+                "hidden": true
+            },
+            {
+                "type": "ci",
+                "hidden": true
+            },
+            {
+                "type": "build",
+                "hidden": true
+            },
+            {
+                "type": "docs",
+                "hidden": true
+            },
+            {
+                "type": "style",
+                "hidden": true
+            },
+            {
+                "type": "refactor",
+                "hidden": true
+            },
+            {
+                "type": "perf",
+                "hidden": true
+            },
+            {
+                "type": "test",
+                "hidden": true
+            }
+        ],
+        "header": "Changelog",
+        "commitUrlFormat": "{{host}}/{{owner}}/{{repository}}/commit/{{hash}}",
+        "compareUrlFormat": "{{host}}/{{owner}}/{{repository}}/compare/{{previousTag}}...{{currentTag}}",
+        "issueUrlFormat": "{{host}}/{{owner}}/{{repository}}/issues/{{id}}",
+        "userUrlFormat": "{{host}}/{{user}}",
+        "releaseCommitMessageFormat": "chore(release): {{currentTag}}",
+        "issuePrefixes": [
+            "#"
         ]
     }
 }

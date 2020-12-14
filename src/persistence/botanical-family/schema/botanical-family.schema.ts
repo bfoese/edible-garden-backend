@@ -1,8 +1,8 @@
-import { BotanicalFamilyEntity } from 'src/types-persistence/botanical-family/botanical-family-entity.interface';
+import { BotanicalFamily } from '@eg-domain/botanical-family/botanical-family';
+import { EntityInfoSchema } from '@eg-persistence/shared/schema/entity-info.schema';
 import { EntitySchema } from 'typeorm';
-import { EntityInfoSchema } from './entity-info.schema';
 
-export const BotanicalFamilySchema = new EntitySchema<BotanicalFamilyEntity>({
+export const BotanicalFamilySchema = new EntitySchema<BotanicalFamily>({
   name: 'botanicalFamily',
   columns: {
     ...EntityInfoSchema,

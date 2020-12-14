@@ -1,10 +1,16 @@
-import { EntityInfo } from '@eg-domain/shared/entity-info.entity';
-import { BotanicalFamilyI18n } from './botanical-family-i18n';
+import { BotanicalFamily } from '@eg-domain-constants/botanical-family.enum';
+import { EdiblePart } from '@eg-domain-constants/edible-part.enum';
+import { NutritionDemand } from '@eg-domain-constants/nutrition-demand.enum';
+import { EntityInfo } from '../shared/entity-info.entity';
+import { BotanicalSpeciesI18n } from './botanical-species-i18n';
 
-export class BotanicalFamily {
+export class BotanicalSpecies {
   private _entityInfo: EntityInfo;
   private _botanicalName: string;
-  private _i18nData: BotanicalFamilyI18n[];
+  private _i18nData: BotanicalSpeciesI18n[];
+  private _botanicalFamily: BotanicalFamily;
+  private _edibleParts: EdiblePart[];
+  private _nutritionDemand: NutritionDemand;
 
   public set entityInfo(entityInfo: EntityInfo) {
     this._entityInfo = entityInfo;
@@ -21,12 +27,36 @@ export class BotanicalFamily {
     return this._botanicalName;
   }
 
-  public set i18nData(i18nData: BotanicalFamilyI18n[]) {
+  public set i18nData(i18nData: BotanicalSpeciesI18n[]) {
     this._i18nData = i18nData;
   }
 
-  public get i18nData(): BotanicalFamilyI18n[] {
+  public get i18nData(): BotanicalSpeciesI18n[] {
     return this._i18nData;
+  }
+
+  public set botanicalFamily(botanicalFamily: BotanicalFamily) {
+    this._botanicalFamily = botanicalFamily;
+  }
+
+  public get botanicalFamily(): BotanicalFamily {
+    return this._botanicalFamily;
+  }
+
+  public set edibleParts(edibleParts: EdiblePart[]) {
+    this._edibleParts = edibleParts;
+  }
+
+  public get edibleParts(): EdiblePart[] {
+    return this._edibleParts;
+  }
+
+  public set nutritionDemand(nutritionDemand: NutritionDemand) {
+    this._nutritionDemand = nutritionDemand;
+  }
+
+  public get nutritionDemand(): NutritionDemand {
+    return this._nutritionDemand;
   }
 
   /**
@@ -63,10 +93,10 @@ export class BotanicalFamily {
       this.i18nData = this.i18nData.filter((i18nData) => i18nData.languageCode !== matchingLanguageCode);
 
       // add the new translation
-      const newI18nData = new BotanicalFamilyI18n();
-      newI18nData.name = newValue;
-      newI18nData.languageCode = matchingLanguageCode;
-
+      const newI18nData = <BotanicalSpeciesI18n>{
+        name: newValue,
+        languageCode: matchingLanguageCode,
+      };
       this.i18nData.push(newI18nData);
     }
   }

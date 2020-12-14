@@ -1,6 +1,6 @@
+import { CommonModule } from '@eg-common/common.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CommonModule } from 'src/common/common.module';
 import { DomainSnakeCaseNamingStrategy } from './strategy/domain-snake-case-naming.strategy';
 
 @Module({

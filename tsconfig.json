@@ -12,14 +12,16 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
-      "@eg-types-persistence/*": ["src/types-persistence/*"],
-      "@eg-types-api/*": ["src/types-api/*"],
+      "@eg-domain-constants/*": ["src/domain-constants/*"],
+      "@eg-domain/*": ["src/domain/*"],
+      "@eg-app-config/*": ["src/application/config/*"],
+      "@eg-database/*": ["src/database/*"],
+      "@eg-presentation-facade/*": ["src/presentation/facade/*"],
+      "@eg-rest-api/*": ["src/presentation/rest-api/*"],
       "@eg-data-access/*": ["src/data-access/*"],
       "@eg-common/*": ["src/common/*"],
       "@eg-core/*": ["src/core/*"],
-      "@eg-peristence/*": ["src/persistence/*"],
-      "@eg-botanical-family/*": ["src/botanical-family/*"],
-      "@eg-botanical-species/*": ["src/botanical-species/*"]
+      "@eg-persistence/*": ["src/persistence/*"]
     },
     "incremental": true,
     "noUnusedParameters": true,
