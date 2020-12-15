@@ -46,7 +46,7 @@ jobs:
           heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_EMAIL}}
           region: eu
-          env_file: "/.env.production"
+          env_file: "../.env.production"
           # Only variables prefixed with 'HD_' will be recognized by the action. The prefix will automatically be cropped from the name by the action.
         env:
           NODE_ENV: production
