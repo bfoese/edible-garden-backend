@@ -31,8 +31,7 @@ jobs:
           npm run build
       - name: Dump node_modules and reinstall without dev dependencies
         run: |
-          npm run rimraf node_modules
-          npm install --only=production
+          npm run postbuild:prod
       - name: Deploy to Heroku
         env:
           NODE_ENV: production
