@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Echo Files
+        run: echo ls
       - name: Install Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
@@ -46,7 +48,7 @@ jobs:
           heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_EMAIL}}
           region: eu
-          env_file: "../.env.production"
+          env_file: ".env.production"
           # Only variables prefixed with 'HD_' will be recognized by the action. The prefix will automatically be cropped from the name by the action.
         env:
           NODE_ENV: production
