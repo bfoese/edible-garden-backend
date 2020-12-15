@@ -1,14 +1,12 @@
 name: Manual CD Pipeline (Heroku)
 
-on: 
-  workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'     
-        required: true
-        default: 'warning'
-      tags:
-        description: 'Test scenario tags'  
+on:
+  pull_request:
+    branches:
+      - pipeline
+  push:
+    branches:
+      - pipeline
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
