@@ -24,7 +24,7 @@ async function bootstrap(): Promise<void> {
     })
   );
 
-  if (process.env.SWAGGER_ENABLED === 'true') {
+  if (process.env.BFEG_SWAGGER_ENABLED === 'true') {
     initSwagger(app);
   }
   await app.listen(process.env.PORT || 8);

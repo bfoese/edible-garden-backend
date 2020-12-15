@@ -30,10 +30,19 @@ jobs:
       - name: Deploy to Heroku
         env:
           NODE_ENV: production
-        uses: akhileshns/heroku-deploy@v3.7.8 # This is the action
+        uses: akhileshns/heroku-deploy@v3.7.8
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_EMAIL}}
-          env_file: .env.production
+          appdir: "dist"
+          env_file: "/.env.production"
+          # Only variables prefixed with 'HD_' will be recognized by the action. The prefix will automatically be cropped from the name by the action.
+          env:
+            HD_DB_HOST=${{secrets.HEROKU_DB_HOST}}
+            HD_DB_USERNAME=${{secrets.HEROKU_DB_USERNAME}}
+            HD_DB_PASSWORD=${{secrets.HEROKU_DB_PW}}
+            HD_DB_NAME=${{secrets.HEROKU_DB_NAME}}
+            HD_DB_SCHEMA=${{secrets.HEROKU_DB_SCHEMA}}
+            HD_DB_PORT=${{secrets.HEROKU_DB_PORT}}
 
