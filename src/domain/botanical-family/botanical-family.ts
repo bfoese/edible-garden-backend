@@ -39,7 +39,7 @@ export class BotanicalFamily {
    * Makes sure that no nonsense will be added.
    * @param i18nNames - Translations to be added to the entity
    */
-  public addOrUpdateI18nNames(languageCodeWhitelist: string[], i18nNames: { [languageCode: string]: string }): void {
+  public addOrUpdateI18nNames(languageCodeWhitelist: string[], i18nNames: { [languageCode: string]: string; }): void {
     if (!languageCodeWhitelist || !i18nNames) {
       return;
     }
