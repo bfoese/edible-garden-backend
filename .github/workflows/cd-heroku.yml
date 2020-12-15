@@ -36,7 +36,8 @@ jobs:
           heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_EMAIL}}
           appdir: "dist"
-          env_file: "/.env.production"
+          # Path relative to appdir
+          env_file: "../.env.production"
           # Only variables prefixed with 'HD_' will be recognized by the action. The prefix will automatically be cropped from the name by the action.
           env:
             HD_DB_HOST=${{secrets.HEROKU_DB_HOST}}
