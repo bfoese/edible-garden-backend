@@ -25,6 +25,9 @@ jobs:
         run: |
           npm run prebuild
           npm run build
+      - run: git config user.email "britt.foese@gmail.com"
+      - run: git config user.name "bfoese"
+      - run: git add -A && git commit -m "Updated code"
       - name: Deploy to Heroku
         uses: akhileshns/heroku-deploy@v3.7.8
         with:
