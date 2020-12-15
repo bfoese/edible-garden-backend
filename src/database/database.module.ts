@@ -16,12 +16,12 @@ import { DomainSnakeCaseNamingStrategy } from './strategy/domain-snake-case-nami
         database: process.env.DB_NAME,
         schema: process.env.DB_SCHEMA,
         namingStrategy: new DomainSnakeCaseNamingStrategy(['eg'], false),
-        entities: [__dirname + '/../**/schema/*.schema{.ts,.js}'],
-        migrations: [__dirname + '/../../**/database/migration/*{.ts,.js}'],
+        entities: [__dirname + '/../**/schema/*.schema.js'],
+        migrations: [__dirname + '/../../**/database/migration/*.js'],
         migrationsTableName: 'migration',
         migrationsRun: process.env.TYPEORM_MIGRATIONS_RUN === 'true',
         cli: {
-          entitiesDir: '/../../../**/schema/*.schema{.ts,.js}',
+          entitiesDir: '/../../../**/schema/*.schema.js',
           migrationsDir: '/../database/migration-gen',
         },
         synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
@@ -29,4 +29,8 @@ import { DomainSnakeCaseNamingStrategy } from './strategy/domain-snake-case-nami
     }),
   ],
 })
-export class DatabaseModule {}
+export class DatabaseModule {
+  public constructor() {
+    console.info('DB Module', process.env.NODE_ENV, process.env.DB_HOST);
+  }
+}
