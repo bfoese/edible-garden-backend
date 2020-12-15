@@ -30,6 +30,7 @@ jobs:
           npm run prebuild
           npm run build
       - name: Dump node_modules and reinstall without dev dependencies
+        run: |
           npm run rimraf node_modules
           npm install --only=production
       - name: Deploy to Heroku
