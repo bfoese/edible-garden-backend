@@ -20,13 +20,18 @@ jobs:
         uses: actions/checkout@v2
       - name: Install, Lint, Test
         run: |
-          npm install --only=production
+          npm install
+          npm run lint
+          npm test
       - name: Build
         env:
           NODE_ENV: production
         run: |
           npm run prebuild
           npm run build
+      - name: Dump node_modules and reinstall without dev dependencies
+          npm run rimraf node_modules
+          npm install --only=production
       - name: Deploy to Heroku
         env:
           NODE_ENV: production
