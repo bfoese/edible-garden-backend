@@ -13,9 +13,17 @@ jobs:
   # This workflow contains a single job called "greet"
   deploy:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Install Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node_version: ${{ matrix.node-version }}
+
       - name: Install, Lint, Test
         run: |
           npm install
@@ -32,7 +40,8 @@ jobs:
         uses: akhileshns/heroku-deploy@v3.7.8
         with:
           branch: "pipeline"
-          dontuseforce: true
+          dontuseforce: false
+          buildpack: heroku/nodejs
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_EMAIL}}
