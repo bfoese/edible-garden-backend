@@ -393,14 +393,9 @@ dist
 /src/database/migration-gen/
 
 # App Configuration
-# We use https://www.npmjs.com/package/dotenv-flow and thei .env file handling recommendations
+# We use https://www.npmjs.com/package/dotenv-flow and their .env file handling recommendations
 .env.local
 .env.*.local
-.env
-.env.production
 *.iml
-.env.development
-.env.test
 .eslintcache
 notizen.txt
-src/foo/

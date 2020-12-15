@@ -1,12 +1,25 @@
 {
     "name": "edible-garden-backend",
     "private": true,
-    "version": "1.0.0",
+    "version": "0.1.0",
     "description": "",
+    "engines": {
+        "node": "14.x"
+    },
+    "bugs": {
+        "url": "https://github.com/bfoese/edible-garden-backend/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bfoese/edible-garden-backend.git"
+    },
+    "homepage": "https://github.com/bfoese/edible-garden-backend",
     "license": "MIT",
     "scripts": {
         "prebuild": "rimraf dist",
         "build": "nest build",
+        "postbuild:prod": "rimraf node_modules && npm install --only=production",
+        "heroku-postbuild": "npm run prebuild && npm run build",
         "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
         "start": "nest start",
         "start:dev": "cross-env NODE_ENV=development nest start --watch",
@@ -105,14 +118,6 @@
             "path": "./node_modules/cz-conventional-changelog"
         }
     },
-    "bugs": {
-        "url": "https://github.com/bfoese/edible-garden-backend/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/bfoese/edible-garden-backend.git"
-    },
-    "homepage": "https://github.com/bfoese/edible-garden-backend",
     "standard-version": {
         "types": [{
                 "type": "feat",

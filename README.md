@@ -1,6 +1,7 @@
 ![lint-test](https://github.com/bfoese/edible-garden-backend/workflows/lint-test/badge.svg)
 
 ## Description
+
 An extended [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository which integrates the following technologies:
 
 <ul>
@@ -40,16 +41,19 @@ $ docker-compose up
 $ docker-compose start postgres
 ```
 
-In the Docker Container for the application the node_modules directory is defined as an anonymous volume. These types 
+In the Docker Container for the application the node_modules directory is defined as an anonymous volume. These types
 of volumes only get removed, when their parent container is removed. This means that node_module updates on the
 local machine aren't reflected in the container!!
 After adding/removing libraries in package.json you need to enforce the deletion of the anonymous volume:
+
 ```bash
 # Enforces an npm install and the -v argument will remove any anonymous volumes and create them again
 
 docker-compose up --build -V
 ```
+
 ## API Documentation
+
 ```bash
 # Browsing the Swagger Documentation of the exposed endpoints
 http://localhost:3000/api
@@ -60,19 +64,20 @@ http://localhost:3000/api-json
 
 ## Database & ORM
 
-This project uses Postgres database. The docker-compose file also setups a Postgres Admin interface connected to the 
+This project uses Postgres database. The docker-compose file also setups a Postgres Admin interface connected to the
 postgres database container.
 
-This project also uses TypeORM and is configured to utilize the TypeORM migration mechanism instead of auto-synchronizing 
+This project also uses TypeORM and is configured to utilize the TypeORM migration mechanism instead of auto-synchronizing
 the database based on the model.
-There are two different migration directories configured: 'migration-gen' is used as a sink for the auto-generated 
-migration files. This directory is in the gitignore list as it is only meant to be a holder for untested migration files 
-which are work in progress. The second directory 'migration' is being used as the source directory for the actual 
+There are two different migration directories configured: 'migration-gen' is used as a sink for the auto-generated
+migration files. This directory is in the gitignore list as it is only meant to be a holder for untested migration files
+which are work in progress. The second directory 'migration' is being used as the source directory for the actual
 migration process. Migration files which need to be tested as well as the final ones need to be copied into
-this directory. Before committing a new migration file, make sure to manually test it by running the 'migration:run' 
+this directory. Before committing a new migration file, make sure to manually test it by running the 'migration:run'
 command and afterwards 'migration:revert' for proper cleanup.
 
 TypeORM Migration Preconditions:
+
 <ul>
 <li>Build app: TypeORM migration operates on the generated JS code. In order to detect changes, we need to build the project first.</li>
 <li>There should be a ormconfig.js file being generated into the build output dir.</li>
@@ -99,8 +104,8 @@ $npm run typeorm:cli -- migration:revert
 $npm run typeorm:cli -- <command>
 
 ```
-Auto-generated migration files will be created in a local directory.
 
+Auto-generated migration files will be created in a local directory.
 
 ## Test
 
@@ -120,13 +125,13 @@ $ npm run test:cov
 Sometimes it's useful to check Postgres state via CLI.
 
 Running postgres under user 'postgres':
-$ docker exec -it <db-container-name> psql -U postgres
+\$ docker exec -it <db-container-name> psql -U postgres
 
 Connecting to a database:
-$ \c <databaseName>
+\$ \c <databaseName>
 
 List all tables:
-$ \d
+\$ \d
 
 Details of a specific table:
 \d+ <table_name>
@@ -144,7 +149,7 @@ During development with TypeORM sync mode turned on, exceptions from postgres ca
 
 # Table Name Conventions
 
-Table and column names should be lowercase. With mixed-case or upper-case names you are required to reference table names with double quotes, e.g. 
+Table and column names should be lowercase. With mixed-case or upper-case names you are required to reference table names with double quotes, e.g.
 
 ```bash
 select * from public."FOO_MyTable"
@@ -152,11 +157,28 @@ select * from public."FOO_MyTable"
 
 at least in SQLDeveloper. Also some features, like data view, can't be used at all because of thrown exceptions. Don't know if this is a problem of the Postgres JDBC driver or implementation of SQLDeveloper or both. PGAdmin can handle these table names, but I personally don't like the user experience with that tool.
 
-So with lower-case table names, you can use all features of SQLDeveloper and SQL statements can be done without double quotes, e.g. 
+So with lower-case table names, you can use all features of SQLDeveloper and SQL statements can be done without double quotes, e.g.
 
 ```bash
 select * from public.foo_my_table
 ```
+
+## DOTENV Files
+
+Priority of the files
+
+<ul>
+    <li>Dev: (npm start): .env.development.local, .env.development, .env.local, .env</li>
+    <li>Prod: (npm run build): .env.production.local, .env.production, .env.local, .env</li>
+</ul>
+
+Conventions for this project:
+
+<ul>
+    <li>Properties which should be handled as a secret belong into the .env.{development|production}.local files. These files are on gitignore list and won't appear in the remote repository. These properties will be configured manually in the CI/CD pipeline tools</li>
+    <li>Secrets that are used both in development and production can go into the .env.local file, which is also on gitignore list</li>
+    <li>Properties which are not secret but rather used can go into the .env.{development|production} files. These files are not on gitignore list and therefore appear in the remote repository where they can be used to serve the CI/CD pipelines as a file import.</li>
+</ul>
 
 ## Helpful Resources
 

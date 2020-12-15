@@ -27,10 +27,10 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     # docker containers have their own network, here we expose the ports to be available on host machine: HOST_PORT:CONTAINER_PORT
-    # The ${SERVER_PORT} syntax means that the value will be retrieved from the environment variables
+    # The ${PORT} syntax means that the value will be retrieved from the environment variables
     # We also add the 9229 port for debugging purposes
     ports:
-      - ${SERVER_PORT}:${SERVER_PORT}
+      - ${PORT}:${PORT}
       - "9229:9229"
 
     command: npm run start:dev
