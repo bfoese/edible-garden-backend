@@ -21,17 +21,12 @@ jobs:
       - name: Install, Lint, Test
         run: |
           npm install
-          npm run lint
-          npm test
       - name: Build
         env:
           NODE_ENV: production
         run: |
           npm run prebuild
           npm run build
-      - name: Dump node_modules and reinstall without dev dependencies
-        run: |
-          npm run postbuild:prod
       - name: Deploy to Heroku
         env:
           NODE_ENV: production
@@ -40,5 +35,5 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_EMAIL}}
-          env_file: /.env.production
+          env_file: .env.production
 
