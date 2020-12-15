@@ -11,7 +11,6 @@ async function bootstrap(): Promise<void> {
     purge_dotenv: true,
   });
 
-  const env = process.env.NODE_ENV;
   const app: INestApplication = await NestFactory.create(AppModule);
   app.setGlobalPrefix('edible-garden');
 
@@ -25,12 +24,10 @@ async function bootstrap(): Promise<void> {
     })
   );
 
-  if (env !== 'production') {
+  if (process.env.SWAGGER_ENABLED === 'true') {
     initSwagger(app);
   }
-  const serverPort = process.env.SERVER_PORT;
-
-  await app.listen(serverPort);
+  await app.listen(process.env.PORT || 8);
 }
 
 /**
