@@ -1,4 +1,4 @@
-name: CD Pipeline (Heroku)
+name: Manual CD Pipeline (Heroku)
 
 on: 
   workflow_dispatch:
