@@ -1,0 +1,56 @@
+# This is a basic workflow that is manually triggered
+
+name: Deploy main branch to prod
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node_version: ${{ matrix.node-version }}
+
+      - name: Install, Lint, Test
+        run: |
+          npm install
+          npm run lint
+          npm test
+
+      - name: Reset potential local changes from previous step
+        run: git reset --hard
+
+      - name: Build and deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.7.8
+        with:
+          branch: "master"
+          dontuseforce: true
+          # buildpack will build and then prune the node_modules
+          buildpack: heroku/nodejs
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+          region: eu
+          env_file: ".env.production"
+          healthcheck: "https://${{secrets.HEROKU_APP_NAME}}.herokuapp.com/edible-garden/health"
+          delay: 5
+          # Only variables prefixed with 'HD_' will be recognized by the action. The prefix will automatically be cropped from the name by the action.
+        env:
+          HD_DB_HOST: ${{secrets.HEROKU_DB_HOST}}
+          HD_DB_USERNAME: ${{secrets.HEROKU_DB_USERNAME}}
+          HD_DB_PASSWORD: ${{secrets.HEROKU_DB_PW}}
+          HD_DB_NAME: ${{secrets.HEROKU_DB_NAME}}
+          HD_DB_SCHEMA: ${{secrets.HEROKU_DB_SCHEMA}}
+          HD_DB_PORT: ${{secrets.HEROKU_DB_PORT}}
+          HD_BFEG_CORS_ORIGINS: ${{secrets.CORS_ORIGINS}}
