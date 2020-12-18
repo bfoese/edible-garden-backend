@@ -54,4 +54,5 @@ jobs:
           HD_DB_NAME: ${{secrets.HEROKU_DB_NAME}}
           HD_DB_SCHEMA: ${{secrets.HEROKU_DB_SCHEMA}}
           HD_DB_PORT: ${{secrets.HEROKU_DB_PORT}}
+          HD_BFEG_CORS_ORIGINS: ${{secrets.CORS_ORIGINS}}
 

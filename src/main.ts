@@ -1,7 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
 import { AppModule } from './app.module';
 
 import dotenvFlow = require('dotenv-flow');
@@ -13,6 +13,11 @@ async function bootstrap(): Promise<void> {
   });
 
   const app: INestApplication = await NestFactory.create(AppModule);
+
+  app.enableCors(<CorsOptions>{
+    origin: process.env.BFEG_CORS_ORIGINS.split('|'),
+  });
+
   app.setGlobalPrefix('edible-garden');
 
   app.useGlobalPipes(new ValidationPipe());

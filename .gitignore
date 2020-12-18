@@ -399,3 +399,4 @@ dist
 *.iml
 .eslintcache
 notizen.txt
+.vscode/
