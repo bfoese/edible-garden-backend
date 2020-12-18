@@ -1,4 +1,5 @@
 import { Provider } from '@nestjs/common';
+
 import { BotanicalSpeciesRepositoryTypeOrmAdapter } from './botanical-species-repository.typeorm.adapter';
 
 export const BotanicalSpeciesRepositoryProvider: Provider = {

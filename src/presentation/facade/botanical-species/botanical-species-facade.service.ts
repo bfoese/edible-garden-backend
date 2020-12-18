@@ -1,9 +1,8 @@
 import { BotanicalSpeciesService } from '@eg-data-access/botanical-species/service/botanical-species.service';
 import { BotanicalSpecies } from '@eg-domain/botanical-species/botanical-species';
 import { Injectable } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { BotanicalSpeciesDto } from 'src/presentation/facade/botanical-species/dto/botanical-species.dto';
+
 import { BotanicalSpeciesMapper } from './mapper/botanical-species.mapper';
 
 @Injectable()
@@ -13,19 +12,17 @@ export class BotanicalSpeciesFacadeService {
     private readonly botanicalSpeciesMapper: BotanicalSpeciesMapper
   ) {}
 
-  public findOne(id: string): Observable<Partial<BotanicalSpeciesDto>> {
+  public findOne(id: string): Promise<BotanicalSpeciesDto> {
     return this.botanicalSpeciesService
       .findOne(id)
-      .pipe(map((entity: BotanicalSpecies) => this.botanicalSpeciesMapper.toDto(entity)));
+      .then((entity: BotanicalSpecies) => this.botanicalSpeciesMapper.toDto(entity));
   }
 
-  public findAll(): Observable<Partial<BotanicalSpeciesDto>[]> {
+  public findAll(): Promise<BotanicalSpeciesDto[]> {
     return this.botanicalSpeciesService
       .findAll()
-      .pipe(
-        map((entities: BotanicalSpecies[]) =>
-          entities.map((entity: BotanicalSpecies) => this.botanicalSpeciesMapper.toDto(entity))
-        )
+      .then((entities: BotanicalSpecies[]) =>
+        entities.map((entity: BotanicalSpecies) => this.botanicalSpeciesMapper.toDto(entity))
       );
   }
 }

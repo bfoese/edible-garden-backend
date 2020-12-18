@@ -1,21 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class EntityInfoDto {
-  @ApiProperty()
-  public readonly id: string;
+  public id: string;
 
-  @ApiProperty()
-  public readonly isActive: boolean;
+  public isActive: boolean;
 
-  @ApiProperty()
-  public readonly deleted: Date;
+  @ApiProperty({ type: 'string', format: 'date-time', example: '2018-11-21T06:20:32.232Z' })
+  public deleted: Date;
 
-  @ApiProperty()
-  public readonly created: Date;
+  @ApiProperty({ type: 'string', format: 'date-time', example: '2018-11-21T06:20:32.232Z' })
+  public created: Date;
 
-  @ApiProperty()
-  public readonly lastChanged: Date;
+  @ApiProperty({ type: 'string', format: 'date-time', example: '2018-11-21T06:20:32.232Z' })
+  public lastChanged: Date;
 
-  @ApiProperty()
-  public readonly version: number;
+  public version: number;
 }

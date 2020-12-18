@@ -4,6 +4,7 @@ import { EntityInfoMapper } from '@eg-presentation-facade/shared/mapper/entity-i
 import { EntityMapper } from '@eg-presentation-facade/shared/mapper/entity-mapper.interface';
 import { Injectable } from '@nestjs/common';
 import { BotanicalFamilyDto } from 'src/presentation/facade/botanical-family/dto/botanical-family.dto';
+
 import { CreateBotanicalFamilyDto } from '../dto/create-botanical-family.dto';
 
 @Injectable()
@@ -31,11 +32,9 @@ export class BotanicalFamilyMapper
     return entity;
   }
 
-  public toDto(entity: BotanicalFamily): Partial<BotanicalFamilyDto> {
-    const dto: Partial<BotanicalFamilyDto> = {
-      botanicalName: entity.botanicalName ?? undefined,
-    };
-    Object.keys(dto).forEach((key) => dto[key] === undefined && delete dto[key]);
+  public toDto(entity: BotanicalFamily): BotanicalFamilyDto {
+    const dto = new BotanicalFamilyDto();
+    dto.botanicalName = entity.botanicalName ?? undefined;
 
     if (entity.entityInfo) {
       dto.entityInfo = this.entityInfoMapper.toDto(entity.entityInfo);

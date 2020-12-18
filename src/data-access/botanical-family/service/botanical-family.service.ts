@@ -2,7 +2,6 @@
 import { BotanicalFamily } from '@eg-domain/botanical-family/botanical-family';
 import { BotanicalFamilyRepository } from '@eg-domain/botanical-family/botanical-family-repository.interface';
 import { Inject, Injectable } from '@nestjs/common';
-import { Observable } from 'rxjs';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const BotanicalFamilyRepo = () => Inject('BotanicalFamilyRepositoryTypeOrm');
@@ -11,11 +10,11 @@ const BotanicalFamilyRepo = () => Inject('BotanicalFamilyRepositoryTypeOrm');
 export class BotanicalFamilyService {
   public constructor(@BotanicalFamilyRepo() private readonly botanicalFamilyRepository: BotanicalFamilyRepository) {}
 
-  public findAll(): Observable<BotanicalFamily[]> {
+  public findAll(): Promise<BotanicalFamily[]> {
     return this.botanicalFamilyRepository.findAll();
   }
 
-  public findOne(id: string): Observable<BotanicalFamily> {
+  public findOne(id: string): Promise<BotanicalFamily> {
     return this.botanicalFamilyRepository.findOne(id);
   }
 }
