@@ -180,9 +180,21 @@ Conventions for this project:
     <li>Properties which are not secret but rather used can go into the .env.{development|production} files. These files are not on gitignore list and therefore appear in the remote repository where they can be used to serve the CI/CD pipelines as a file import.</li>
 </ul>
 
-## Helpful Resources
+## TypeORM Limitations & Cons
 
 <ul>
-<li>TypeORM Migrations: <a href="https://wanago.io/2019/01/28/typeorm-migrations-postgres/">wanago.io - TypeORM Migrations</a> </li>
-<li>TypeORM Initial Data Seed: <a href="https://medium.com/@bansalsushil_34403/how-to-seed-typeorm-d9637a5948cc">Medium.com - How to seed TypeORM</a> </li>
+    <li>It is possible to completely separate domain model and persistence model by separating entity definitions into schema files as demonstrated in this repo. However, the external schema implementation lacks some features which are supported by TypeORM Entity decorators.
+        <ul><li>The current version 0.2.29 does not support embedded entities in external schema. There is an open issue for that and a pull request with a fix was created, but no sign of progress on this topic: https://github.com/typeorm/typeorm/pull/6318</li>
+        <li>TypeORM has different implementations for tree structures, e.g. closure tables. Didn't find options to define a closure table or the other tree implementations in external schema. Assume it's not supported yet.</li></ul>
+    </li>
+<li>It is possible to generate migration files based on changes in entities or schema files which saves some work of writing them yourself. However, I noticed that often unneccessary statements are contained (dropping default uuid generation and recreating it). Also statements for dropping sequences which do not exist are being generated. And some statements need manual correction. In summary, you have to check the generated migration files and often need to correct them.</li>
+<li>Quite long standing open issue concerning performance issues with queries: https://github.com/typeorm/typeorm/issues/3857#issuecomment-609863113</li>
 </ul>
+
+## Heroku
+
+```bash
+$ heroku releases
+$ heroku releases:output ${RELEASE_NUMBER}
+
+```

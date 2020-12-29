@@ -14,9 +14,13 @@ async function bootstrap(): Promise<void> {
 
   const app: INestApplication = await NestFactory.create(AppModule);
 
-  app.enableCors(<CorsOptions>{
-    origin: process.env.BFEG_CORS_ORIGINS.split('|'),
-  });
+  const corsOriginProperty = process.env.BFEG_CORS_ORIGINS ?? '';
+  const corsOrigins = corsOriginProperty ? corsOriginProperty.split('|') : [];
+  if (corsOrigins.length > 0) {
+    app.enableCors(<CorsOptions>{
+      origin: corsOrigins,
+    });
+  }
 
   app.setGlobalPrefix('edible-garden');
 

@@ -1,20 +1,20 @@
+import { BotanicalSpeciesInfoFacadeService } from '@eg-presentation-facade/botanical-species-info/botanical-species-info-facade.service';
+import { BotanicalSpeciesInfoDto } from '@eg-presentation-facade/botanical-species-info/dto/botanical-species-info.dto';
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { BotanicalSpeciesFacadeService } from 'src/presentation/facade/botanical-species/botanical-species-facade.service';
-import { BotanicalSpeciesDto } from 'src/presentation/facade/botanical-species/dto/botanical-species.dto';
 
 @ApiTags('Botanical Species')
-@Controller('v1/botanical-species')
-export class BotanicalSpeciesController {
-  public constructor(private readonly botanicalSpeciesFacadeService: BotanicalSpeciesFacadeService) {}
+@Controller('v1/botanical-species-info')
+export class BotanicalSpeciesInfoController {
+  public constructor(private readonly botanicalSpeciesInfoFacadeService: BotanicalSpeciesInfoFacadeService) {}
 
   @Get()
-  public findAll(): Promise<BotanicalSpeciesDto[]> {
-    return this.botanicalSpeciesFacadeService.findAll();
+  public findAll(): Promise<BotanicalSpeciesInfoDto[]> {
+    return this.botanicalSpeciesInfoFacadeService.findAll();
   }
 
   @Get(':id')
-  public findOne(@Param('id') id: string): Promise<BotanicalSpeciesDto> {
-    return this.botanicalSpeciesFacadeService.findOne(id);
+  public findOne(@Param('id') id: string): Promise<BotanicalSpeciesInfoDto> {
+    return this.botanicalSpeciesInfoFacadeService.findOne(id);
   }
 }

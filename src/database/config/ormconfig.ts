@@ -1,8 +1,10 @@
 import { DomainSnakeCaseNamingStrategy } from '@eg-database/strategy/domain-snake-case-naming.strategy';
+import { TlsOptions } from 'tls';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
 export = <PostgresConnectionOptions>{
   type: 'postgres',
+
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
   username: process.env.DB_USERNAME,
@@ -15,8 +17,11 @@ export = <PostgresConnectionOptions>{
   migrationsTableName: 'migration',
   migrationsRun: process.env.TYPEORM_MIGRATIONS_RUN === 'true',
   cli: {
-    entitiesDir: '/../../../**/schema/*.schema.js',
-    migrationsDir: '/../database/migration-gen',
+    migrationsDir: __dirname + '/../../../**/../database/migration-gen',
   },
   synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
+
+  ...(process.env.NODE_ENV === 'production' && {
+    ssl: <TlsOptions>{ ca: process.env.DB_SSL_CA, rejectUnauthorized: false },
+  }),
 };

@@ -1,19 +1,21 @@
-import { BotanicalSpecies } from '@eg-domain/botanical-species/botanical-species';
-import { BotanicalSpeciesRepository } from '@eg-domain/botanical-species/botanical-species-repository.interface';
+import { BotanicalSpeciesInfo } from '@eg-domain/botanical-species-info/botanical-species-info';
+import { BotanicalSpeciesInfoRepository } from '@eg-domain/botanical-species-info/botanical-species-info-repository.interface';
 import { Inject, Injectable } from '@nestjs/common';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const BotanicalSpeciesRepo = () => Inject('BotanicalSpeciesRepositoryTypeOrm');
+const BotanicalSpeciesRepo = () => Inject('BotanicalSpeciesInfoRepositoryTypeOrm');
 
 @Injectable()
-export class BotanicalSpeciesService {
-  public constructor(@BotanicalSpeciesRepo() private readonly botanicalSpeciesRepository: BotanicalSpeciesRepository) {}
+export class BotanicalSpeciesInfoService {
+  public constructor(
+    @BotanicalSpeciesRepo() private readonly botanicalSpeciesRepository: BotanicalSpeciesInfoRepository
+  ) {}
 
-  public findAll(): Promise<BotanicalSpecies[]> {
+  public findAll(): Promise<BotanicalSpeciesInfo[]> {
     return this.botanicalSpeciesRepository.findAll();
   }
 
-  public findOne(id: string): Promise<BotanicalSpecies> {
+  public findOne(id: string): Promise<BotanicalSpeciesInfo> {
     return this.botanicalSpeciesRepository.findOne(id);
   }
 }

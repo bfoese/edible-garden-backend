@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { FacadeModule } from '../facade/facade.module';
-import { BotanicalFamilyController } from './botanical-family/botanical-family.controller';
-import { BotanicalSpeciesController } from './botanical-species/botanical-species.controller';
+import { BotanicalNodeController } from './botanical-node/botanical-node.controller';
+import { BotanicalSpeciesInfoController } from './botanical-species/botanical-species.controller';
 
 @Module({
   imports: [FacadeModule],
-  controllers: [BotanicalFamilyController, BotanicalSpeciesController],
+  controllers: [BotanicalNodeController, BotanicalSpeciesInfoController],
 })
 export class RestApiModule {}

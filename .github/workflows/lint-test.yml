@@ -14,8 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install, Lint, Test
-        run: |
-          npm install
-          npm run lint
-          npm test
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '15.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Install Packages
+        run: npm run install:patched
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: Lint
+        run: npm run lint
+      - name: Test
+        run: npm test
+

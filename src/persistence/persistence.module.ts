@@ -1,41 +1,43 @@
 import { DomainModule } from '@eg-domain/domain.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BotanicalFamilyRepositoryProvider } from './botanical-family/adapter/botanical-family-repository.provider';
-import { BotanicalFamilyRepositoryTypeOrmAdapter } from './botanical-family/adapter/botanical-family-repository.typeorm.adapter';
-import { BotanicalFamilyTypeOrmRepository } from './botanical-family/repository/botanical-family.typeorm-repository';
-import { BotanicalFamilyI18nSchema } from './botanical-family/schema/botanical-family-i18n.schema';
-import { BotanicalFamilySchema } from './botanical-family/schema/botanical-family.schema';
-import { BotanicalSpeciesRepositoryProvider } from './botanical-species/adapter/botanical-species-repository.provider';
-import { BotanicalSpeciesRepositoryTypeOrmAdapter } from './botanical-species/adapter/botanical-species-repository.typeorm.adapter';
-import { BotanicalSpeciesTypeOrmRepository } from './botanical-species/repository/botanical-species.typeorm-repository';
-import { BotanicalSpeciesI18nSchema } from './botanical-species/schema/botanical-species-i18n.schema';
-import { BotanicalSpeciesSchema } from './botanical-species/schema/botanical-species.schema';
+import { BotanicalNodeRepositoryProvider } from './botanical-node/adapter/botanical-node-repository.provider';
+import { BotanicalNodeRepositoryTypeOrmAdapter } from './botanical-node/adapter/botanical-node-repository.typeorm.adapter';
+import { BotanicalNodeTypeOrmRepository } from './botanical-node/repository/botanical-node.typeorm-repository';
+import { BotanicalNodeI18nSchema } from './botanical-node/schema/botanical-node-i18n.schema';
+import { BotanicalNodeSchema } from './botanical-node/schema/botanical-node.schema';
+import { BotanicalSpeciesInfoRepositoryProvider } from './botanical-species/adapter/botanical-species-info-repository.provider';
+import { BotanicalSpeciesInfoRepositoryTypeOrmAdapter } from './botanical-species/adapter/botanical-species-info-repository.typeorm.adapter';
+import { BotanicalSpeciesInfoTypeOrmRepository } from './botanical-species/repository/botanical-species-info.typeorm-repository';
+import { BotanicalSpeciesInfoI18nSchema } from './botanical-species/schema/botanical-species-info-i18n.schema';
+import { BotanicalSpeciesInfoSchema } from './botanical-species/schema/botanical-species-info.schema';
 
 @Module({
   imports: [
     DomainModule,
     TypeOrmModule.forFeature([
-      BotanicalFamilySchema,
-      BotanicalFamilyI18nSchema,
-      BotanicalFamilyTypeOrmRepository,
+      BotanicalNodeSchema,
+      BotanicalNodeI18nSchema,
+      BotanicalNodeTypeOrmRepository,
 
-      BotanicalSpeciesSchema,
-      BotanicalSpeciesI18nSchema,
-      BotanicalSpeciesTypeOrmRepository,
+      BotanicalSpeciesInfoSchema,
+      BotanicalSpeciesInfoI18nSchema,
+      BotanicalSpeciesInfoTypeOrmRepository,
     ]),
   ],
   providers: [
-    BotanicalFamilyRepositoryProvider,
-    BotanicalFamilyRepositoryTypeOrmAdapter,
-    BotanicalSpeciesRepositoryProvider,
-    BotanicalSpeciesRepositoryTypeOrmAdapter,
+    BotanicalNodeRepositoryProvider,
+    BotanicalNodeRepositoryTypeOrmAdapter,
+
+    BotanicalSpeciesInfoRepositoryProvider,
+    BotanicalSpeciesInfoRepositoryTypeOrmAdapter,
   ],
   exports: [
-    BotanicalFamilyRepositoryProvider,
-    BotanicalFamilyRepositoryTypeOrmAdapter,
-    BotanicalSpeciesRepositoryProvider,
-    BotanicalSpeciesRepositoryTypeOrmAdapter,
+    BotanicalNodeRepositoryProvider,
+    BotanicalNodeRepositoryTypeOrmAdapter,
+
+    BotanicalSpeciesInfoRepositoryProvider,
+    BotanicalSpeciesInfoRepositoryTypeOrmAdapter,
   ],
 })
 export class PersistenceModule {}

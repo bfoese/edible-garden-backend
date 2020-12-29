@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [14]
+        node-version: [15]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -22,10 +22,14 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node_version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
 
-      - name: Install, Lint, Test
+      - name: Install Packages
+        run: npm run install:patched
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: Lint, Test
         run: |
-          npm install
           npm run lint
           npm test
 
@@ -55,4 +59,6 @@ jobs:
           HD_DB_SCHEMA: ${{secrets.HEROKU_DB_SCHEMA}}
           HD_DB_PORT: ${{secrets.HEROKU_DB_PORT}}
           HD_BFEG_CORS_ORIGINS: ${{secrets.CORS_ORIGINS}}
+          HD_NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+          HD_DB_SSL_CA: ${{secrets.HEROKU_CA}}
 

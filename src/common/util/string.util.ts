@@ -18,4 +18,23 @@ export class StringUtil {
     }
     return str;
   }
+
+  public static isEmpty(str: string): boolean {
+    return str === null || str === undefined || str === '';
+  }
+
+  public static range(
+    lowerBound: number | string | undefined,
+    upperBound: number | string | undefined,
+    lowerBoundIncluding: boolean,
+    upperBoundIncluding: boolean
+  ): string {
+    const lowerStr: string = `${lowerBound ?? ''}`.trim();
+    const upperStr = `${upperBound ?? ''}`.trim();
+
+    if (StringUtil.isEmpty(lowerStr) && StringUtil.isEmpty(upperStr)) {
+      return undefined;
+    }
+    return `${lowerBoundIncluding ? '[' : '('}${lowerStr},${upperStr}${upperBoundIncluding ? ']' : ')'}`;
+  }
 }
