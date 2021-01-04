@@ -39,7 +39,7 @@ jobs:
         uses: akhileshns/heroku-deploy@v3.7.8
         with:
           branch: "master"
-          dontuseforce: true
+          dontuseforce: false
           # buildpack will build and then prune the node_modules
           buildpack: heroku/nodejs
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
