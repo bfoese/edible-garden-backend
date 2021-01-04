@@ -6,11 +6,16 @@ import { BotanicalNodeRepositoryTypeOrmAdapter } from './botanical-node/adapter/
 import { BotanicalNodeTypeOrmRepository } from './botanical-node/repository/botanical-node.typeorm-repository';
 import { BotanicalNodeI18nSchema } from './botanical-node/schema/botanical-node-i18n.schema';
 import { BotanicalNodeSchema } from './botanical-node/schema/botanical-node.schema';
-import { BotanicalSpeciesInfoRepositoryProvider } from './botanical-species/adapter/botanical-species-info-repository.provider';
-import { BotanicalSpeciesInfoRepositoryTypeOrmAdapter } from './botanical-species/adapter/botanical-species-info-repository.typeorm.adapter';
-import { BotanicalSpeciesInfoTypeOrmRepository } from './botanical-species/repository/botanical-species-info.typeorm-repository';
-import { BotanicalSpeciesInfoI18nSchema } from './botanical-species/schema/botanical-species-info-i18n.schema';
-import { BotanicalSpeciesInfoSchema } from './botanical-species/schema/botanical-species-info.schema';
+import { GrowingManualRepositoryProvider } from './growing-manual/adapter/growing-manual-repository.provider';
+import { GrowingManualRepositoryTypeOrmAdapter } from './growing-manual/adapter/growing-manual-repository.typeorm.adapter';
+import { GrowingManualTypeOrmRepository } from './growing-manual/repository/growing-manual.typeorm-repository';
+import { GrowingManualI18nSchema } from './growing-manual/schema/growing-manual-i18n.schema';
+import { GrowingManualSchema } from './growing-manual/schema/growing-manual.schema';
+import { MixedCultureRepositoryProvider } from './mixed-culture/adapter/mixed-culture-repository.provider';
+import { MixedCultureRepositoryTypeOrmAdapter } from './mixed-culture/adapter/mixed-culture-repository.typeorm.adapter';
+import { MixedCultureTypeOrmRepository } from './mixed-culture/repository/mixed-culture.typeorm-repository';
+import { MixedCultureI18nSchema } from './mixed-culture/schema/mixed-culture-i18n.schema';
+import { MixedCultureSchema } from './mixed-culture/schema/mixed-culture.schema';
 
 @Module({
   imports: [
@@ -20,24 +25,34 @@ import { BotanicalSpeciesInfoSchema } from './botanical-species/schema/botanical
       BotanicalNodeI18nSchema,
       BotanicalNodeTypeOrmRepository,
 
-      BotanicalSpeciesInfoSchema,
-      BotanicalSpeciesInfoI18nSchema,
-      BotanicalSpeciesInfoTypeOrmRepository,
+      GrowingManualSchema,
+      GrowingManualI18nSchema,
+      GrowingManualTypeOrmRepository,
+
+      MixedCultureSchema,
+      MixedCultureI18nSchema,
+      MixedCultureTypeOrmRepository,
     ]),
   ],
   providers: [
     BotanicalNodeRepositoryProvider,
     BotanicalNodeRepositoryTypeOrmAdapter,
 
-    BotanicalSpeciesInfoRepositoryProvider,
-    BotanicalSpeciesInfoRepositoryTypeOrmAdapter,
+    GrowingManualRepositoryProvider,
+    GrowingManualRepositoryTypeOrmAdapter,
+
+    MixedCultureRepositoryProvider,
+    MixedCultureRepositoryTypeOrmAdapter,
   ],
   exports: [
     BotanicalNodeRepositoryProvider,
     BotanicalNodeRepositoryTypeOrmAdapter,
 
-    BotanicalSpeciesInfoRepositoryProvider,
-    BotanicalSpeciesInfoRepositoryTypeOrmAdapter,
+    GrowingManualRepositoryProvider,
+    GrowingManualRepositoryTypeOrmAdapter,
+
+    MixedCultureRepositoryProvider,
+    MixedCultureRepositoryTypeOrmAdapter,
   ],
 })
 export class PersistenceModule {}

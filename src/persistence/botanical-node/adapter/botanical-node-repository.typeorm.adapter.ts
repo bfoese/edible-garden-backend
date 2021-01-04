@@ -1,7 +1,7 @@
+import { FindManyOptions } from '@bfoese/typeorm';
 import { BotanicalNode } from '@eg-domain/botanical-node/botanical-node';
 import { BotanicalNodeRepository } from '@eg-domain/botanical-node/botanical-node-repository.interface';
 import { Injectable } from '@nestjs/common';
-
 import { BotanicalNodeTypeOrmRepository } from '../repository/botanical-node.typeorm-repository';
 
 @Injectable()
@@ -12,6 +12,8 @@ export class BotanicalNodeRepositoryTypeOrmAdapter implements BotanicalNodeRepos
     return this.botanicalNodeRepository.findOneOrFail(id);
   }
   public findAll(): Promise<BotanicalNode[]> {
-    return this.botanicalNodeRepository.find();
+    return this.botanicalNodeRepository.find(<FindManyOptions>{
+      relations: ['i18nData'],
+    });
   }
 }

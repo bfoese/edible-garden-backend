@@ -139,6 +139,11 @@ Details of a specific table:
 Exit the container:
 \q
 
+Restart with clean local database:
+```bash
+$ docker-compose down --volumes
+```
+
 # Postgres Error Handling
 
 During development with TypeORM sync mode turned on, exceptions from postgres can arise. Here are some workarounds.
@@ -195,6 +200,11 @@ Conventions for this project:
 
 ```bash
 $ heroku releases
-$ heroku releases:output ${RELEASE_NUMBER}
+$ heroku releases:output <release number>
 
+```
+
+Reset Database
+```bash
+heroku pg:reset DATABASE --app <app-name>
 ```

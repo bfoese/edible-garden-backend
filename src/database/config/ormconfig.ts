@@ -17,7 +17,7 @@ export = <PostgresConnectionOptions>{
   migrationsTableName: 'migration',
   migrationsRun: process.env.TYPEORM_MIGRATIONS_RUN === 'true',
   cli: {
-    migrationsDir: __dirname + '/../../../**/../database/migration-gen',
+    migrationsDir: 'src/database/migration-gen',
   },
   synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
 
