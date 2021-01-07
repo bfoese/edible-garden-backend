@@ -3,7 +3,7 @@ import { GrowingManualFacadeService } from '@eg-presentation-facade/growing-manu
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Growing Manuals')
+@ApiTags('Growing Manual')
 @Controller('v1/growing-manual')
 export class GrowingManualController {
   public constructor(private readonly growingManualFacadeService: GrowingManualFacadeService) {}

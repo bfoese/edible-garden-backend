@@ -11,4 +11,13 @@ export enum EdiblePart {
   fruit = 'fruit',
   seed = 'seed',
   sprout = 'sprout',
+  /**
+   * Knolle
+   */
+  tuber = 'tuber',
+  rhizome = 'rhizome',
+  /**
+   * Schote
+   */
+  pod = 'pod',
 }

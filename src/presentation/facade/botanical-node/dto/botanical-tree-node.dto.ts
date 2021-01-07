@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BotanicalNodeBaseDto } from './botanical-node-base.dto';
 
-export class BotanicalNodeDto extends BotanicalNodeBaseDto {
+export class BotanicalTreeNodeDto extends BotanicalNodeBaseDto {
   @ApiProperty({
-    type: BotanicalNodeDto,
+    type: 'array',
   })
-  public parent?: BotanicalNodeDto;
+  public children: BotanicalTreeNodeDto[];
 }

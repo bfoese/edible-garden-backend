@@ -10,8 +10,8 @@ const BotanicalNodeRepo = () => Inject('BotanicalNodeRepositoryTypeOrm');
 export class BotanicalNodeService {
   public constructor(@BotanicalNodeRepo() private readonly botanicalNodeRepository: BotanicalNodeRepository) {}
 
-  public findAll(): Promise<BotanicalNode[]> {
-    return this.botanicalNodeRepository.findAll();
+  public getTree(): Promise<BotanicalNode[]> {
+    return this.botanicalNodeRepository.getTree();
   }
 
   public findOne(id: string): Promise<BotanicalNode> {

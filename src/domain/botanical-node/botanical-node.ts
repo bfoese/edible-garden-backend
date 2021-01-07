@@ -13,6 +13,8 @@ export class BotanicalNode implements HasI18nData<BotanicalNode, BotanicalNodeI1
 
   public parent: BotanicalNode;
 
+  public children: BotanicalNode[];
+
   public set entityInfo(entityInfo: EntityInfo) {
     this._entityInfo = entityInfo;
   }

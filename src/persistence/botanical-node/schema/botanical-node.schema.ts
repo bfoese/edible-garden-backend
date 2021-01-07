@@ -1,5 +1,6 @@
 import { TaxonomicRank } from '@eg-domain-constants/taxonomic-rank.enum';
 import { BotanicalNode } from '@eg-domain/botanical-node/botanical-node';
+import { EntityInfo } from '@eg-domain/shared/entity-info';
 import { EntityInfoSchema } from '@eg-persistence/shared/schema/entity-info.embed';
 import { EntitySchema, EntitySchemaColumnOptions, EntitySchemaRelationOptions, JoinColumnOptions } from 'typeorm';
 import { EntitySchemaEmbeddedOptions } from 'typeorm/entity-schema/EntitySchemaEmbeddedOptions';
@@ -10,8 +11,7 @@ export const BotanicalNodeSchema = new EntitySchema<BotanicalNode>(<EntitySchema
   embeddeds: {
     entityInfo: {
       isArray: false,
-      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-      type: () => EntityInfoSchema(),
+      type: (): EntitySchema<EntityInfo> => EntityInfoSchema(),
       prefix: '',
     } as EntitySchemaEmbeddedOptions,
   },
@@ -37,11 +37,17 @@ export const BotanicalNodeSchema = new EntitySchema<BotanicalNode>(<EntitySchema
       inverseSide: 'parent',
     } as EntitySchemaRelationOptions,
 
+    children: {
+      type: 'one-to-many',
+      target: 'botanicalNode',
+      cascade: ['insert'],
+      inverseSide: 'parent',
+    } as EntitySchemaRelationOptions,
+
     parent: {
       type: 'many-to-one',
       target: 'botanicalNode',
       cascade: ['insert'],
-      // inverseSide: 'botanicalNode',
       joinColumn: <JoinColumnOptions>{ name: 'parent_id' },
     } as EntitySchemaRelationOptions,
   },

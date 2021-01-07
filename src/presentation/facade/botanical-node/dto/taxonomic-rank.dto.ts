@@ -1,4 +1,7 @@
 export enum TaxonomicRankDto {
-  'BotanicalSpecies',
-  'BotanicalFamily',
+  'Family' = 0,
+  'Genus' = 1,
+  'Species' = 2,
+  'Subspecies' = 3,
+  'Variety' = 4,
 }

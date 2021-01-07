@@ -11,9 +11,11 @@ export class BotanicalNodeRepositoryTypeOrmAdapter implements BotanicalNodeRepos
   public findOne(id: string): Promise<BotanicalNode> {
     return this.botanicalNodeRepository.findOneOrFail(id);
   }
-  public findAll(): Promise<BotanicalNode[]> {
+
+  public getTree(): Promise<BotanicalNode[]> {
     return this.botanicalNodeRepository.find(<FindManyOptions>{
-      relations: ['i18nData'],
+      relations: ['i18nData', 'children', 'children.i18nData', 'children.children', 'children.children.i18nData'],
+      where: { parent: null }, // start with roots and load children
     });
   }
 }
