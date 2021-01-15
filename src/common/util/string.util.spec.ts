@@ -35,4 +35,20 @@ describe('StringUtil', () => {
         expect(StringUtil.range('', null, true, false)).toBe(undefined);
       });
   });
+
+  describe('contains', () => {
+    it('should work case-sensitive', async () => {
+      expect(StringUtil.contains('foo Bar baz', 'Bar', false)).toBe(true);
+    }),
+      it('should work case-insensitive', async () => {
+        expect(StringUtil.contains('foo Bar baz', 'BAR', true)).toBe(true);
+      }),
+      it('should handle empty gracefully', async () => {
+        expect(StringUtil.contains('', '', true)).toBe(false);
+        expect(StringUtil.contains('', 'Bar', true)).toBe(false);
+      }),
+      it('should handle null gracefully', async () => {
+        expect(StringUtil.contains(null, null, true)).toBe(false);
+      });
+  });
 });

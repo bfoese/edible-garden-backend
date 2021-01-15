@@ -37,4 +37,15 @@ export class StringUtil {
     }
     return `${lowerBoundIncluding ? '[' : '('}${lowerStr},${upperStr}${upperBoundIncluding ? ']' : ')'}`;
   }
+
+  public static contains(a: string, searchString: string, ignoreCase: boolean): boolean {
+    if (this.isEmpty(a) || this.isEmpty(searchString)) {
+      return false;
+    }
+
+    const aNormalized = ignoreCase ? a.toLowerCase() : a;
+    const substringNormalized = ignoreCase ? searchString.toLowerCase() : searchString;
+
+    return aNormalized.indexOf(substringNormalized) != -1;
+  }
 }

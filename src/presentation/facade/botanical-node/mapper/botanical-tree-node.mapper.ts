@@ -1,8 +1,9 @@
 import { ArrayUtil } from '@eg-common/util/array.util';
+import { DtoMapper } from '@eg-core/facade/mapper/contract/dto-mapper.interface';
 import { BotanicalNode } from '@eg-domain/botanical-node/botanical-node';
 import { BotanicalTreeNodeDto } from '@eg-presentation-facade/botanical-node/dto/botanical-tree-node.dto';
-import { DtoMapper } from '@eg-presentation-facade/shared/mapper/dto-mapper.interface';
 import { Injectable } from '@nestjs/common';
+
 import { BotanicalNodeBaseMapper } from './botanical-node-base.mapper';
 
 @Injectable()

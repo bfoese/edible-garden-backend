@@ -1,5 +1,6 @@
-import { EntityInfoDto } from '@eg-presentation-facade/shared/dto/entity-info.dto';
+import { EntityInfoDto } from '@eg-core/facade/dto/entity-info.dto';
 import { ApiProperty } from '@nestjs/swagger';
+
 import { TaxonomicRankDto } from './taxonomic-rank.dto';
 
 export class BotanicalNodeBaseDto {

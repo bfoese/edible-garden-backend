@@ -1,6 +1,7 @@
 import { BotanicalNode } from '@eg-domain/botanical-node/botanical-node';
 import { EntityInfo } from '@eg-domain/shared/entity-info';
 import { HasI18nData } from '@eg-domain/shared/has-i18n-data.interface';
+
 import { MixedCultureI18n } from './mixed-culture-i18n';
 
 export class MixedCulture implements HasI18nData<MixedCulture, MixedCultureI18n> {

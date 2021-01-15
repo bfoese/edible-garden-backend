@@ -1,7 +1,8 @@
+import { DtoMapper } from '@eg-core/facade/mapper/contract/dto-mapper.interface';
+import { EntityInfoMapper } from '@eg-core/facade/mapper/entity-info.mapper';
 import { BotanicalNode } from '@eg-domain/botanical-node/botanical-node';
-import { DtoMapper } from '@eg-presentation-facade/shared/mapper/dto-mapper.interface';
-import { EntityInfoMapper } from '@eg-presentation-facade/shared/mapper/entity-info.mapper';
 import { Injectable } from '@nestjs/common';
+
 import { BotanicalNodeBaseDto } from '../dto/botanical-node-base.dto';
 import { TaxonomicRankMapper } from './taxonomix-rank.mapper';
 

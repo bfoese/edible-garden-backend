@@ -1,5 +1,5 @@
+import { EntityInfoDto } from '@eg-core/facade/dto/entity-info.dto';
 import { BotanicalNodeDto } from '@eg-presentation-facade/botanical-node/dto/botanical-node.dto';
-import { EntityInfoDto } from '@eg-presentation-facade/shared/dto/entity-info.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class MixedCultureDto {

@@ -1,6 +1,7 @@
 import { DomainModule } from '@eg-domain/domain.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { BotanicalNodeRepositoryProvider } from './botanical-node/adapter/botanical-node-repository.provider';
 import { BotanicalNodeRepositoryTypeOrmAdapter } from './botanical-node/adapter/botanical-node-repository.typeorm.adapter';
 import { BotanicalNodeTypeOrmRepository } from './botanical-node/repository/botanical-node.typeorm-repository';
@@ -16,6 +17,10 @@ import { MixedCultureRepositoryTypeOrmAdapter } from './mixed-culture/adapter/mi
 import { MixedCultureTypeOrmRepository } from './mixed-culture/repository/mixed-culture.typeorm-repository';
 import { MixedCultureI18nSchema } from './mixed-culture/schema/mixed-culture-i18n.schema';
 import { MixedCultureSchema } from './mixed-culture/schema/mixed-culture.schema';
+import { UserRepositoryProvider } from './user/adapter/user-repository.provider';
+import { UserRepositoryTypeOrmAdapter } from './user/adapter/user-repository.typeorm.adapter';
+import { UserTypeOrmRepository } from './user/repository/user.typeorm-repository';
+import { UserSchema } from './user/schema/user.schema';
 
 @Module({
   imports: [
@@ -32,6 +37,9 @@ import { MixedCultureSchema } from './mixed-culture/schema/mixed-culture.schema'
       MixedCultureSchema,
       MixedCultureI18nSchema,
       MixedCultureTypeOrmRepository,
+
+      UserSchema,
+      UserTypeOrmRepository,
     ]),
   ],
   providers: [
@@ -43,6 +51,9 @@ import { MixedCultureSchema } from './mixed-culture/schema/mixed-culture.schema'
 
     MixedCultureRepositoryProvider,
     MixedCultureRepositoryTypeOrmAdapter,
+
+    UserRepositoryProvider,
+    UserRepositoryTypeOrmAdapter,
   ],
   exports: [
     BotanicalNodeRepositoryProvider,
@@ -53,6 +64,9 @@ import { MixedCultureSchema } from './mixed-culture/schema/mixed-culture.schema'
 
     MixedCultureRepositoryProvider,
     MixedCultureRepositoryTypeOrmAdapter,
+
+    UserRepositoryProvider,
+    UserRepositoryTypeOrmAdapter,
   ],
 })
 export class PersistenceModule {}

@@ -12,6 +12,8 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
+      "@eg-auth/*": ["src/auth/*"],
+      "@eg-hashing/*": ["src/hashing/*"],
       "@eg-domain-constants/*": ["src/domain-constants/*"],
       "@eg-domain/*": ["src/domain/*"],
       "@eg-app-config/*": ["src/application/config/*"],

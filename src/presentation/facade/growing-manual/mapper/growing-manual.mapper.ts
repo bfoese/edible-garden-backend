@@ -1,10 +1,11 @@
+import { DtoMapper } from '@eg-core/facade/mapper/contract/dto-mapper.interface';
+import { EntityInfoMapper } from '@eg-core/facade/mapper/entity-info.mapper';
 import { GrowingManual } from '@eg-domain/growing-manual/growing-manual';
 import { NutritionDemand } from '@eg-domain/growing-manual/nutrition-demand';
 import { BotanicalNodeMapper } from '@eg-presentation-facade/botanical-node/mapper/botanical-node.mapper';
 import { GrowingManualDto } from '@eg-presentation-facade/growing-manual/dto/growing-manual.dto';
-import { DtoMapper } from '@eg-presentation-facade/shared/mapper/dto-mapper.interface';
-import { EntityInfoMapper } from '@eg-presentation-facade/shared/mapper/entity-info.mapper';
 import { Injectable } from '@nestjs/common';
+
 import { NutritionDemandDto } from '../dto/nutrition-demand.dto';
 
 @Injectable()

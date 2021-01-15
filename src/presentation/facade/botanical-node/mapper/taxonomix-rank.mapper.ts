@@ -1,6 +1,7 @@
+import { DtoEnumMapper } from '@eg-core/facade/mapper/contract/dto-mapper.interface';
 import { TaxonomicRank } from '@eg-domain-constants/taxonomic-rank.enum';
-import { DtoEnumMapper } from '@eg-presentation-facade/shared/mapper/dto-mapper.interface';
 import { Injectable } from '@nestjs/common';
+
 import { TaxonomicRankDto } from '../dto/taxonomic-rank.dto';
 
 @Injectable()
