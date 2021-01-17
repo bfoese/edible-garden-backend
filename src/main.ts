@@ -1,18 +1,35 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
+import { HttpsOptions } from '@nestjs/common/interfaces/external/https-options.interface';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
 import { AppModule } from './app.module';
 
 import dotenvFlow = require('dotenv-flow');
 import RateLimit = require('express-rate-limit');
+import fs = require('fs');
+import cookieParser = require('cookie-parser');
 
 async function bootstrap(): Promise<void> {
   dotenvFlow.config({
     purge_dotenv: true,
   });
 
-  const app: INestApplication = await NestFactory.create(AppModule);
+  // enable HTTPS under localhost
+  let httpsOptions: HttpsOptions;
+  if (process.env.NODE_ENV !== 'production') {
+    httpsOptions = {
+      key: fs.readFileSync('./certs/local-key.pem'),
+      cert: fs.readFileSync('./certs/local-cert.pem'),
+    };
+  }
+
+  const app: INestApplication = await NestFactory.create(AppModule, {
+    httpsOptions,
+  });
+
+  app.use(cookieParser(process.env.BFEG_COOKIE_SIGNATURE_SECRET)); // needed for JWT refresh token
 
   const corsOriginProperty = process.env.BFEG_CORS_ORIGINS ?? '';
   const corsOrigins = corsOriginProperty ? corsOriginProperty.split('|') : [];

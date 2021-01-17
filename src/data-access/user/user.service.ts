@@ -1,5 +1,5 @@
 import { UniqueKeyViolationException } from '@eg-auth/exceptions/unique-key-violation.exception';
-import { ArrayUtil } from '@eg-common/util/array.util';
+import { ArrayUtils } from '@eg-common/util/array.utils';
 import { User } from '@eg-domain/user/user';
 import { UserRepository } from '@eg-domain/user/user-repository.interface';
 import { UserValidation } from '@eg-domain/user/user-validation';
@@ -29,7 +29,7 @@ export class UserService {
       groups: [UserValidation.groups.userRegistration],
     });
 
-    if (!ArrayUtil.isEmpty(errors)) {
+    if (!ArrayUtils.isEmpty(errors)) {
       throw new BadRequestException(errors);
     }
 

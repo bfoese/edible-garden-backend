@@ -1,5 +1,5 @@
+import { DomainContantsModule } from '@eg-domain-constants/domain-constants.module';
 import { Module } from '@nestjs/common';
-import { DomainContantsModule } from 'src/domain-constants/domain-constants.module';
 
 @Module({
   imports: [DomainContantsModule],

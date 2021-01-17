@@ -1,13 +1,12 @@
 import { InvalidCredentialsException } from '@eg-auth/exceptions/invalid-credentials.exception';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
-import { JwtService } from '@nestjs/jwt';
+import { HashingService } from '@eg-hashing/hashing.service';
+import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
+import { JwtModuleOptions, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 
-import { HashingService } from '../hashing/hashing.service';
 import { AuthenticationService } from './authentication.service';
-import { JwtTokenPayload } from './strategies/jwt-token-payload.interface';
-import mockedJwtService from './test/mocks/jwt.service.mock';
 import mockedUser from './test/mocks/user.mock';
 import mockedUserService from './test/mocks/user.service.mock';
 
@@ -22,16 +21,20 @@ describe('AuthenticationService', () => {
       providers: [
         AuthenticationService,
         {
-          provide: JwtService,
-          useValue: mockedJwtService,
-        },
-        {
           provide: UserService,
           useValue: mockedUserService,
         },
         {
+          provide: JwtService,
+          useValue: new JwtService({ secret: 'test', signOptions: { expiresIn: '60s' } } as JwtModuleOptions),
+        },
+        {
           provide: HashingService,
           useValue: new HashingService({ saltRounds: 10, pepper: hashingPepper }),
+        },
+        {
+          provide: RefreshTokenCacheService,
+          useValue: {},
         },
       ],
     }).compile();
@@ -52,15 +55,6 @@ describe('AuthenticationService', () => {
       expect(userBeforeSave.password).toEqual(passwordHash);
       expect(unregisteredUser.password !== passwordHash).toBeTruthy();
       expect(registeredUser.password === null || registeredUser.password === undefined).toBeTruthy();
-    });
-  });
-
-  describe('the provided JWT token on login', () => {
-    it('should contain the unique username to identify the user', async () => {
-      const user = mockedUser;
-      const jwtToken = await authenticationService.login(user);
-      const payload: JwtTokenPayload = JSON.parse(jwtToken.access_token);
-      expect(payload.sub).toEqual(user.username);
     });
   });
 

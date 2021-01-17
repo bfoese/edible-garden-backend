@@ -1,8 +1,10 @@
-import { Body, Controller, Get, HttpCode, Post, Request, UseGuards } from '@nestjs/common';
+import { AuthenticationService } from '@eg-auth/authentication.service';
+import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
+import { JwtRefreshGuard } from '@eg-auth/guards/jwt-refresh.guard';
+import { LocalAuthenticationGuard } from '@eg-auth/guards/local-authentication.guard';
+import { RequestWithUser } from '@eg-auth/strategies/request-with-user';
+import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { LocalAuthenticationGuard } from 'src/auth/guards/local-authentication.guard';
-import { RequestWithUser } from 'src/auth/strategies/request-with-user';
 
 import { AuthenticationFacadeService } from '../facade/autentication-facade.service';
 import { JwtTokenDto } from '../facade/dto/jwt-token.dto';
@@ -23,18 +25,56 @@ export class AuthenticationController {
     return this.authenticationFacadeService.register(dto);
   }
 
+  @UseGuards(JwtRefreshGuard)
+  @Get('refresh-token')
+  public async refresh(@Req() request: RequestWithUser): Promise<JwtTokenDto> {
+    const user = await request.user;
+    const previousRefreshToken = AuthenticationService.getJwtRefreshCookie(request);
+
+    const accessToken = this.authenticationFacadeService.generateAccessToken(user);
+    const refreshToken = await this.authenticationFacadeService.generateNextRefreshToken(user, previousRefreshToken);
+    request.res.cookie(AuthenticationService.JwtRefreshCookieName, refreshToken, {
+      httpOnly: true,
+      signed: true,
+      secure: true,
+      expires: this.authenticationFacadeService.getJwtExpirationDate(refreshToken),
+    });
+
+    return accessToken;
+  }
+
   @HttpCode(200)
   @UseGuards(LocalAuthenticationGuard)
   @Post('login')
-  public async login(@Request() req: RequestWithUser): Promise<JwtTokenDto> {
+  public async login(@Req() request: RequestWithUser): Promise<JwtTokenDto> {
+    const user = await request.user;
+    if (user) {
+      const accessToken = this.authenticationFacadeService.generateAccessToken(user);
+      const refreshToken = await this.authenticationFacadeService.generateNextRefreshToken(user, null);
+      request.res.cookie(AuthenticationService.JwtRefreshCookieName, refreshToken, {
+        httpOnly: true,
+        signed: true,
+        secure: true,
+        expires: this.authenticationFacadeService.getJwtExpirationDate(refreshToken),
+      });
+      return accessToken;
+    }
+
+    return null;
+  }
+
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  public async logout(@Req() req: RequestWithUser): Promise<boolean> {
     const user = await req.user;
-    return this.authenticationFacadeService.login(user);
+    return this.authenticationFacadeService.logout(user);
   }
 
   // TODO move to different controller
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  public async getProfile(@Request() req: RequestWithUser): Promise<UserDto> {
+  public async getProfile(@Req() req: RequestWithUser): Promise<UserDto> {
     const user = await req.user;
     return this.userMapper.toDto(user);
   }

@@ -49,6 +49,14 @@ services:
     # When our application starts, we expect that both the Postgres database and the Redis storage are ready to be used. Otherwise, our application would probably crash
     depends_on:
       - postgres
+      - redis
+  redis:
+    container_name: redis
+    image: redis:5
+    networks:
+      - webnet
+    ports:
+      - "6379:6379"
   postgres:
     container_name: edible-garden-db
     image: postgres:12
@@ -71,7 +79,7 @@ services:
   pgadmin:
     container_name: edible-garden-pgadmin
     image: dpage/pgadmin4
-    environment: 
+    environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     volumes:
@@ -80,7 +88,7 @@ services:
       - ${PGADMIN_PORT}:80
     networks:
       - webnet
-    depends_on: 
+    depends_on:
       - postgres
     restart: unless-stopped
     tty: true

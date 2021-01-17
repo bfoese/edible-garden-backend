@@ -12,6 +12,7 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
+      "@eg-refresh-token-cache/*": ["src/refresh-token-cache/*"],
       "@eg-auth/*": ["src/auth/*"],
       "@eg-hashing/*": ["src/hashing/*"],
       "@eg-domain-constants/*": ["src/domain-constants/*"],
