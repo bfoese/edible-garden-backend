@@ -24,10 +24,10 @@ import { DomainModule } from './domain/domain.module';
     AuthModule,
     CacheModule.registerAsync({
       useFactory: () => {
+        // possible options: https://github.com/NodeRedis/node-redis
         return {
           store: redisStore,
-          host: 'localhost',
-          port: 6379,
+          url: process.env.BFEG_REDIS_URL
         } as CacheModuleAsyncOptions;
       },
     }),

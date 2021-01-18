@@ -3,6 +3,7 @@ import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.int
 import { HttpsOptions } from '@nestjs/common/interfaces/external/https-options.interface';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as path from 'path';
 
 import { AppModule } from './app.module';
 
@@ -10,7 +11,6 @@ import dotenvFlow = require('dotenv-flow');
 import RateLimit = require('express-rate-limit');
 import fs = require('fs');
 import cookieParser = require('cookie-parser');
-
 async function bootstrap(): Promise<void> {
   dotenvFlow.config({
     purge_dotenv: true,
@@ -18,10 +18,13 @@ async function bootstrap(): Promise<void> {
 
   // enable HTTPS under localhost
   let httpsOptions: HttpsOptions;
-  if (process.env.NODE_ENV !== 'production') {
+  const ssl = process.env.BFEG_SSL;
+  if (ssl) {
+    const keyPath = process.env.BFEG_SSL_KEY_PATH || '';
+    const certPath = process.env.BFEG_SSL_CERT_PATH || '';
     httpsOptions = {
-      key: fs.readFileSync('./certs/local-key.pem'),
-      cert: fs.readFileSync('./certs/local-cert.pem'),
+      key: fs.readFileSync(path.join(__dirname, keyPath)),
+      cert: fs.readFileSync(path.join(__dirname, certPath)),
     };
   }
 

@@ -208,3 +208,36 @@ Reset Database
 ```bash
 heroku pg:reset DATABASE --app <app-name>
 ```
+
+## Self-signed Certificates for HTTPS under localhost
+
+For using HTTPS under localhost (or other local dev domain, e.g. dev.local or whatever) you can use a self signed certificate that can be generated with the tool mkcert.
+The certificate and the key can be easily provided in the NestJS bootstrap process: https://docs.nestjs.com/faq/multiple-servers
+This way the server is quickly running under https://localhost.
+
+But I ran into problems when generating the OpenAPI source code for the Angular
+client using ng-openapi-gen. First error that was shown was "unable to verify
+the first certificate". This error occured when I only registered the
+localhost-key.pem and localhost.pem file with NestJS. The problem can be solved
+by concatenating the root certificate together with the localhost certificate
+into one file and register that with NestJS as shown below. Second error
+afterwards was "self signed certificate in certificate chain". But this must be
+solved on client side.
+
+<ol>
+<li>Install mkcert</li>
+<li>Create certificate and key for desired domain</li>
+<li>Concatenate the root certificate and the certificate of the domain into one file (fullchain)<li>
+<li><li>
+<li>start NestJS by providing the fullchain certificate and the key file of the domain</li>
+<ol>
+
+```bash
+# creates localhost.pem and localhost-key.pem
+$mkcert localhost
+# Show path of root certificate
+$mkcert -CAROOT
+# Concatenate root certificate and localhost certifiate into one file
+cat localhost.pem > localhost-fullchain.pem
+cat "$(mkcert -CAROOT)/rootCA.pem" >> localhost-fullchain.pem
+```
