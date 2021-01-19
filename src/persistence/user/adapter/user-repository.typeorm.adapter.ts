@@ -36,4 +36,18 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
       } else throw error;
     });
   }
+
+  public save(user: User): Promise<User | UniqueConstraintViolation> {
+    return this.userRepository.save(user).catch((error) => {
+      const violatedUniqueConstraint = UniqueConstraintViolationFactory.getUniqueConstraintViolationOrNull(
+        error,
+        UserSchema,
+        user
+      );
+
+      if (violatedUniqueConstraint) {
+        return violatedUniqueConstraint;
+      } else throw error;
+    });
+  }
 }

@@ -41,6 +41,23 @@ export class UserService {
     });
   }
 
+  public async activateAccount(usernameOrEmail: string): Promise<User> | never {
+    const user = await this.findByUsernameOrEmail(usernameOrEmail);
+    if (!user) {
+      return null;
+    }
+    if (user.entityInfo.deleted) {
+      return user; // do nothing
+    }
+    user.entityInfo.isActive = true;
+    return this.userRepository.save(user).then((result: User | UniqueConstraintViolation) => {
+      if (result instanceof UniqueConstraintViolation) {
+        throw new UniqueKeyViolationException();
+      }
+      return this.unexposePassword(result);
+    });
+  }
+
   /**
    * In almost all cases, we don't want the password to be exposed. This method
    * will clear the password field.

@@ -1,13 +1,24 @@
-import { AuthenticationService } from '@eg-auth/authentication.service';
+import { JwtActivateAccountGuard } from '@eg-auth/guards/jwt-activate-account.guard';
 import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
 import { JwtRefreshGuard } from '@eg-auth/guards/jwt-refresh.guard';
 import { LocalAuthenticationGuard } from '@eg-auth/guards/local-authentication.guard';
+import { AuthenticationService } from '@eg-auth/service/authentication.service';
 import { RequestWithUser } from '@eg-auth/strategies/request-with-user';
-import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
+import { User } from '@eg-domain/user/user';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { AuthenticationFacadeService } from '../facade/autentication-facade.service';
 import { JwtTokenDto } from '../facade/dto/jwt-token.dto';
+import { LoginUserDto } from '../facade/dto/login-user.dto';
 import { RegisterUserDto } from '../facade/dto/register-user.dto';
 import { UserDto } from '../facade/dto/user.dto';
 import { UserMapper } from '../facade/mapper/user.mapper';
@@ -24,6 +35,20 @@ export class AuthenticationController {
   public register(@Body() dto: RegisterUserDto): Promise<boolean> {
     return this.authenticationFacadeService.register(dto);
   }
+
+  /**
+   * TODO on success redirect to a page with success message
+   * @param request -
+   * @param dto -
+   */
+  @UseGuards(JwtActivateAccountGuard)
+  @Post('activate-account')
+  public async activateAccount(@Req() request: RequestWithUser, @Body() dto: JwtTokenDto): Promise<User | null> {
+    const user = await request.user;
+    console.log('activateAccount', user, dto);
+    return this.authenticationFacadeService.activateAccount(user);
+  }
+
 
   @UseGuards(JwtRefreshGuard)
   @Get('refresh-token')
@@ -46,7 +71,9 @@ export class AuthenticationController {
   @HttpCode(200)
   @UseGuards(LocalAuthenticationGuard)
   @Post('login')
-  public async login(@Req() request: RequestWithUser): Promise<JwtTokenDto> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async login(@Req() request: RequestWithUser, @Body() _loginData: LoginUserDto): Promise<JwtTokenDto> {
+
     const user = await request.user;
     if (user) {
       const accessToken = this.authenticationFacadeService.generateAccessToken(user);

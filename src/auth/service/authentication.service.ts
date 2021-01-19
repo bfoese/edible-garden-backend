@@ -1,15 +1,20 @@
+import { JwtAccountActionTokenPayload } from '@eg-auth/token-payload/jwt-account-action-token-payload.interface';
 import { JwtUtil } from '@eg-common/util/jwt.util';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
+import { UserValidation } from '@eg-domain/user/user-validation';
 import { HashingService } from '@eg-hashing/hashing.service';
 import { LimitTokensPerUserOptions } from '@eg-refresh-token-cache/limit-tokens-per-user.options';
 import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
 import { Injectable } from '@nestjs/common';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { ValidatorOptions } from '@nestjs/common/interfaces/external/validator-options.interface';
+import { JwtService } from '@nestjs/jwt';
+import { validateOrReject } from 'class-validator';
 import { Request } from 'express';
+import { MailService } from 'src/mail/mail.service';
 
-import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
-import { JwtTokenPayload } from './strategies/jwt-token-payload.interface';
+import { InvalidCredentialsException } from '../exceptions/invalid-credentials.exception';
+import { JwtTokenFactoryService } from './jwt-token-factory.service';
 
 @Injectable()
 export class AuthenticationService {
@@ -19,19 +24,76 @@ export class AuthenticationService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly hashingService: HashingService,
-    private readonly refreshTokenCacheService: RefreshTokenCacheService
+    private readonly refreshTokenCacheService: RefreshTokenCacheService,
+    private readonly jwtTokenFactoryService: JwtTokenFactoryService,
+    private mailService: MailService
   ) {}
 
   /**
-   * @param user -
+   * TODO instead of returning the user object, I would like to return a
+   * localized message indicating that registration was successful and the user
+   * received an account activation mail. So the frontend does not need to
+   * hardcode the message itself.
+   *
+   * @param username -
+   * @param email -
+   * @param password -
    */
-  public async register(user: User): Promise<User> {
-    const hashedPassword = await this.hashingService.createSaltedPepperedHash(user.password);
-    const createdUser = await this.userService.create({
-      ...user,
-      password: hashedPassword, // override the plain text password with hashed one
+  public async register(username: string, email: string, password: string): Promise<User> {
+    const user = new User();
+    user.username = username;
+    user.email = email;
+    user.password = password;
+    console.log('start registration process');
+
+    validateOrReject(user, { groups: [UserValidation.groups.userRegistration] } as ValidatorOptions);
+
+    const accountActionToken: string = this.jwtTokenFactoryService.generateAccountActionToken({
+      sub: user.username,
+      action: 'ActivateAccount',
     });
+    const hashedAccountActionToken: string = await this.hashingService.createSaltedHash(accountActionToken);
+
+    const hashedPassword: string = await this.hashingService.createSaltedPepperedHash(user.password);
+    user.password = hashedPassword; // override the plain text password with hashed one
+    user.entityInfo.isActive = false; // do not activate account yet
+    user.accountActionToken = hashedAccountActionToken; // we hash the token for the database in case the database get leaked
+    const createdUser = await this.userService.create(user);
+    console.log('created user', createdUser, accountActionToken);
+
+    this.mailService.sendConfirmationEmail(user, accountActionToken); // don't wait for finishing
     return createdUser;
+  }
+
+  /**
+   * Will check the validty of the provided token by checking if we have this token stored in the database for the user.
+   * We don't need to perform expiration checks over here as this is done by passport-jwt strategy. Its more of a business rule check.
+   * @param jwtToken - JWT for account action confirmation
+   * @param payload - already decoded payload from that token
+   */
+  public async verifyActivateAccountToken(
+    jwtToken: string,
+    payload: JwtAccountActionTokenPayload
+  ): Promise<User | null> {
+    if (jwtToken && payload?.action === 'ActivateAccount') {
+      const user = await this.userService.findByUsernameOrEmail(payload.sub);
+      // don't allow activation if already activated or account soft-deleted
+      if (user && user.entityInfo && !user.entityInfo.deleted && !user.entityInfo.isActive) {
+        const userAccountActionToken = user.accountActionToken;
+        // the token in the database was hashed for security reasons
+        const matchingToken = userAccountActionToken
+          ? await this.hashingService.verifyUnpepperedHash(jwtToken, userAccountActionToken)
+          : false;
+        if (matchingToken) {
+          return user;
+        }
+      }
+    }
+    return Promise.resolve(null);
+  }
+
+  public activateAccount(user: User): Promise<User> {
+    return this.userService.activateAccount(user.username);
   }
 
   /**
@@ -45,7 +107,7 @@ export class AuthenticationService {
    */
   public async validateUser(usernameOrEmail: string, plainTextPassword: string): Promise<User | undefined> {
     const password = await this.userService.getPasswordFromUser(usernameOrEmail);
-    const passwordMatches = await this.hashingService.verifyHash(plainTextPassword, password);
+    const passwordMatches = await this.hashingService.verifyPepperedHash(plainTextPassword, password);
     if (passwordMatches) {
       return this.userService.findByUsernameOrEmail(usernameOrEmail);
     }
@@ -53,12 +115,7 @@ export class AuthenticationService {
   }
 
   public async generateNextRefreshToken(user: User, previousRefreshToken: string): Promise<string> {
-    const payload = { sub: user.username } as JwtTokenPayload;
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: process.env.BFEG_JWT_REFRESH_SECRET,
-      expiresIn: process.env.BFEG_JWT_REFRESH_EXPIRATION_TIME,
-    } as JwtSignOptions);
-
+    const refreshToken = this.jwtTokenFactoryService.generateRefreshToken({ sub: user.username });
     if (previousRefreshToken) {
       // invalidate the old token by removing it
       this.refreshTokenCacheService.removeOne(user.username, previousRefreshToken);
@@ -76,15 +133,7 @@ export class AuthenticationService {
    * @returns JwtToken for the user
    */
   public generateAccessToken(user: User): Promise<string> {
-    const payload = { sub: user.username } as JwtTokenPayload;
-    // had to provide secret and expiration time here again, even though its
-    // configured already for the imported JwtModule - don't know why,
-    // whithout it, no secret was found
-    const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.BFEG_JWT_SECRET,
-      expiresIn: process.env.BFEG_JWT_EXPIRATION_TIME,
-    } as JwtSignOptions);
-    return Promise.resolve(accessToken);
+    return Promise.resolve(this.jwtTokenFactoryService.generateAccessToken({ sub: user.username }));
   }
 
   /**

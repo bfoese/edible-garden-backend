@@ -241,3 +241,23 @@ $mkcert -CAROOT
 cat localhost.pem > localhost-fullchain.pem
 cat "$(mkcert -CAROOT)/rootCA.pem" >> localhost-fullchain.pem
 ```
+
+
+## Send Email via Gmail
+To securely send Emails via a Gmail Account you have to create an App Password
+with access to the Google account email functionality. How to create such a
+password for the app is described here along with the SMTP host and port
+information to set everything up:
+https://support.google.com/mail/answer/7126229?p=BadCredentials&visit_id=637466758146187794-1782866574&rd=2#cantsignin
+
+In short: You have to enable 2-Factor-Authentication for the Google Account,
+then choose Google Account > Security > Sign In with Google > "App Passwords"
+and here you can create a password which only has access to the Email
+functionalities of your account.
+
+Gmail Sending limits: According to one page there is a limit of 500 outgoing
+Mails within 24 hours. I assume the mails above that limit will be purged to
+avoid exploitation.
+
+Its a good idea to have a counter for the apps mail sending queue to not run
+into that limit by delaying mails above the limit for a few hours.

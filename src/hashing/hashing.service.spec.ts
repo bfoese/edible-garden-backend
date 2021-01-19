@@ -21,15 +21,27 @@ describe('HashingService', () => {
   });
 
   describe('hash and validate password', () => {
-    it('be able to validate the original password', async () => {
+    it('be able to validate the original peppered password', async () => {
       const hash = await hashingService.createSaltedPepperedHash(password);
-      const verified = await hashingService.verifyHash(password, hash);
+      const verified = await hashingService.verifyPepperedHash(password, hash);
       expect(verified).toBe(true);
     });
 
-    it('should fail during validation of wrong password', async () => {
+    it('should fail during peppered validation of wrong password', async () => {
       const hash = await hashingService.createSaltedPepperedHash(password);
-      const verified = await hashingService.verifyHash(password.toLowerCase(), hash);
+      const verified = await hashingService.verifyPepperedHash(password.toLowerCase(), hash);
+      expect(verified).toBe(false);
+    });
+
+    it('be able to validate the original unpeppered password', async () => {
+      const hash = await hashingService.createSaltedHash(password);
+      const verified = await hashingService.verifyUnpepperedHash(password, hash);
+      expect(verified).toBe(true);
+    });
+
+    it('should fail during unpeppered validation of wrong password', async () => {
+      const hash = await hashingService.createSaltedHash(password);
+      const verified = await hashingService.verifyUnpepperedHash(password.toLowerCase(), hash);
       expect(verified).toBe(false);
     });
   });

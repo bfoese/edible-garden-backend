@@ -39,5 +39,15 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       length: 200,
       nullable: false,
     } as EntitySchemaColumnOptions,
-  },
+
+    preferredLocale: {
+      type: 'varchar',
+      length: 5,
+      nullable: true,
+    } as EntitySchemaColumnOptions,
+
+    accountActionToken: {
+      type: 'varchar',
+      nullable: true,
+    } as EntitySchemaColumnOptions,  },
 });

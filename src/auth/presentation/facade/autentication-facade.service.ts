@@ -1,22 +1,23 @@
-import { AuthenticationService } from '@eg-auth/authentication.service';
+import { AuthenticationService } from '@eg-auth/service/authentication.service';
 import { User } from '@eg-domain/user/user';
 import { Injectable } from '@nestjs/common';
 
 import { JwtTokenDto } from './dto/jwt-token.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { RegisterUserMapper } from './mapper/register-user.mapper';
 
 @Injectable()
 export class AuthenticationFacadeService {
   public constructor(
     private authenticationService: AuthenticationService,
-    private registerUserMapper: RegisterUserMapper
   ) {}
 
   public async register(dto: RegisterUserDto): Promise<boolean> {
-    const registrationData = this.registerUserMapper.ontoEntity(dto, new User());
-    const user = await this.authenticationService.register(registrationData);
+    const user = await this.authenticationService.register(dto.username, dto.email, dto.password);
     return Promise.resolve(user ? true : false);
+  }
+
+  public activateAccount(user: User): Promise<User> {
+    return this.authenticationService.activateAccount(user);
   }
 
   public async generateAccessToken(user: User): Promise<JwtTokenDto> {

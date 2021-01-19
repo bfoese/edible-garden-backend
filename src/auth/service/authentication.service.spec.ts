@@ -6,9 +6,9 @@ import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-
 import { JwtModuleOptions, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 
+import mockedUser from '../test/mocks/user.mock';
+import mockedUserService from '../test/mocks/user.service.mock';
 import { AuthenticationService } from './authentication.service';
-import mockedUser from './test/mocks/user.mock';
-import mockedUserService from './test/mocks/user.service.mock';
 
 describe('AuthenticationService', () => {
   let authenticationService: AuthenticationService;
@@ -47,7 +47,7 @@ describe('AuthenticationService', () => {
       const spyPasswordHashing = jest.spyOn(hashingService, 'createSaltedPepperedHash');
       const spyUserServiceCreate = jest.spyOn(mockedUserService, 'create');
       const unregisteredUser = mockedUser;
-      const registeredUser = await authenticationService.register(unregisteredUser);
+      const registeredUser = await authenticationService.register(unregisteredUser.username, unregisteredUser.email, unregisteredUser.password);
       expect(spyPasswordHashing).toBeCalledTimes(1);
 
       const passwordHash: string = await spyPasswordHashing.mock.results[0].value;
@@ -60,7 +60,7 @@ describe('AuthenticationService', () => {
 
   describe('when validating the users credentials', () => {
     it('should return the user if positively validated against the hashed password', async () => {
-      const spyVerifyPassword = jest.spyOn(hashingService, 'verifyHash');
+      const spyVerifyPassword = jest.spyOn(hashingService, 'verifyPepperedHash');
       const spyUserSvcGetPassword = jest.spyOn(mockedUserService, 'getPasswordFromUser');
       const spyUserSvcFindByUserNameOrMail = jest.spyOn(mockedUserService, 'findByUsernameOrEmail');
 

@@ -9,9 +9,11 @@ import { LoggerModule } from './application/logger/logger.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { DomainModule } from './domain/domain.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
+    MailModule,
     LoggerModule,
     DatabaseModule,
     ConfigModule.forRoot({
@@ -30,6 +32,7 @@ import { DomainModule } from './domain/domain.module';
           url: process.env.BFEG_REDIS_URL
         } as CacheModuleAsyncOptions;
       },
+
     }),
   ],
   providers: [],

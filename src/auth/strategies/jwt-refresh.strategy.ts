@@ -1,4 +1,4 @@
-import { AuthenticationService } from '@eg-auth/authentication.service';
+import { AuthenticationService } from '@eg-auth/service/authentication.service';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
 import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
@@ -7,7 +7,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { JwtTokenPayload } from './jwt-token-payload.interface';
+import { JwtTokenPayload } from '../token-payload/jwt-token-payload.interface';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-token') {
