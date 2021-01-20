@@ -1,7 +1,11 @@
 import appConfig from '@eg-app-config/app.config';
+import authConfig from '@eg-app-config/auth.config';
+import dbConfig from '@eg-app-config/db.config';
+import emailConfig from '@eg-app-config/email.config';
+import redisConfig from '@eg-app-config/redis.config';
 import { RestApiModule } from '@eg-rest-api/rest-api.module';
 import { CacheModule, CacheModuleAsyncOptions, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import * as redisStore from 'cache-manager-redis-store';
 
 import { HealthModule } from './application/health/health.module';
@@ -18,18 +22,20 @@ import { MailModule } from './mail/mail.module';
     DatabaseModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig],
+      load: [appConfig, redisConfig, emailConfig, authConfig, dbConfig],
     }),
     DomainModule,
     RestApiModule,
     HealthModule,
     AuthModule,
     CacheModule.registerAsync({
-      useFactory: () => {
+      imports: [ConfigModule],
+      inject: [redisConfig.KEY],
+      useFactory: (_redisConfig: ConfigType<typeof redisConfig>) => {
         // possible options: https://github.com/NodeRedis/node-redis
         return {
           store: redisStore,
-          url: process.env.BFEG_REDIS_URL
+          url: _redisConfig.url
         } as CacheModuleAsyncOptions;
       },
 

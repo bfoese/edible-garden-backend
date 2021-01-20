@@ -1,17 +1,20 @@
+import appConfig from '@eg-app-config/app.config';
 import { JwtAccountActionTokenPayload } from '@eg-auth/token-payload/jwt-account-action-token-payload.interface';
 import { JwtUtil } from '@eg-common/util/jwt.util';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
 import { UserValidation } from '@eg-domain/user/user-validation';
 import { HashingService } from '@eg-hashing/hashing.service';
+import { AccountActivationEmailJobData } from '@eg-mail/contracts/account-activation-email-job-data.interface';
+import { MailService } from '@eg-mail/mail.service';
 import { LimitTokensPerUserOptions } from '@eg-refresh-token-cache/limit-tokens-per-user.options';
 import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ValidatorOptions } from '@nestjs/common/interfaces/external/validator-options.interface';
+import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { validateOrReject } from 'class-validator';
 import { Request } from 'express';
-import { MailService } from 'src/mail/mail.service';
 
 import { InvalidCredentialsException } from '../exceptions/invalid-credentials.exception';
 import { JwtTokenFactoryService } from './jwt-token-factory.service';
@@ -21,12 +24,14 @@ export class AuthenticationService {
   public static readonly JwtRefreshCookieName = 'JwtRefresh';
 
   public constructor(
+    @Inject(appConfig.KEY)
+    private readonly _appConfig: ConfigType<typeof appConfig>,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly hashingService: HashingService,
     private readonly refreshTokenCacheService: RefreshTokenCacheService,
     private readonly jwtTokenFactoryService: JwtTokenFactoryService,
-    private mailService: MailService
+    private readonly mailService: MailService
   ) {}
 
   /**
@@ -44,7 +49,6 @@ export class AuthenticationService {
     user.username = username;
     user.email = email;
     user.password = password;
-    console.log('start registration process');
 
     validateOrReject(user, { groups: [UserValidation.groups.userRegistration] } as ValidatorOptions);
 
@@ -59,9 +63,12 @@ export class AuthenticationService {
     user.entityInfo.isActive = false; // do not activate account yet
     user.accountActionToken = hashedAccountActionToken; // we hash the token for the database in case the database get leaked
     const createdUser = await this.userService.create(user);
-    console.log('created user', createdUser, accountActionToken);
-
-    this.mailService.sendConfirmationEmail(user, accountActionToken); // don't wait for finishing
+    const emailJobData: AccountActivationEmailJobData = {
+      recipientName: user.username,
+      recipientEmail: user.email,
+      accountActivationUrl: `${this._appConfig.serverUrl()}/edible-garden/auth/activate?token=${accountActionToken}`,
+    };
+    this.mailService.sendAccountActivationEmail(emailJobData); // don't wait for finishing
     return createdUser;
   }
 
@@ -77,16 +84,27 @@ export class AuthenticationService {
   ): Promise<User | null> {
     if (jwtToken && payload?.action === 'ActivateAccount') {
       const user = await this.userService.findByUsernameOrEmail(payload.sub);
-      // don't allow activation if already activated or account soft-deleted
-      if (user && user.entityInfo && !user.entityInfo.deleted && !user.entityInfo.isActive) {
-        const userAccountActionToken = user.accountActionToken;
-        // the token in the database was hashed for security reasons
-        const matchingToken = userAccountActionToken
-          ? await this.hashingService.verifyUnpepperedHash(jwtToken, userAccountActionToken)
-          : false;
-        if (matchingToken) {
-          return user;
-        }
+
+      if (!user || user.entityInfo.deleted) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (!user || user.entityInfo.deleted) {
+        throw new HttpException('Account is marked for deletion', HttpStatus.FORBIDDEN);
+      }
+
+      if (user.entityInfo.isActive) {
+        throw new HttpException('Account is already activated', HttpStatus.FORBIDDEN);
+      }
+
+      const userAccountActionToken = user.accountActionToken;
+      // the token in the database was hashed for security reasons
+      const matchingToken = userAccountActionToken
+        ? await this.hashingService.verifyUnpepperedHash(jwtToken, userAccountActionToken)
+        : false;
+
+      if (matchingToken){
+        return user;
       }
     }
     return Promise.resolve(null);

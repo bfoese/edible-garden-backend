@@ -1,11 +1,13 @@
+import authConfig from '@eg-app-config/auth.config';
 import { CoreFacadeModule } from '@eg-core/facade/core-facade.module';
 import { DataAccessModule } from '@eg-data-access/data-access.module';
 import { HashingModule } from '@eg-hashing/hashing.module';
+import { MailModule } from '@eg-mail/mail.module';
 import { RefreshTokenCacheModule } from '@eg-refresh-token-cache/refresh-token-cache.module';
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { MailModule } from 'src/mail/mail.module';
 
 import { AuthenticationFacadeService } from './presentation/facade/autentication-facade.service';
 import { RegisterUserMapper } from './presentation/facade/mapper/register-user.mapper';
@@ -24,9 +26,13 @@ import { LocalStrategy } from './strategies/local.strategy';
     DataAccessModule,
     PassportModule,
     CoreFacadeModule,
-    JwtModule.register({
-      secret: process.env.BFEG_JWT_SECRET,
-      signOptions: { expiresIn: process.env.BFEG_JWT_EXPIRATION_TIME },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [authConfig.KEY],
+      useFactory: (_authConfig: ConfigType<typeof authConfig>) => ({
+        secret: _authConfig.jwtSecret(),
+        signOptions: { expiresIn: _authConfig.jwtExpirationTime() }
+      }),
     }),
     RefreshTokenCacheModule,
 

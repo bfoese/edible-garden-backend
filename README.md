@@ -261,3 +261,9 @@ avoid exploitation.
 
 Its a good idea to have a counter for the apps mail sending queue to not run
 into that limit by delaying mails above the limit for a few hours.
+
+## Bulls Queue
+
+<ul>
+<li>Bulls ignores jobs whose jobID is the same as the jobID of a previously performed job, unless you use 'removeOnCompleted'. Using this option will purge the information about previously performed Jobs after completion so they can't be considered the next time you add a job.</li>
+</ul>

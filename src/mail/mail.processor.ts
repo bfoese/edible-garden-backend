@@ -1,4 +1,3 @@
-import { User } from '@eg-domain/user/user';
 import { MailerService } from '@nestjs-modules/mailer';
 import {
   OnQueueActive,
@@ -8,9 +7,11 @@ import {
   Processor,
 } from '@nestjs/bull';
 import { Job } from 'bull';
-import { plainToClass } from 'class-transformer';
 
-@Processor('TestMailQueue')
+import { AppConstants } from '../application/app.constants';
+import { AccountActivationEmailJobData } from './contracts/account-activation-email-job-data.interface';
+
+@Processor(AppConstants.QueueOutgoingEmail)
 export class MailProcessor {
   public constructor(private readonly mailerService: MailerService) {}
 
@@ -29,30 +30,21 @@ export class MailProcessor {
     console.log(`Failed job ${job.id} of type ${job.name}: ${error.message}`, error.stack);
   }
 
-  @Process('confirmation')
-  public async sendWelcomeEmail(job: Job<{ user: User; code: string; }>): Promise<any> {
-    console.log(`Sending confirmation email to '${job.data.user.email}'`);
-
-    // const url = `${config.get('server.origin')}/auth/${job.data.code}/confirm`
-    const url = 'fakeactivationURL';
-    // if (!process.env.MAIL_LIVE) {
-    //   return 'SENT MOCK CONFIRMATION EMAIL'
-    // }
-
+  @Process('accountActivationEmail')
+  public async sendAccountActivationMail(job: Job<AccountActivationEmailJobData>): Promise<any> {
     try {
       const result = await this.mailerService.sendMail({
-        template: 'confirmation',
+        template: 'account-activation',
         context: {
-          firstName: plainToClass(User, job.data.user).username,
-          url: url,
-          token: job.data.code
+          activationUrl: job.data.accountActivationUrl,
+          recipientName: job.data.recipientName,
         },
-        subject: `Welcome to Edible Garden! Please Confirm Your Email Address`,
-        to: job.data.user.email,
+        subject: `Willkommen bei Krautland! Bitte aktiviere dein Benutzerkonto.`,
+        to: job.data.recipientEmail,
       });
       return result;
     } catch (error) {
-      console.error(`Failed to send confirmation email to '${job.data.user.email}'`, error.stack);
+      console.error(`Failed to send account activation email to '${job.data.recipientName}'`, error.stack);
       throw error;
     }
   }

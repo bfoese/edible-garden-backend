@@ -12,7 +12,6 @@ import dotenvExpand = require('dotenv-expand');
 import RateLimit = require('express-rate-limit');
 import fs = require('fs');
 import cookieParser = require('cookie-parser');
-
 async function bootstrap(): Promise<void> {
   initEnvironmenVariables();
 
@@ -47,6 +46,8 @@ async function bootstrap(): Promise<void> {
     initSwagger(app);
   }
   await app.listen(process.env.PORT || 8);
+  const appUrl = await app.getUrl();
+  console.log('appUrl', appUrl);
 }
 
 function initEnvironmenVariables(): void {
@@ -59,7 +60,7 @@ function initEnvironmenVariables(): void {
 
 function getHttpsOptions(): HttpsOptions {
   // enable HTTPS under localhost
-  const ssl = process.env.BFEG_SSL;
+  const ssl = process.env.BFEG_SSL_ENABLED;
   if (ssl) {
     const keyPath = process.env.BFEG_SSL_KEY_PATH || '';
     const certPath = process.env.BFEG_SSL_CERT_PATH || '';

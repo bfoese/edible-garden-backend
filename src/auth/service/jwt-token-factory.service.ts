@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import authConfig from '@eg-app-config/auth.config';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 
 import { JwtAccountActionTokenPayload } from '../token-payload/jwt-account-action-token-payload.interface';
@@ -6,7 +8,11 @@ import { JwtTokenPayload } from '../token-payload/jwt-token-payload.interface';
 
 @Injectable()
 export class JwtTokenFactoryService {
-  public constructor(private readonly jwtService: JwtService) {}
+  public constructor(
+    @Inject(authConfig.KEY)
+    private readonly _authConfig: ConfigType<typeof authConfig>,
+    private readonly jwtService: JwtService
+  ) {}
 
   /**
    * Must be called for a validated user only.
@@ -15,15 +21,15 @@ export class JwtTokenFactoryService {
    */
   public generateAccessToken(payload: JwtTokenPayload): string {
     return this.jwtService.sign(payload, {
-      secret: process.env.BFEG_JWT_SECRET,
-      expiresIn: process.env.BFEG_JWT_EXPIRATION_TIME,
+      secret: this._authConfig.jwtSecret(),
+      expiresIn: this._authConfig.jwtExpirationTime(),
     } as JwtSignOptions);
   }
 
   public generateRefreshToken(payload: JwtTokenPayload): string {
     return this.jwtService.sign(payload, {
-      secret: process.env.BFEG_JWT_REFRESH_SECRET,
-      expiresIn: process.env.BFEG_JWT_REFRESH_EXPIRATION_TIME,
+      secret: this._authConfig.jwtRefreshSecret(),
+      expiresIn: this._authConfig.jwtExpirationTime(),
     } as JwtSignOptions);
   }
 
@@ -34,7 +40,7 @@ export class JwtTokenFactoryService {
    */
   public generateAccountActionToken(payload: JwtAccountActionTokenPayload): string {
     return this.jwtService.sign(payload, {
-      secret: process.env.BFEG_JWT_ACCOUNT_ACTION_SECRET,
+      secret: this._authConfig.jwtAccountActionSecret(),
       expiresIn: '12h',
     } as JwtSignOptions);
   }

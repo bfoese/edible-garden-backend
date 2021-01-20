@@ -1,14 +1,20 @@
+import appConfig from '@eg-app-config/app.config';
 import { InvalidCredentialsException } from '@eg-auth/exceptions/invalid-credentials.exception';
+import mockedJwtTokenFactoryService from '@eg-auth/test/mocks/jwt-token-factory.service.mock';
+import mockedMailService from '@eg-auth/test/mocks/mail.service.mock';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
 import { HashingService } from '@eg-hashing/hashing.service';
+import { MailService } from '@eg-mail/mail.service';
 import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
+import { ConfigModule } from '@nestjs/config';
 import { JwtModuleOptions, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 
 import mockedUser from '../test/mocks/user.mock';
 import mockedUserService from '../test/mocks/user.service.mock';
 import { AuthenticationService } from './authentication.service';
+import { JwtTokenFactoryService } from './jwt-token-factory.service';
 
 describe('AuthenticationService', () => {
   let authenticationService: AuthenticationService;
@@ -18,6 +24,7 @@ describe('AuthenticationService', () => {
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
+      imports: [ConfigModule],
       providers: [
         AuthenticationService,
         {
@@ -36,7 +43,22 @@ describe('AuthenticationService', () => {
           provide: RefreshTokenCacheService,
           useValue: {},
         },
+        {
+          provide: MailService,
+          useValue: mockedMailService,
+        },
+        {
+          provide: appConfig.KEY,
+          useValue: {
+            serverUrl: (): string => process.env.SERVER_URL,
+          },
+        },
+        {
+          provide: JwtTokenFactoryService,
+          useValue: mockedJwtTokenFactoryService,
+        },
       ],
+      exports: [appConfig.KEY],
     }).compile();
     authenticationService = await module.get(AuthenticationService);
     hashingService = await module.get(HashingService);
@@ -47,7 +69,11 @@ describe('AuthenticationService', () => {
       const spyPasswordHashing = jest.spyOn(hashingService, 'createSaltedPepperedHash');
       const spyUserServiceCreate = jest.spyOn(mockedUserService, 'create');
       const unregisteredUser = mockedUser;
-      const registeredUser = await authenticationService.register(unregisteredUser.username, unregisteredUser.email, unregisteredUser.password);
+      const registeredUser = await authenticationService.register(
+        unregisteredUser.username,
+        unregisteredUser.email,
+        unregisteredUser.password
+      );
       expect(spyPasswordHashing).toBeCalledTimes(1);
 
       const passwordHash: string = await spyPasswordHashing.mock.results[0].value;

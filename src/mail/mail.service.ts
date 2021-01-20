@@ -1,27 +1,33 @@
-import { User } from '@eg-domain/user/user';
+import emailConfig from '@eg-app-config/email.config';
 import { InjectQueue } from '@nestjs/bull';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { Queue } from 'bull';
+
+import { AppConstants } from '../application/app.constants';
+import { AccountActivationEmailJobData } from './contracts/account-activation-email-job-data.interface';
 
 @Injectable()
 export class MailService {
-    public constructor(
-        @InjectQueue('TestMailQueue')
-        private mailQueue: Queue,
-      ) {}
+  public constructor(
+    @InjectQueue(AppConstants.QueueOutgoingEmail)
+    private mailQueue: Queue,
+    @Inject(emailConfig.KEY)
+    private readonly _emailConfig: ConfigType<typeof emailConfig>
+  ) {}
 
-      /** Send email confirmation link to new user account. */
-  public async sendConfirmationEmail(user: User, code: string): Promise<boolean> {
+  public async sendAccountActivationEmail(jobData: AccountActivationEmailJobData): Promise<boolean> {
+    if (!this._emailConfig.enabled()) {
+      return false;
+    }
+
     try {
-      await this.mailQueue.add('confirmation', {
-        user,
-        code,
-      })
-      return true
+      await this.mailQueue.add('accountActivationEmail', jobData);
+      return true;
     } catch (error) {
-        console.error(`Error queueing confirmation email to user ${user.email}`, error);
+      console.error(`Error queueing confirmation email to user ${jobData?.recipientName}`, error);
       // this.logger.error(`Error queueing confirmation email to user ${user.email}`)
-      return false
+      return false;
     }
   }
 }

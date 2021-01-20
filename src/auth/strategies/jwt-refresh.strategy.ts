@@ -1,8 +1,10 @@
+import authConfig from '@eg-app-config/auth.config';
 import { AuthenticationService } from '@eg-auth/service/authentication.service';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
 import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -12,6 +14,8 @@ import { JwtTokenPayload } from '../token-payload/jwt-token-payload.interface';
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-token') {
   public constructor(
+    @Inject(authConfig.KEY)
+    private readonly _authConfig: ConfigType<typeof authConfig>,
     private readonly userService: UserService,
     private readonly refreshTokenCacheService: RefreshTokenCacheService
   ) {
@@ -25,7 +29,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
       // if our route is supplied with an expired JWT, the request will be
       // denied and a 401 Unauthorized response sent
       ignoreExpiration: false,
-      secretOrKey: process.env.BFEG_JWT_REFRESH_SECRET,
+      secretOrKey: _authConfig.jwtRefreshSecret(),
       passReqToCallback: true,
     });
   }
@@ -43,6 +47,9 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
    *
    */
   public async validate(request: Request, payload: JwtTokenPayload): Promise<User> {
+    // TODO find better way to access the token from the strategy instance
+    // instead of reading it here again from the cookies: thats duplicated
+    // logic
     const refreshToken = AuthenticationService.getJwtRefreshCookie(request);
 
     if (refreshToken) {

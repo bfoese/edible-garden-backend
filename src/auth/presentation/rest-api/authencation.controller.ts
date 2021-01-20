@@ -4,17 +4,19 @@ import { JwtRefreshGuard } from '@eg-auth/guards/jwt-refresh.guard';
 import { LocalAuthenticationGuard } from '@eg-auth/guards/local-authentication.guard';
 import { AuthenticationService } from '@eg-auth/service/authentication.service';
 import { RequestWithUser } from '@eg-auth/strategies/request-with-user';
-import { User } from '@eg-domain/user/user';
 import {
   Body,
   Controller,
   Get,
   HttpCode,
   Post,
+  Query,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 
 import { AuthenticationFacadeService } from '../facade/autentication-facade.service';
 import { JwtTokenDto } from '../facade/dto/jwt-token.dto';
@@ -24,7 +26,7 @@ import { UserDto } from '../facade/dto/user.dto';
 import { UserMapper } from '../facade/mapper/user.mapper';
 
 @ApiTags('Authentication')
-@Controller('authentication')
+@Controller('auth')
 export class AuthenticationController {
   public constructor(
     private readonly authenticationFacadeService: AuthenticationFacadeService,
@@ -37,21 +39,31 @@ export class AuthenticationController {
   }
 
   /**
-   * TODO on success redirect to a page with success message
+   * This is a GET even though there will be a change performed. This request
+   * will show up within an Email. Using a POST with a form and submit button in
+   * the Email might cause a popup to show up or even worse a popup being
+   * blocked. For more inexperienced users the link with the GET request is
+   * better.
    * @param request -
-   * @param dto -
+   * @param _token - JWT from the Email to allow account activation
    */
   @UseGuards(JwtActivateAccountGuard)
-  @Post('activate-account')
-  public async activateAccount(@Req() request: RequestWithUser, @Body() dto: JwtTokenDto): Promise<User | null> {
+  @Get('activate')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async activateAccount(
+    @Req() request: RequestWithUser,
+    @Query('token') _token: string,
+    @Res() response: Response
+  ): Promise<any> {
     const user = await request.user;
-    console.log('activateAccount', user, dto);
-    return this.authenticationFacadeService.activateAccount(user);
+    // TODO redirectUrl
+    return this.authenticationFacadeService
+      .activateAccount(user)
+      .then(() => response.status(302).redirect('http://localhost:4200'));
   }
 
-
   @UseGuards(JwtRefreshGuard)
-  @Get('refresh-token')
+  @Get('refresh')
   public async refresh(@Req() request: RequestWithUser): Promise<JwtTokenDto> {
     const user = await request.user;
     const previousRefreshToken = AuthenticationService.getJwtRefreshCookie(request);
@@ -73,7 +85,6 @@ export class AuthenticationController {
   @Post('login')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async login(@Req() request: RequestWithUser, @Body() _loginData: LoginUserDto): Promise<JwtTokenDto> {
-
     const user = await request.user;
     if (user) {
       const accessToken = this.authenticationFacadeService.generateAccessToken(user);

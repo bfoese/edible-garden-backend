@@ -1,24 +1,27 @@
+import authConfig from '@eg-app-config/auth.config';
 import { AuthenticationService } from '@eg-auth/service/authentication.service';
 import { JwtAccountActionTokenPayload } from '@eg-auth/token-payload/jwt-account-action-token-payload.interface';
 import { User } from '@eg-domain/user/user';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 @Injectable()
 export class JwtActivateAccountStrategy extends PassportStrategy(Strategy, 'jwt-activate-account') {
-
   public constructor(
     private readonly authenticationService: AuthenticationService,
+    @Inject(authConfig.KEY)
+    private readonly _authConfig: ConfigType<typeof authConfig>
   ) {
     super({
       // Refresh token was transferred via cookie
-      jwtFromRequest: ExtractJwt.fromBodyField('access_token'),
+      jwtFromRequest: ExtractJwt.fromUrlQueryParameter('token'),
       // if we are supplied with an expired JWT, the request will be
       // denied and a 401 Unauthorized response sent
       ignoreExpiration: false,
-      secretOrKey: process.env.BFEG_JWT_ACCOUNT_ACTION_SECRET,
+      secretOrKey: _authConfig.jwtAccountActionSecret(),
       passReqToCallback: true,
     });
   }
@@ -36,7 +39,10 @@ export class JwtActivateAccountStrategy extends PassportStrategy(Strategy, 'jwt-
    *
    */
   public async validate(request: Request, payload: JwtAccountActionTokenPayload): Promise<User> {
-    const jwtToken = request.body?.access_token;
+    // TODO find better way to access the token from the strategy instance
+    // instead of reading it here again from the queryParams: thats duplicated
+    // logic
+    const jwtToken = request.query?.token + '';
     return this.authenticationService.verifyActivateAccountToken(jwtToken, payload);
   }
 }

@@ -1,41 +1,46 @@
+import emailConfig from '@eg-app-config/email.config';
+import redisConfig from '@eg-app-config/redis.config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 
+import { AppConstants } from '../application/app.constants';
 import { MailProcessor } from './mail.processor';
 import { MailService } from './mail.service';
 
 @Module({
   imports: [
     MailerModule.forRootAsync({
-      useFactory: () => ({
-        transport: process.env.BFEG_OUTGOING_MAIL_TRANSPORT_URL,
-      defaults: {
-        from: '"Edible Garden" <britt.foese@gmail.com>',
-      },
-      template: {
-        dir: __dirname + '/templates',
-        adapter: new HandlebarsAdapter(),
-        options: {
-          strict: true,
+      imports: [ConfigModule],
+      inject: [emailConfig.KEY],
+      useFactory: (_emailConfig: ConfigType<typeof emailConfig>) => ({
+        transport: _emailConfig.transportUrl(),
+        defaults: {
+          from: _emailConfig.from(),
         },
-      },
+        template: {
+          dir: __dirname + '/templates',
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
+        },
       }),
     }),
     BullModule.registerQueueAsync({
-      name: 'TestMailQueue',
-      useFactory: () => ({
-        redis: {
-          host: 'localhost',
-          port: 6379
-        },
+      name: AppConstants.QueueOutgoingEmail,
+      imports: [ConfigModule],
+      inject: [redisConfig.KEY],
+      useFactory: (_redisConfig: ConfigType<typeof redisConfig>) => ({
+        redis: _redisConfig.url,
       }),
     }),
   ],
   providers: [MailService, MailProcessor],
-  exports: [
-    MailService,
-  ],
+  exports: [MailService],
 })
 export class MailModule {}
+
+
