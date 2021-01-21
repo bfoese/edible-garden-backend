@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AccountActivationEmailJobData } from '@eg-mail/contracts/account-activation-email-job-data.interface';
+import { AccountActivationEmailJobContext } from '@eg-mail/contracts/account-activation-email.jobcontext';
 
 const mockedMailService = {
-  sendAccountActivationEmail: (_jobData: AccountActivationEmailJobData): Promise<boolean> => Promise.resolve(true),
+  sendAccountActivationEmail: (_jobContext: AccountActivationEmailJobContext): Promise<boolean> => Promise.resolve(true),
 };
 
 export default mockedMailService;

@@ -9,7 +9,11 @@ import {
 import { Job } from 'bull';
 
 import { AppConstants } from '../application/app.constants';
-import { AccountActivationEmailJobData } from './contracts/account-activation-email-job-data.interface';
+import { AccountActivationEmailJobContext } from './contracts/account-activation-email.jobcontext';
+import { AccountRegistrationDuplicateAddressJobContext } from './contracts/account-registration-duplicate-address.jobcontext';
+import { AccountRegistrationUserDeletedEmailJobContext } from './contracts/account-registration-user-deleted-email.jobcontext';
+import { EmailRecipientJobContext } from './contracts/email-recipient.jobcontext';
+import { RegisteredEmailId } from './registered-email-id';
 
 @Processor(AppConstants.QueueOutgoingEmail)
 export class MailProcessor {
@@ -30,22 +34,53 @@ export class MailProcessor {
     console.log(`Failed job ${job.id} of type ${job.name}: ${error.message}`, error.stack);
   }
 
-  @Process('accountActivationEmail')
-  public async sendAccountActivationMail(job: Job<AccountActivationEmailJobData>): Promise<any> {
-    try {
-      const result = await this.mailerService.sendMail({
-        template: 'account-activation',
-        context: {
-          activationUrl: job.data.accountActivationUrl,
-          recipientName: job.data.recipientName,
-        },
-        subject: `Willkommen bei Krautland! Bitte aktiviere dein Benutzerkonto.`,
+  @Process(RegisteredEmailId.AccountRegistrationUserDeleted)
+  public async sendAccountRegistrationUserDeleted(
+    job: Job<AccountRegistrationUserDeletedEmailJobContext>
+  ): Promise<any> {
+    const emailId = RegisteredEmailId.AccountRegistrationUserDeleted;
+    const template = 'account-registration-user-deleted';
+    const subject = `Deine Registrierung bei Krautland`;
+
+    this.sendMail(job, emailId, template, subject);
+  }
+
+  @Process(RegisteredEmailId.AccountRegistrationDuplicateAddress)
+  public async sendAccountRegistrationDuplicateAddress(
+    job: Job<AccountRegistrationDuplicateAddressJobContext>
+  ): Promise<any> {
+    const emailId = RegisteredEmailId.AccountRegistrationDuplicateAddress;
+    const template = 'account-registration-duplicate-address';
+    const subject = `Deine Registrierung bei Krautland`;
+
+    this.sendMail(job, emailId, template, subject);
+  }
+
+  @Process(RegisteredEmailId.AccountActivation)
+  public async sendAccountActivationMail(job: Job<AccountActivationEmailJobContext>): Promise<any> {
+    const emailId = RegisteredEmailId.AccountActivation;
+    const template = 'account-activation';
+    const subject = `Willkommen bei Krautland! Bitte aktiviere dein Benutzerkonto.`;
+
+    this.sendMail(job, emailId, template, subject);
+  }
+
+  private async sendMail(
+    job: Job<EmailRecipientJobContext>,
+    emailId: string,
+    template: string,
+    subject: string
+  ): Promise<any> {
+    return this.mailerService
+      .sendMail({
+        template: template,
+        subject: subject,
+        context: { ...job.data },
         to: job.data.recipientEmail,
+      })
+      .catch((error) => {
+        console.error(`Failed to send emailId=${emailId} to '${job.data.recipientName}'`, error.stack);
+        throw error;
       });
-      return result;
-    } catch (error) {
-      console.error(`Failed to send account activation email to '${job.data.recipientName}'`, error.stack);
-      throw error;
-    }
   }
 }

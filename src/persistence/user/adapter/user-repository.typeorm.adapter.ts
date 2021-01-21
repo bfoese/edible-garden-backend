@@ -11,6 +11,16 @@ import { UserSchema } from '../schema/user.schema';
 export class UserRepositoryTypeOrmAdapter implements UserRepository {
   public constructor(private readonly userRepository: UserTypeOrmRepository) {}
 
+  public findByEmail(email: string): Promise<User> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .where('user.email=:email')
+      .setParameters({
+        email: email,
+      })
+      .getOne();
+  }
+
   public findByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
     return this.userRepository
       .createQueryBuilder('user')

@@ -5,11 +5,19 @@ import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
 import { UserValidation } from '@eg-domain/user/user-validation';
 import { HashingService } from '@eg-hashing/hashing.service';
-import { AccountActivationEmailJobData } from '@eg-mail/contracts/account-activation-email-job-data.interface';
+import { AccountActivationEmailJobContext } from '@eg-mail/contracts/account-activation-email.jobcontext';
+import { AccountRegistrationDuplicateAddressJobContext } from '@eg-mail/contracts/account-registration-duplicate-address.jobcontext';
+import { AccountRegistrationUserDeletedEmailJobContext } from '@eg-mail/contracts/account-registration-user-deleted-email.jobcontext';
 import { MailService } from '@eg-mail/mail.service';
 import { LimitTokensPerUserOptions } from '@eg-refresh-token-cache/limit-tokens-per-user.options';
 import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { ValidatorOptions } from '@nestjs/common/interfaces/external/validator-options.interface';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -52,24 +60,67 @@ export class AuthenticationService {
 
     validateOrReject(user, { groups: [UserValidation.groups.userRegistration] } as ValidatorOptions);
 
-    const accountActionToken: string = this.jwtTokenFactoryService.generateAccountActionToken({
-      sub: user.username,
+    const alreadyRegisteredUser = await this.userService.findByEmail(email);
+    if (alreadyRegisteredUser && alreadyRegisteredUser.entityInfo.deleted) {
+      // user is marked for deletion
+      this.mailService.sendAccountRegistrationUserDeleted({
+        usernameForSecondRegistration: user.username,
+        recipientEmail: alreadyRegisteredUser.email,
+        recipientName: alreadyRegisteredUser.username,
+      } as AccountRegistrationUserDeletedEmailJobContext);
+
+      // do not return the user object but throw an error
+      throw new BadRequestException('Business rule violation');
+    }
+
+    const accountActivationToken: string = this.jwtTokenFactoryService.generateAccountActionToken({
+      sub: alreadyRegisteredUser?.username ?? user.username,
       action: 'ActivateAccount',
     });
-    const hashedAccountActionToken: string = await this.hashingService.createSaltedHash(accountActionToken);
+    const encryptedAccountActivationToken: string = await this.hashingService.createSaltedHash(accountActivationToken);
+    const accountActivationUrl = `${this._appConfig.serverUrl()}/edible-garden/auth/activate?token=${accountActivationToken}`;
 
-    const hashedPassword: string = await this.hashingService.createSaltedPepperedHash(user.password);
-    user.password = hashedPassword; // override the plain text password with hashed one
-    user.entityInfo.isActive = false; // do not activate account yet
-    user.accountActionToken = hashedAccountActionToken; // we hash the token for the database in case the database get leaked
-    const createdUser = await this.userService.create(user);
-    const emailJobData: AccountActivationEmailJobData = {
-      recipientName: user.username,
-      recipientEmail: user.email,
-      accountActivationUrl: `${this._appConfig.serverUrl()}/edible-garden/auth/activate?token=${accountActionToken}`,
-    };
-    this.mailService.sendAccountActivationEmail(emailJobData); // don't wait for finishing
-    return createdUser;
+    if (alreadyRegisteredUser) {
+      // user already registered with that email and is not deleted
+      // don't override the already registered user object with the new data
+      // send an account reminder email to user
+      // in case the account is not activated yet, create a new activation token and include it in the email
+      const isAccountActivated = alreadyRegisteredUser.entityInfo.isActive;
+
+      const emailContext: AccountRegistrationDuplicateAddressJobContext = {
+        usernameForSecondRegistration: user.username,
+        recipientEmail: alreadyRegisteredUser.email,
+        recipientName: alreadyRegisteredUser.username,
+        showAccountActivationLink: !isAccountActivated,
+      };
+
+      if (!isAccountActivated) {
+        // provide new account activation link in account reminder email
+        emailContext.accountActivationUrl = accountActivationUrl;
+        // update activation token on user object
+        alreadyRegisteredUser.accountActionToken = encryptedAccountActivationToken;
+        this.userService.save(alreadyRegisteredUser);
+      }
+      this.mailService.sendAccountRegistrationDuplicateAddress(emailContext);
+      return alreadyRegisteredUser;
+
+    } else {
+      // this is really a completely new user
+      // create an inactive account for the user and send an activation email
+      const hashedPassword: string = await this.hashingService.createSaltedPepperedHash(user.password);
+      user.password = hashedPassword; // override the plain text password with hashed one
+      user.entityInfo.isActive = false; // do not activate account yet
+      user.accountActionToken = encryptedAccountActivationToken; // we hash the token for the database in case the database get leaked
+
+      const createdUser = await this.userService.create(user);
+      const emailJobData: AccountActivationEmailJobContext = {
+        recipientName: user.username,
+        recipientEmail: user.email,
+        accountActivationUrl: accountActivationUrl,
+      };
+      this.mailService.sendAccountActivation(emailJobData);
+      return createdUser;
+    }
   }
 
   /**
@@ -103,7 +154,7 @@ export class AuthenticationService {
         ? await this.hashingService.verifyUnpepperedHash(jwtToken, userAccountActionToken)
         : false;
 
-      if (matchingToken){
+      if (matchingToken) {
         return user;
       }
     }

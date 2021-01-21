@@ -19,6 +19,11 @@ export class UserService {
     return this.unexposePassword(user);
   }
 
+  public async findByEmail(email: string): Promise<User | undefined> {
+    const user = await this.userRepository.findByEmail(email);
+    return this.unexposePassword(user);
+  }
+
   public async getPasswordFromUser(usernameOrEmail: string): Promise<string | undefined> {
     const user = await this.userRepository.findByUsernameOrEmail(usernameOrEmail);
     return user ? user.password : undefined;
@@ -34,6 +39,23 @@ export class UserService {
     }
 
     return this.userRepository.create(user).then((result: User | UniqueConstraintViolation) => {
+      if (result instanceof UniqueConstraintViolation) {
+        throw new UniqueKeyViolationException();
+      }
+      return this.unexposePassword(result);
+    });
+  }
+
+  public async save(user: User): Promise<User> | never {
+    const errors: ValidationError[] = await validate(user, <ValidatorOptions>{
+      groups: [UserValidation.groups.userRegistration],
+    });
+
+    if (!ArrayUtils.isEmpty(errors)) {
+      throw new BadRequestException(errors);
+    }
+
+    return this.userRepository.save(user).then((result: User | UniqueConstraintViolation) => {
       if (result instanceof UniqueConstraintViolation) {
         throw new UniqueKeyViolationException();
       }
