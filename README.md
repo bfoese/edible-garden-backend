@@ -228,7 +228,6 @@ solved on client side.
 <li>Install mkcert</li>
 <li>Create certificate and key for desired domain</li>
 <li>Concatenate the root certificate and the certificate of the domain into one file (fullchain)<li>
-<li><li>
 <li>start NestJS by providing the fullchain certificate and the key file of the domain</li>
 <ol>
 

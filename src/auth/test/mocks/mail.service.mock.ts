@@ -2,7 +2,7 @@
 import { AccountActivationEmailJobContext } from '@eg-mail/contracts/account-activation-email.jobcontext';
 
 const mockedMailService = {
-  sendAccountActivationEmail: (_jobContext: AccountActivationEmailJobContext): Promise<boolean> => Promise.resolve(true),
+  sendAccountActivation: (_jobContext: AccountActivationEmailJobContext): Promise<boolean> => Promise.resolve(true),
 };
 
 export default mockedMailService;
