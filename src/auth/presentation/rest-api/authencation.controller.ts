@@ -97,7 +97,6 @@ export class AuthenticationController {
       });
       return accessToken;
     }
-
     return null;
   }
 

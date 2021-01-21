@@ -46,15 +46,14 @@ async function bootstrap(): Promise<void> {
     initSwagger(app);
   }
   await app.listen(process.env.PORT || 8);
-  const appUrl = await app.getUrl();
-  console.log('appUrl', appUrl);
 }
 
 function initEnvironmenVariables(): void {
   const environment = dotenvFlow.config({
     purge_dotenv: true,
   });
-  // dotenvExpand will resolve variables within the env files - example: BASE_URL = http://${IP}:${PORT}/
+  // dotenvExpand will resolve variables within the env files - example:
+  // BASE_URL=http://${IP}:${PORT}/
   dotenvExpand(environment);
 }
 

@@ -7,7 +7,6 @@ import { User } from '@eg-domain/user/user';
 import { HashingService } from '@eg-hashing/hashing.service';
 import { MailService } from '@eg-mail/mail.service';
 import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
-import { ConfigModule } from '@nestjs/config';
 import { JwtModuleOptions, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 
@@ -24,7 +23,6 @@ describe('AuthenticationService', () => {
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      imports: [ConfigModule],
       providers: [
         AuthenticationService,
         {
