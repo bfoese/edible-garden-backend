@@ -1,10 +1,10 @@
 import emailConfig from '@eg-app-config/email.config';
+import { ApplicationConstants } from '@eg-app/application-constants';
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { Queue } from 'bull';
 
-import { AppConstants } from '../application/app.constants';
 import { AccountActivationEmailJobContext } from './contracts/account-activation-email.jobcontext';
 import { AccountRegistrationDuplicateAddressJobContext } from './contracts/account-registration-duplicate-address.jobcontext';
 import { AccountRegistrationUserDeletedEmailJobContext } from './contracts/account-registration-user-deleted-email.jobcontext';
@@ -14,18 +14,21 @@ import { RegisteredEmailId } from './registered-email-id';
 @Injectable()
 export class MailService {
   public constructor(
-    @InjectQueue(AppConstants.QueueOutgoingEmail)
+    @InjectQueue(ApplicationConstants.QueueOutgoingEmail)
     private mailQueue: Queue,
     @Inject(emailConfig.KEY)
     private readonly _emailConfig: ConfigType<typeof emailConfig>
   ) {}
 
-  public async sendAccountRegistrationDuplicateAddress(jobContext: AccountRegistrationDuplicateAddressJobContext): Promise<boolean> {
+  public async sendAccountRegistrationDuplicateAddress(
+    jobContext: AccountRegistrationDuplicateAddressJobContext
+  ): Promise<boolean> {
     return this.enqueueEmail(RegisteredEmailId.AccountRegistrationDuplicateAddress, jobContext);
   }
 
-
-  public async sendAccountRegistrationUserDeleted(jobContext: AccountRegistrationUserDeletedEmailJobContext): Promise<boolean> {
+  public async sendAccountRegistrationUserDeleted(
+    jobContext: AccountRegistrationUserDeletedEmailJobContext
+  ): Promise<boolean> {
     return this.enqueueEmail(RegisteredEmailId.AccountRegistrationUserDeleted, jobContext);
   }
 

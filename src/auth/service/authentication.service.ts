@@ -1,4 +1,5 @@
 import appConfig from '@eg-app-config/app.config';
+import { ApplicationErrorRegistry } from '@eg-app/error/application-error-registry';
 import { JwtAccountActionTokenPayload } from '@eg-auth/token-payload/jwt-account-action-token-payload.interface';
 import { JwtUtil } from '@eg-common/util/jwt.util';
 import { UserService } from '@eg-data-access/user/user.service';
@@ -11,13 +12,7 @@ import { AccountRegistrationUserDeletedEmailJobContext } from '@eg-mail/contract
 import { MailService } from '@eg-mail/mail.service';
 import { LimitTokensPerUserOptions } from '@eg-refresh-token-cache/limit-tokens-per-user.options';
 import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ValidatorOptions } from '@nestjs/common/interfaces/external/validator-options.interface';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -70,7 +65,7 @@ export class AuthenticationService {
       } as AccountRegistrationUserDeletedEmailJobContext);
 
       // do not return the user object but throw an error
-      throw new BadRequestException('Business rule violation');
+      throw new HttpException(ApplicationErrorRegistry.ActionDeniedConsultEmailAccount.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     const accountActivationToken: string = this.jwtTokenFactoryService.generateAccountActionToken({
@@ -102,8 +97,7 @@ export class AuthenticationService {
         this.userService.save(alreadyRegisteredUser);
       }
       this.mailService.sendAccountRegistrationDuplicateAddress(emailContext);
-      return alreadyRegisteredUser;
-
+      throw new HttpException(ApplicationErrorRegistry.ActionDeniedConsultEmailAccount.getMessage(), HttpStatus.BAD_REQUEST);
     } else {
       // this is really a completely new user
       // create an inactive account for the user and send an activation email

@@ -1,3 +1,4 @@
+import { ApplicationConstants } from '@eg-app/application-constants';
 import { MailerService } from '@nestjs-modules/mailer';
 import {
   OnQueueActive,
@@ -8,14 +9,13 @@ import {
 } from '@nestjs/bull';
 import { Job } from 'bull';
 
-import { AppConstants } from '../application/app.constants';
 import { AccountActivationEmailJobContext } from './contracts/account-activation-email.jobcontext';
 import { AccountRegistrationDuplicateAddressJobContext } from './contracts/account-registration-duplicate-address.jobcontext';
 import { AccountRegistrationUserDeletedEmailJobContext } from './contracts/account-registration-user-deleted-email.jobcontext';
 import { EmailRecipientJobContext } from './contracts/email-recipient.jobcontext';
 import { RegisteredEmailId } from './registered-email-id';
 
-@Processor(AppConstants.QueueOutgoingEmail)
+@Processor(ApplicationConstants.QueueOutgoingEmail)
 export class MailProcessor {
   public constructor(private readonly mailerService: MailerService) {}
 

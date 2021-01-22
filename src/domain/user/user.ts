@@ -5,7 +5,6 @@ import {
   IsString,
   Length,
   Matches,
-  MinLength,
 } from 'class-validator';
 
 import { UserValidation } from './user-validation';
@@ -34,7 +33,6 @@ export class User {
     groups: [UserValidation.groups.userRegistration],
   })
   @IsString()
-  @MinLength(UserValidation.constraints.password.minLength)
   @Matches(UserValidation.constraints.password.pattern, { message: 'password too weak' })
   public password: string;
 

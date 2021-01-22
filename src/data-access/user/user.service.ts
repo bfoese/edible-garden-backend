@@ -1,4 +1,4 @@
-import { UniqueKeyViolationException } from '@eg-auth/exceptions/unique-key-violation.exception';
+import { UniqueKeyConstraintViolationException } from '@eg-app/exception/unique-key-violation.exception';
 import { ArrayUtils } from '@eg-common/util/array.utils';
 import { User } from '@eg-domain/user/user';
 import { UserRepository } from '@eg-domain/user/user-repository.interface';
@@ -40,7 +40,7 @@ export class UserService {
 
     return this.userRepository.create(user).then((result: User | UniqueConstraintViolation) => {
       if (result instanceof UniqueConstraintViolation) {
-        throw new UniqueKeyViolationException();
+        throw new UniqueKeyConstraintViolationException(result.constraintColumns);
       }
       return this.unexposePassword(result);
     });
@@ -57,7 +57,7 @@ export class UserService {
 
     return this.userRepository.save(user).then((result: User | UniqueConstraintViolation) => {
       if (result instanceof UniqueConstraintViolation) {
-        throw new UniqueKeyViolationException();
+        throw new UniqueKeyConstraintViolationException(result.constraintColumns);
       }
       return this.unexposePassword(result);
     });
@@ -74,7 +74,7 @@ export class UserService {
     user.entityInfo.isActive = true;
     return this.userRepository.save(user).then((result: User | UniqueConstraintViolation) => {
       if (result instanceof UniqueConstraintViolation) {
-        throw new UniqueKeyViolationException();
+        throw new UniqueKeyConstraintViolationException(result.constraintColumns);
       }
       return this.unexposePassword(result);
     });

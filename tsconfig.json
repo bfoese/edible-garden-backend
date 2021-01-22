@@ -12,6 +12,7 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
+      "@eg-app/*": ["src/application/*"],
       "@eg-mail/*": ["src/mail/*"],
       "@eg-refresh-token-cache/*": ["src/refresh-token-cache/*"],
       "@eg-auth/*": ["src/auth/*"],

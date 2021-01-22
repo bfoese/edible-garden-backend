@@ -1,12 +1,12 @@
 import emailConfig from '@eg-app-config/email.config';
 import redisConfig from '@eg-app-config/redis.config';
+import { ApplicationConstants } from '@eg-app/application-constants';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 
-import { AppConstants } from '../application/app.constants';
 import { MailProcessor } from './mail.processor';
 import { MailService } from './mail.service';
 
@@ -30,7 +30,7 @@ import { MailService } from './mail.service';
       }),
     }),
     BullModule.registerQueueAsync({
-      name: AppConstants.QueueOutgoingEmail,
+      name: ApplicationConstants.QueueOutgoingEmail,
       imports: [ConfigModule],
       inject: [redisConfig.KEY],
       useFactory: (_redisConfig: ConfigType<typeof redisConfig>) => ({
