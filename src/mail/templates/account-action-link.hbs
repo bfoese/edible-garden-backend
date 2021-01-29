@@ -1,0 +1,39 @@
+Servus {{ recipientName }},<br/>
+
+<!-- Email main content -->
+{{#compare  "ActivateAccount" "===" purpose}}
+<p>um deine Registrierung bei Krautland abzuschließen, aktiviere bitte dein Benutzerkonto durch Klick auf den nachfolgenden Link:</p>
+<a href="{{ accountActionUrl }}" target="_blank">Benutzerkonto aktivieren</a>
+{{/compare }}
+
+{{#compare  "ResetPassword" "===" purpose}}
+<p>wir haben gehört, dass du dein Krautland Passwort verloren hast. Keine Sorge, du kannst den folgenden Link aufrufen, um ein neues Passwort für dein Benutzerkonto zu vergeben:</p>
+<a href="{{ accountActionUrl }}" target="_blank">Neues Passwort erstellen</a>
+{{/compare }}
+
+{{#compare  "DeleteAccount" "===" purpose}}
+<p>wir haben gehört, dass du dein Krautland Benutzerkonto löschen möchtest. Schade. Du kannst den folgenden Link aufrufen, um dein Benutzerkonto endgültig zu löschen:</p>
+<a href="{{ accountActionUrl }}" target="_blank">Mein Krautland Benutzerkonto löschen</a>
+{{/compare }}
+
+
+<!-- Link expiration time-->
+
+{{#if urlExpirationHours}}
+<p>Dieser Link ist {{urlExpirationHours}} Stunden lang gültig.</p>
+{{/if }}
+
+<!-- Closing words-->
+
+{{#compare  "ActivateAccount" "===" purpose}}
+<p>Viel Spaß im Krautland!</p>
+{{/compare }}
+
+{{#compare  "ResetPassword" "===" purpose}}
+<p>Danke,<br/> dein Krautland Team</p>
+{{/compare }}
+
+{{#compare  "DeleteAccount" "===" purpose}}
+<p>Über Verbesserungsvorschläge oder Kritik würden wir uns sehr freuen. Du kannst uns jederzeit eine Nachricht über das Kontaktformular auf der Webseite zukommen lassen.</p>
+<p>Danke für die gemeinsame Zeit,<br/> dein Krautland Team</p>
+{{/compare }}

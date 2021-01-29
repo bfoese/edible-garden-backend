@@ -52,6 +52,21 @@ After adding/removing libraries in package.json you need to enforce the deletion
 docker-compose up --build -V
 ```
 
+## Debugging in VSCode
+
+There are different options for debugging a NestJS app. The easiest seems to be to write a config, that creates a debugger which can be attached to any of the currently running NodeJS processes. This is described in the following lines.
+
+<ul><li>Create a .vscode/launch.json as described here: https://github.com/microsoft/vscode-recipes/tree/master/nodemon; Make sure to also add "sourceMaps=true" in the launch.json so that the debugger will point you to .ts code instead of .js code</li>
+
+
+<li>Click Ctrl+Shift+P and search for "Debug: Toggle Auto Attach". There are different options. When you choose 'disable', your debugger won't connect to the application. When you choose 'Only with Flag...', you have to start your app with '--inspect' flag otherwise the debugger won't connect to it. At the beginning you can choose 'Always'</li>
+
+<li>Start the application as you normally do, for example: nest start --watch. Basically, you can use your normal startup script. Except when you choose 'Only with flag' in the previous step, then you also have to include the option '--inspect'</li>
+<li>Open the debug view: Ctrl+Shift+D. In the top you can choose between existing launch configs. They are named and the name is defined in the property 'name' within the launch config json. Just select the one which belongs to the launch.json you created two steps earlier. Then click F5. In the top of the screen a small window will open where you can see your currently running node.js processes. Chose the process of your running application. And thats it: the debugger will connect to that instance.</li>
+<li>Debugger can be disconnected in den debug view under 'Call stack'</li>
+</ul>
+
+
 ## API Documentation
 
 ```bash
@@ -159,14 +174,14 @@ Table and column names should be lowercase. With mixed-case or upper-case names 
 ```bash
 select * from public."FOO_MyTable"
 ```
-
-at least in SQLDeveloper. Also some features, like data view, can't be used at all because of thrown exceptions. Don't know if this is a problem of the Postgres JDBC driver or implementation of SQLDeveloper or both. PGAdmin can handle these table names, but I personally don't like the user experience with that tool.
+at least in SQLDeveloper. Also some features, like data view, can't be used at all because of thrown exceptions. PGAdmin can handle these table names, but I personally don't like the user experience with that tool.
 
 So with lower-case table names, you can use all features of SQLDeveloper and SQL statements can be done without double quotes, e.g.
 
 ```bash
 select * from public.foo_my_table
 ```
+Therefore there is a naming strategy defined and registered in TypeORM which will take care of the desired conventions.
 
 ## DOTENV Files
 
@@ -185,14 +200,20 @@ Conventions for this project:
     <li>Properties which are not secret but rather used can go into the .env.{development|production} files. These files are not on gitignore list and therefore appear in the remote repository where they can be used to serve the CI/CD pipelines as a file import.</li>
 </ul>
 
-## TypeORM Limitations & Cons
+## Working with TypeORM
 
+<ul><li><strong>Update an entity</strong>It is not necessary to load the entity, map the new fields onto it and then save it. You can also just provide a Partial of the entity with the fields you really want to change plus the primary key of the object. TypeORM will then only change the fields contained in that Partial.</li>
+<li><strong>Loading an entity</strong>In this repo I use external schema files to have a clear separation between domain and persistence layer. The schema files point to classes from the domain, but TypeORM treats these classes as interfaces. When you load an entity from the database with TypeORM, you can cast it to your domain class but it is in fact no class instance. You will receive an object with the properties of that class. If you really want to return a class instance from the persistence layer, you can use a tool like class-transformer which transforms the plain object to the desired class. This is important to know when you have instance methods in your domain objects, which are not getters or setters. These will be undefined in the objects returned from TypeORM, unless you transform that object into a class.</li>
+<li><strong>Loading relationships</strong>By default, the relationships of an object are not loaded when you load the object, unless you defined them to be eager or you explicitly name them in the query. TypeORM also has an experimental lazy-load mechanism which would work like lazy-loading in Hinbernate: the first time you access the field of the relationship, it will be loaded. Therefore these relationship fields are provided as Promises. But, as far as I read, lazy loading is still considered to be experimental.</li>
+<li><strong>Auto-generated migration files</strong>It is possible to let TypeORM auto-generate migration files based on changes in entities or schema files which saves some work of writing them yourself.  However, I noticed that often unneccessary statements are contained (dropping default uuid generation and recreating it). Also statements for dropping sequences which do not exist are being generated. And some statements need manual correction. In summary, you have to check the generated migration files and often need to correct them. At least this is the case when using external schema files. At first I used schema annotations and I don't remember these problems from that time.</li>
+</ul>
+
+Limitations of TypeORM I ran into:
 <ul>
     <li>It is possible to completely separate domain model and persistence model by separating entity definitions into schema files as demonstrated in this repo. However, the external schema implementation lacks some features which are supported by TypeORM Entity decorators.
         <ul><li>The current version 0.2.29 does not support embedded entities in external schema. There is an open issue for that and a pull request with a fix was created, but no sign of progress on this topic: https://github.com/typeorm/typeorm/pull/6318</li>
         <li>TypeORM has different implementations for tree structures, e.g. closure tables. Didn't find options to define a closure table or the other tree implementations in external schema. Assume it's not supported yet.</li></ul>
     </li>
-<li>It is possible to generate migration files based on changes in entities or schema files which saves some work of writing them yourself. However, I noticed that often unneccessary statements are contained (dropping default uuid generation and recreating it). Also statements for dropping sequences which do not exist are being generated. And some statements need manual correction. In summary, you have to check the generated migration files and often need to correct them.</li>
 <li>Quite long standing open issue concerning performance issues with queries: https://github.com/typeorm/typeorm/issues/3857#issuecomment-609863113</li>
 </ul>
 
@@ -228,7 +249,6 @@ solved on client side.
 <li>Install mkcert</li>
 <li>Create certificate and key for desired domain</li>
 <li>Concatenate the root certificate and the certificate of the domain into one file (fullchain)<li>
-<li><li>
 <li>start NestJS by providing the fullchain certificate and the key file of the domain</li>
 <ol>
 
@@ -241,3 +261,29 @@ $mkcert -CAROOT
 cat localhost.pem > localhost-fullchain.pem
 cat "$(mkcert -CAROOT)/rootCA.pem" >> localhost-fullchain.pem
 ```
+
+
+## Send Email via Gmail
+To securely send Emails via a Gmail Account you have to create an App Password
+with access to the Google account email functionality. How to create such a
+password for the app is described here along with the SMTP host and port
+information to set everything up:
+https://support.google.com/mail/answer/7126229?p=BadCredentials&visit_id=637466758146187794-1782866574&rd=2#cantsignin
+
+In short: You have to enable 2-Factor-Authentication for the Google Account,
+then choose Google Account > Security > Sign In with Google > "App Passwords"
+and here you can create a password which only has access to the Email
+functionalities of your account.
+
+Gmail Sending limits: According to one page there is a limit of 500 outgoing
+Mails within 24 hours. I assume the mails above that limit will be purged to
+avoid exploitation.
+
+Its a good idea to have a counter for the apps mail sending queue to not run
+into that limit by delaying mails above the limit for a few hours.
+
+## Bulls Queue
+
+<ul>
+<li>Bulls ignores jobs whose jobID is the same as the jobID of a previously performed job, unless you use 'removeOnCompleted'. Using this option will purge the information about previously performed Jobs after completion so they can't be considered the next time you add a job.</li>
+</ul>

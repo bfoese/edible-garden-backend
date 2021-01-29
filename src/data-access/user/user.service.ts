@@ -1,4 +1,4 @@
-import { UniqueKeyViolationException } from '@eg-auth/exceptions/unique-key-violation.exception';
+import { UniqueKeyConstraintViolationException } from '@eg-app/exception/unique-key-violation.exception';
 import { ArrayUtils } from '@eg-common/util/array.utils';
 import { User } from '@eg-domain/user/user';
 import { UserRepository } from '@eg-domain/user/user-repository.interface';
@@ -19,6 +19,11 @@ export class UserService {
     return this.unexposePassword(user);
   }
 
+  public async findByEmail(email: string, opts?: { withDeleted: boolean; }): Promise<User | undefined> {
+    const user = await this.userRepository.findByEmail(email, opts);
+    return this.unexposePassword(user);
+  }
+
   public async getPasswordFromUser(usernameOrEmail: string): Promise<string | undefined> {
     const user = await this.userRepository.findByUsernameOrEmail(usernameOrEmail);
     return user ? user.password : undefined;
@@ -35,9 +40,38 @@ export class UserService {
 
     return this.userRepository.create(user).then((result: User | UniqueConstraintViolation) => {
       if (result instanceof UniqueConstraintViolation) {
-        throw new UniqueKeyViolationException();
+        throw new UniqueKeyConstraintViolationException(result.constraintColumns);
       }
       return this.unexposePassword(result);
+    });
+  }
+
+  public async save(user: User): Promise<User> | never {
+    return this.userRepository.save(user).then((result: User | UniqueConstraintViolation) => {
+      if (result instanceof UniqueConstraintViolation) {
+        throw new UniqueKeyConstraintViolationException(result.constraintColumns);
+      }
+      return this.unexposePassword(result);
+    });
+  }
+
+  public async activateAccount(usernameOrEmail: string): Promise<User> | never {
+    const user = await this.findByUsernameOrEmail(usernameOrEmail);
+    if (!user) {
+      return null;
+    }
+    user.entityInfo.isActive = true;
+    return this.userRepository.save(user).then((result: User) => {
+      return this.unexposePassword(result);
+    });
+  }
+
+  public async deleteAccountPermanently(email: string): Promise<boolean> | never {
+    if (!email) {
+      return false;
+    }
+    return this.userRepository.delete({ email: email } as User).then((affectedRows: number) => {
+      return affectedRows > 0;
     });
   }
 

@@ -12,6 +12,8 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
+      "@eg-app/*": ["src/application/*"],
+      "@eg-mail/*": ["src/mail/*"],
       "@eg-refresh-token-cache/*": ["src/refresh-token-cache/*"],
       "@eg-auth/*": ["src/auth/*"],
       "@eg-hashing/*": ["src/hashing/*"],
@@ -29,7 +31,7 @@
     "incremental": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "importHelpers": true
   },
   "exclude": ["node_modules", "dist"]

@@ -1,35 +1,40 @@
+import appConfig from '@eg-app-config/app.config';
+import dbConfig from '@eg-app-config/db.config';
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { TlsOptions } from 'tls';
+
 import { DomainSnakeCaseNamingStrategy } from './strategy/domain-snake-case-naming.strategy';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      inject: [],
-      useFactory: () =>
+      imports: [ConfigModule],
+      inject: [dbConfig.KEY, appConfig.KEY],
+      useFactory: (_dbConfig: ConfigType<typeof dbConfig>, _appConfig: ConfigType<typeof appConfig>) =>
         <TypeOrmModuleOptions>{
           type: 'postgres',
 
-          host: process.env.DB_HOST,
-          port: Number(process.env.DB_PORT),
-          username: process.env.DB_USERNAME,
-          password: process.env.DB_PASSWORD,
-          database: process.env.DB_NAME,
-          schema: process.env.DB_SCHEMA,
+          host: _dbConfig.host(),
+          port: _dbConfig.port(),
+          username: _dbConfig.username(),
+          password: _dbConfig.password(),
+          database: _dbConfig.database(),
+          schema: _dbConfig.schema(),
           namingStrategy: new DomainSnakeCaseNamingStrategy(['eg'], false),
           entities: [__dirname + '/../**/schema/*.schema.js'],
           migrations: [__dirname + '/../../**/database/migration/*.js'],
           migrationsTableName: 'migration',
-          migrationsRun: process.env.TYPEORM_MIGRATIONS_RUN === 'true',
+          migrationsRun: _dbConfig.migrationsRun(),
           cli: {
             entitiesDir: '/../../../**/schema/*.schema.js',
             migrationsDir: '/../database/migration-gen',
           },
-          synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
+          synchronize: _dbConfig.synchronize(),
 
-          ...(process.env.NODE_ENV === 'production' && {
-            ssl: <TlsOptions>{ ca: process.env.DB_SSL_CA, rejectUnauthorized: false },
+          ...(_appConfig.isProduction() && {
+            ssl: <TlsOptions>{ ca: _dbConfig.sslCA(), rejectUnauthorized: false },
           }),
         },
     }),

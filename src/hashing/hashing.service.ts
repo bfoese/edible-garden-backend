@@ -8,17 +8,24 @@ import bcrypt = require('bcrypt');
 export class HashingService {
   public constructor(@Inject('CONFIG_OPTIONS') private options: HashingModuleOptions) {}
 
-  public createSaltedPepperedHash(data: string): Promise<string | undefined> {
+  public createSaltedHash(data: string): Promise<string | undefined> {
     if (data === null || data === undefined || data.length === 0) {
       return Promise.resolve(undefined);
     }
-
     // 10 salt rounds should be quite safe - more increase crypting time
-    return bcrypt.hash(this.pepperHash(data), this.options?.saltRounds ?? 10);
+    return bcrypt.hash(data, this.options?.saltRounds ?? 10);
   }
 
-  public verifyHash(plainTextData: string, encryptedData: string): Promise<boolean> {
+  public createSaltedPepperedHash(data: string): Promise<string | undefined> {
+    return this.createSaltedHash(this.pepperHash(data));
+  }
+
+  public verifyPepperedHash(plainTextData: string, encryptedData: string): Promise<boolean> {
     return bcrypt.compare(this.pepperHash(plainTextData), encryptedData);
+  }
+
+  public verifyUnpepperedHash(plainTextData: string, encryptedData: string): Promise<boolean> {
+    return bcrypt.compare(plainTextData, encryptedData);
   }
 
   private pepperHash(data: string): string {

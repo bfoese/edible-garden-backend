@@ -19,7 +19,6 @@ export class RegisterUserDto {
 
   @ApiProperty(<ApiPropertyOptions>{
     required: true,
-    minLength: UserValidation.constraints.password.minLength,
     pattern: UserValidation.constraints.password.pattern.toString(),
   })
   public password: string;

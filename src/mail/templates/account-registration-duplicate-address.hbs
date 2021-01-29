@@ -1,0 +1,16 @@
+Servus {{ recipientName }},<br/>
+<p>du hast soeben versucht, dich bei Krautland mit dieser E-Mail Adresse
+    unter dem Namen <em>{{usernameForSecondRegistration}}</em> zu registrieren.
+    Wir haben festgestellt, dass du bereits bei uns registriert bist. Deine Benuzterdaten lauten:</p>
+<p>Benutzername: {{recipientName}}<br/>E-Mail: {{recipientEmail}}</p>
+<p>Es ist nicht möglich, sich mehrfach mit derselben E-Mail Adresse zu registrieren,
+daher wird dein Benutzerkonto weiterhin unter den oben genannten Benutzerdaten verfügbar sein.</p>
+
+{{#if showAccountActivationLink}}
+<p>Übrigens, dein Benutzerkonto ist noch nicht aktiviert. Um die Aktivierung abzuschließen,
+    klicke bitte auf den nachfolgenden Link:</p>
+<a href="{{ accountActivationUrl }}" target="_blank">Benutzerkonto aktivieren</a>
+{{/if}}
+
+<p>Pfiat di,<br/>dein Krautland Team</p>
+,

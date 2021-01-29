@@ -8,26 +8,14 @@ import * as path from 'path';
 import { AppModule } from './app.module';
 
 import dotenvFlow = require('dotenv-flow');
+import dotenvExpand = require('dotenv-expand');
 import RateLimit = require('express-rate-limit');
 import fs = require('fs');
 import cookieParser = require('cookie-parser');
 async function bootstrap(): Promise<void> {
-  dotenvFlow.config({
-    purge_dotenv: true,
-  });
+  initEnvironmenVariables();
 
-  // enable HTTPS under localhost
-  let httpsOptions: HttpsOptions;
-  const ssl = process.env.BFEG_SSL;
-  if (ssl) {
-    const keyPath = process.env.BFEG_SSL_KEY_PATH || '';
-    const certPath = process.env.BFEG_SSL_CERT_PATH || '';
-    httpsOptions = {
-      key: fs.readFileSync(path.join(__dirname, keyPath)),
-      cert: fs.readFileSync(path.join(__dirname, certPath)),
-    };
-  }
-
+  const httpsOptions = getHttpsOptions();
   const app: INestApplication = await NestFactory.create(AppModule, {
     httpsOptions,
   });
@@ -58,6 +46,29 @@ async function bootstrap(): Promise<void> {
     initSwagger(app);
   }
   await app.listen(process.env.PORT || 8);
+}
+
+function initEnvironmenVariables(): void {
+  const environment = dotenvFlow.config({
+    purge_dotenv: true,
+  });
+  // dotenvExpand will resolve variables within the env files - example:
+  // BASE_URL=http://${IP}:${PORT}/
+  dotenvExpand(environment);
+}
+
+function getHttpsOptions(): HttpsOptions {
+  // enable HTTPS under localhost
+  const ssl = process.env.BFEG_SSL_ENABLED;
+  if (ssl) {
+    const keyPath = process.env.BFEG_SSL_KEY_PATH || '';
+    const certPath = process.env.BFEG_SSL_CERT_PATH || '';
+    return {
+      key: fs.readFileSync(path.join(__dirname, keyPath)),
+      cert: fs.readFileSync(path.join(__dirname, certPath)),
+    };
+  }
+  return null;
 }
 
 /**

@@ -1,14 +1,20 @@
+import authConfig from '@eg-app-config/auth.config';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { JwtTokenPayload } from './jwt-token-payload.interface';
+import { JwtTokenPayload } from '../token-payload/jwt-token-payload.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  public constructor(private userService: UserService) {
+  public constructor(
+    @Inject(authConfig.KEY)
+    private readonly _authConfig: ConfigType<typeof authConfig>,
+    private userService: UserService
+  ) {
     super({
       // We use the standard approach of supplying a bearer token in the
       // Authorization header of our API requests
@@ -16,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       // if our route is supplied with an expired JWT, the request will be
       // denied and a 401 Unauthorized response sent
       ignoreExpiration: false,
-      secretOrKey: process.env.BFEG_JWT_SECRET,
+      secretOrKey: _authConfig.jwtSecret(),
     });
   }
 
@@ -35,7 +41,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   public async validate(payload: JwtTokenPayload): Promise<User> {
     const user = await this.userService.findByUsernameOrEmail(payload.sub);
     if (user) {
-      user.password = null;
       return user;
     }
     throw new HttpException('User not found', HttpStatus.NOT_FOUND);
