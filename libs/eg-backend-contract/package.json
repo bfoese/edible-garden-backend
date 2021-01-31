@@ -1,0 +1,61 @@
+{
+  "name": "@bfoese/eg-be-contract",
+  "version": "0.0.22",
+  "description": "Edible Garden backend code to share with frontend - everything that can't be fetched with openapi generator.",
+  "author": "Britt Foese <britt.foese@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bfoese/edible-garden-backend.git",
+    "directory": "packages/eg-be-contract"
+  },
+  "publishConfig": {
+    "registry": "registry=https://npm.pkg.github.com/bfoese"
+  },
+  "files": [
+    "dist/**/*",
+    "*.md"
+  ],
+  "scripts": {
+    "start:dev": "tsc -w",
+    "build": "tsc",
+    "prepare": "npm run build",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "tslint -p tsconfig.json -c tslint.json",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "peerDependencies": {},
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^26.0.15",
+    "@types/node": "^14.14.6",
+    "jest": "^26.6.3",
+    "prettier": "^2.1.2",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.4.3",
+    "ts-loader": "^8.0.9",
+    "ts-node": "^9.0.0",
+    "tsc-watch": "2.2.1",
+    "tsconfig-paths": "^3.9.0",
+    "tslint": "5.16.0",
+    "typescript": "^4.0.5"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".spec.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  },
+  "main": "index.js",
+  "license": "ISC"
+}

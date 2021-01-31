@@ -45,9 +45,12 @@
         "schema:log": "npm run prebuild && npm run build && npm run typeorm:cli -- schema:log",
         "schema:drop": "npm run typeorm:cli -- schema:drop",
         "migration:show": "npm run typeorm:cli -- migration:show",
-        "heroku:migration": "typeorm -f dist/database/config/ormconfig.js -- migration:run"
+        "heroku:migration": "typeorm -f dist/database/config/ormconfig.js -- migration:run",
+        "patch:lib": "cd libs/eg-backend-contract && npm version patch",
+        "publish:lib": "cd libs/eg-backend-contract && npm publish"
     },
     "dependencies": {
+        "@bfoese/eg-be-contract": "^0.0.22",
         "@bfoese/typeorm": "^0.2.30-snapshot",
         "@nestjs-modules/mailer": "^1.5.1",
         "@nestjs/bull": "^0.3.1",

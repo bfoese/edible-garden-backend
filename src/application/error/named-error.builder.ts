@@ -1,7 +1,7 @@
+import { NamedErrorCode } from '@bfoese/eg-be-contract/dist';
 import { EnumUtils } from '@eg-common/util/enum.utils';
 
 import { NamedError } from './named-error';
-import { NamedErrorCode } from './named-error-code.enum';
 
 export class NamedErrorBuilder {
   private namedError: NamedError;

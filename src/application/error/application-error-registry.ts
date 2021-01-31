@@ -1,4 +1,5 @@
-import { NamedErrorCode } from './named-error-code.enum';
+import { NamedErrorCode } from '@bfoese/eg-be-contract/dist';
+
 import { NamedErrorBuilder } from './named-error.builder';
 
 /**
