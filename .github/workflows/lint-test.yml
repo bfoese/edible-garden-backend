@@ -21,10 +21,10 @@ jobs:
           scope: '@bfoese'
         env:
           NODE_AUTH_TOKEN: ${{secrets.GH_PKG_TOKEN}}
-      - name: create .npmrc
-        run: npm run create:npmrc
       - name: Install Packages
-        run: npm run install:patched
+        run: |
+          echo @bfoese:registry=https://npm.pkg.github.com/ >> .npmrc
+          npm run install:patched
         env:
           NODE_AUTH_TOKEN: ${{secrets.GH_PKG_TOKEN}}
       - name: Lint
