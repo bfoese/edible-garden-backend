@@ -50,6 +50,6 @@ COPY . .
 COPY --from=development /usr/src/app/dist ./dist
 
 # Here we define the default command to execute when the image is run
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]
 
 
