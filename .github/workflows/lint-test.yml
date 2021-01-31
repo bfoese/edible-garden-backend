@@ -17,7 +17,9 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '15.x'
-          registry-url: 'https://npm.pkg.github.com'
+          registry-url: "https://npm.pkg.github.com"
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GH_PKG_TOKEN}}
       - name: Install Packages
         run: npm run install:patched
         env:
