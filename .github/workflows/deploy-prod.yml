@@ -20,12 +20,10 @@ jobs:
       - name: Install Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node-version }}
+          node_version: ${{ matrix.node-version }}
           always-auth: true
           registry-url: https://npm.pkg.github.com
           scope: '@bfoese'
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.GH_PKG_TOKEN}}
       - name: Install Packages
         run: |
           echo "//npm.pkg.github.com/:_authToken=$NODE_AUTH_TOKEN" > ~/.npmrc
