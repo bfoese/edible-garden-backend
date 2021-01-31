@@ -18,9 +18,11 @@ jobs:
         with:
           node-version: '15.x'
           registry-url: "https://npm.pkg.github.com"
-          scope: @bfoese
+          scope: '@bfoese'
         env:
           NODE_AUTH_TOKEN: ${{secrets.GH_PKG_TOKEN}}
+      - name: create .npmrc
+        run: npm run create:npmrc
       - name: Install Packages
         run: npm run install:patched
         env:

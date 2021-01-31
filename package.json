@@ -47,7 +47,8 @@
         "migration:show": "npm run typeorm:cli -- migration:show",
         "heroku:migration": "typeorm -f dist/database/config/ormconfig.js -- migration:run",
         "patch:lib": "cd libs/eg-backend-contract && npm version patch",
-        "publish:lib": "cd libs/eg-backend-contract && npm publish"
+        "publish:lib": "cd libs/eg-backend-contract && npm publish",
+        "create:npmrc": "node scripts/create-npmrc.js"
     },
     "dependencies": {
         "@bfoese/eg-be-contract": "^0.0.22",
