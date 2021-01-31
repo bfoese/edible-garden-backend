@@ -219,6 +219,8 @@ Limitations of TypeORM I ran into:
 
 ## Heroku
 
+Infos about customizing Heroku builds for Node.JS: https://devcenter.heroku.com/articles/nodejs-support#heroku-specific-build-steps
+
 ```bash
 $ heroku releases
 $ heroku releases:output <release number>
@@ -228,6 +230,18 @@ $ heroku releases:output <release number>
 Reset Database
 ```bash
 heroku pg:reset DATABASE --app <app-name>
+```
+
+See server logs
+```bash
+$ heroku logs --app <app-name> --tail -n <lines count>
+```
+
+See files on server
+```bash
+$ heroku run bash --app <app-name>
+$ cd <app-name>
+$ dir
 ```
 
 ## Self-signed Certificates for HTTPS under localhost

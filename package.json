@@ -94,7 +94,7 @@
         "rxjs": "^6.6.3",
         "swagger-ui-express": "^4.1.4",
         "shx": "^0.3.3",
-        "replace-in-file": "^6.1.0",
+        "replace-in-file": "^6.1.0"
     },
     "devDependencies": {
         "@commitlint/cli": "9.1.1",
