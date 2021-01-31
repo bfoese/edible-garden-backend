@@ -28,7 +28,8 @@ export class SecureAccountActionGuard extends AuthGuard('secure-account-action')
    * @param _context - big object with lots of information :)
    * @param status - In case of token expiration the value is 'null'
    */
-  public handleRequest(_err: any, user: any, _info: any, _context: any, _status?: any): any {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public handleRequest(_err: unknown, user: unknown, _info: unknown, _context: unknown, _status?: unknown): any {
     // just return the user object: the controller will receive user=false
     // in case of token validation errors, otherwise the resolved user will
     // be provided

@@ -1,6 +1,12 @@
 import { ApplicationConstants } from '@eg-app/application-constants';
 import { MailerService } from '@nestjs-modules/mailer';
-import { OnQueueActive, OnQueueCompleted, OnQueueFailed, Process, Processor } from '@nestjs/bull';
+import {
+  OnQueueActive,
+  OnQueueCompleted,
+  OnQueueFailed,
+  Process,
+  Processor,
+} from '@nestjs/bull';
 import { Job } from 'bull';
 
 import { AccountActionEmailJobContext } from './contracts/account-action-email.jobcontext';
@@ -19,11 +25,12 @@ export class MailProcessor {
   }
 
   @OnQueueCompleted()
-  public onComplete(job: Job, result: any): void {
+  public onComplete(job: Job, result: unknown): void {
     console.log(`Completed job ${job.id} of type ${job.name}. Result: ${JSON.stringify(result)}`);
   }
 
   @OnQueueFailed()
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public onError(job: Job<any>, error: any): void {
     console.log(`Failed job ${job.id} of type ${job.name}: ${error.message}`, error.stack);
   }
