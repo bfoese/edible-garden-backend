@@ -22,12 +22,13 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node_version: ${{ matrix.node-version }}
-          registry-url: "https://npm.pkg.github.com"
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.GH_PKG_TOKEN}}
-
+          always-auth: true
+          registry-url: https://npm.pkg.github.com
+          scope: '@bfoese'
       - name: Install Packages
-        run: npm run install:patched
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=$NODE_AUTH_TOKEN" > ~/.npmrc
+          npm run install:patched
         env:
           NODE_AUTH_TOKEN: ${{secrets.GH_PKG_TOKEN}}
       - name: Lint, Test
