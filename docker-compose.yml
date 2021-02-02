@@ -39,7 +39,7 @@ services:
     # place. Since we are using environment variables in our config (like we do above in ports), we also load the
     # variables from the file just in case they were defined there.
     env_file:
-      - .env
+      - .env.docker
 
     # Since each service has its own internal network (due to their being different containers), we also create our own
     # network that will make it possible for them to communicate.
@@ -56,7 +56,7 @@ services:
     networks:
       - webnet
     ports:
-      - "6379:6379"
+      - ${REDIS_PORT}:${REDIS_PORT}
   postgres:
     container_name: edible-garden-db
     image: postgres:12

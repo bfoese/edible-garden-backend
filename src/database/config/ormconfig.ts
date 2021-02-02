@@ -5,11 +5,7 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
 export = <PostgresConnectionOptions>{
   type: 'postgres',
 
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  url: process.env.DB_URL,
   schema: process.env.DB_SCHEMA,
   namingStrategy: new DomainSnakeCaseNamingStrategy(['eg'], false),
   entities: [__dirname + '/../../../**/schema/*.schema.js'],

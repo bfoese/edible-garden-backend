@@ -57,12 +57,8 @@ jobs:
           delay: 5
           # Only variables prefixed with 'HD_' will be recognized by the action. The prefix will automatically be cropped from the name by the action.
         env:
-          HD_DB_HOST: ${{secrets.HEROKU_DB_HOST}}
-          HD_DB_USERNAME: ${{secrets.HEROKU_DB_USERNAME}}
-          HD_DB_PASSWORD: ${{secrets.HEROKU_DB_PW}}
-          HD_DB_NAME: ${{secrets.HEROKU_DB_NAME}}
+          HD_DB_URL: ${{secrets.HEROKU_DB_URL}}
           HD_DB_SCHEMA: ${{secrets.HEROKU_DB_SCHEMA}}
-          HD_DB_PORT: ${{secrets.HEROKU_DB_PORT}}
           HD_BFEG_CORS_ORIGINS: ${{secrets.CORS_ORIGINS}}
           HD_NPM_TOKEN: ${{secrets.NPM_TOKEN}}
           HD_DB_SSL_CA: ${{secrets.HEROKU_CA}}

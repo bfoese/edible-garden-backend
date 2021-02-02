@@ -16,11 +16,7 @@ import { DomainSnakeCaseNamingStrategy } from './strategy/domain-snake-case-nami
         <TypeOrmModuleOptions>{
           type: 'postgres',
 
-          host: _dbConfig.host(),
-          port: _dbConfig.port(),
-          username: _dbConfig.username(),
-          password: _dbConfig.password(),
-          database: _dbConfig.database(),
+          url: _dbConfig.url(),
           schema: _dbConfig.schema(),
           namingStrategy: new DomainSnakeCaseNamingStrategy(['eg'], false),
           entities: [__dirname + '/../**/schema/*.schema.js'],
