@@ -1,19 +1,15 @@
-import { EntitySchemaUniqueOptions } from '@bfoese/typeorm/entity-schema/EntitySchemaUniqueOptions';
-import { User } from '@eg-domain/user/user';
+import { CultivationPrinciple } from '@eg-domain-constants/cultivation-principle.enum';
+import { ShareableReproductiveMaterial } from '@eg-domain-constants/shareable-reproductive-material.enum';
+import { SeedSharingOffer } from '@eg-domain/seed-sharing-offer/seed-sharing-offer';
 import { AddressSchema } from '@eg-persistence/shared/schema/address.embed';
 import { EntityInfoSchema } from '@eg-persistence/shared/schema/entity-info.embed';
 import { PhoneNumberSchema } from '@eg-persistence/shared/schema/phone-number.embed';
-import { EntitySchema, EntitySchemaColumnOptions } from 'typeorm';
+import { EntitySchema, EntitySchemaColumnOptions, EntitySchemaRelationOptions, JoinColumnOptions } from 'typeorm';
 import { EntitySchemaEmbeddedOptions } from 'typeorm/entity-schema/EntitySchemaEmbeddedOptions';
 import { EntitySchemaOptions } from 'typeorm/entity-schema/EntitySchemaOptions';
 
-export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
-  name: 'user',
-
-  uniques: [
-    <EntitySchemaUniqueOptions>{ name: 'UQ_username', columns: ['username'] },
-    <EntitySchemaUniqueOptions>{ name: 'UQ_email', columns: ['email'] },
-  ],
+export const SeedSharingOfferSchema = new EntitySchema<SeedSharingOffer>(<EntitySchemaOptions<SeedSharingOffer>>{
+  name: 'seedSharingOffer',
 
   embeddeds: {
     entityInfo: {
@@ -38,33 +34,42 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
     } as EntitySchemaEmbeddedOptions,
   },
   columns: {
-    email: {
-      type: 'varchar',
-      length: 320,
-      nullable: false,
+    shareableReproductiveMaterial: {
+      type: 'enum',
+      enum: ShareableReproductiveMaterial,
+      nullable: true,
     } as EntitySchemaColumnOptions,
 
-    username: {
-      type: 'varchar',
-      length: 20,
-      nullable: false,
+    cultivationPrinciple: {
+      type: 'enum',
+      enum: CultivationPrinciple,
+      nullable: true,
     } as EntitySchemaColumnOptions,
 
-    password: {
+    cultivarEpithet: {
       type: 'varchar',
       length: 200,
-      nullable: false,
-    } as EntitySchemaColumnOptions,
-
-    preferredLocale: {
-      type: 'varchar',
-      length: 5,
       nullable: true,
     } as EntitySchemaColumnOptions,
 
-    accountActionToken: {
+    description: {
       type: 'varchar',
+      length: 1000,
       nullable: true,
     } as EntitySchemaColumnOptions,
+  },
+
+  relations: {
+    user: {
+      type: 'many-to-one',
+      target: 'user',
+      joinColumn: <JoinColumnOptions>{ name: 'user_id' },
+    } as EntitySchemaRelationOptions,
+
+    botanicalNode: {
+      type: 'many-to-one',
+      target: 'botanicalNode',
+      joinColumn: <JoinColumnOptions>{ name: 'botanical_node_id' },
+    } as EntitySchemaRelationOptions,
   },
 });
