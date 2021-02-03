@@ -12,7 +12,7 @@ export class CryptoService {
 
   /**
    * Encrypt a message using AES
-   * @param data Message to be encrypted
+   * @param data - Message to be encrypted
    */
   public encryptAes(data: string): string | undefined | null {
     if (data !== undefined && data !== null) {
@@ -23,7 +23,7 @@ export class CryptoService {
 
   /**
    * Decrypt a message using AES
-   * @param cipherText AES encrypted message to be decrypted
+   * @param cipherText - AES encrypted message to be decrypted
    */
   public decryptAes(cipherText: string): string | undefined | null {
     if (cipherText !== undefined && cipherText !== null) {

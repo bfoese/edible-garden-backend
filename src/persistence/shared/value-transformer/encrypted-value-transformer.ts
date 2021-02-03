@@ -3,8 +3,9 @@ import { CryptoService } from '@eg-app/crypto/crypto.service';
 import { Inject } from '@nestjs/common';
 
 export class EncryptedValueTransformer implements ValueTransformer {
+
   @Inject()
-  private cryptoService: CryptoService;
+  private cryptoService: CryptoService
 
   /**
    * Used to marshal data when writing to the database.
@@ -23,12 +24,13 @@ export class EncryptedValueTransformer implements ValueTransformer {
     }
     return value;
   }
+
   /**
    * Used to unmarshal data when reading from the database.
    *
    * Value will be decrypted.
    */
-  public from(value: string): unknown {
+  public from(value: unknown): unknown {
     if (value === null || value === undefined) {
       return value;
     }
