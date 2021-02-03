@@ -13,6 +13,7 @@
         }
       }
     ],
-    "assets": ["mail/templates/**/*"]
+    "deleteOutDir": true,
+    "assets": [{"include": "/mail/templates/**/*.hbs", "watchAssets": true, "outDir": "dist/src/"}]
   }
 }
