@@ -5,8 +5,13 @@ import { EncryptedValueTransformer } from './encrypted-value-transformer';
 
 describe('EncryptedValueTransformer', () => {
   let encryptedValueTransformer: EncryptedValueTransformer;
-  const secretKey = 'myFancySecretKey';
-  const message = 'please encrypt me to keep me safe';
+
+  const testData = {
+    secretKey: '003ca9579092c210de6c20fe4667e5ab',
+    message: 'foo@bar.baz',
+    // this is the encrypted cipher based on AES with ECB mode for the properties message and secretKey
+    aesEcbCipherForKeyMsg: 'l7yWWFgSjsY7bmkVTrMuQg==',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -21,35 +26,22 @@ describe('EncryptedValueTransformer', () => {
     encryptedValueTransformer = module.get(EncryptedValueTransformer);
 
     Object.defineProperty(encryptedValueTransformer, 'cryptoService', {
-      get: jest.fn(() => new CryptoService({ secretKey: secretKey })),
+      get: jest.fn(() => new CryptoService({ secretKey: testData.secretKey })),
       set: jest.fn(),
     });
   });
 
-  describe('encrypt and decrypt a message', () => {
+  describe('to an from conversion', () => {
     it('should be able to encrypt and decrypt a message using AES', async () => {
-      const transformedValue = await encryptedValueTransformer.to(message);
-      expect(transformedValue !== message).toBeTruthy();
-      const reparsedValue = await encryptedValueTransformer.from(transformedValue);
-      expect(reparsedValue).toBe(message);
+      const transformedValue1 = await encryptedValueTransformer.to(testData.message);
+      const transformedValue2 = await encryptedValueTransformer.to(testData.message);
+
+      expect(transformedValue1).toBe(testData.aesEcbCipherForKeyMsg);
+      expect(transformedValue1 === transformedValue2).toBeTruthy();
+      expect(await encryptedValueTransformer.from(transformedValue1)).toBe(testData.message);
     });
 
-    it('should be able to encrypt and decrypt a number using AES', async () => {
-      const phoneNumber = 4317423456754;
-
-      const transformedValue = await encryptedValueTransformer.to(phoneNumber);
-      expect(transformedValue !== phoneNumber).toBeTruthy();
-      expect(typeof transformedValue === 'string').toBeTruthy();
-      expect(await encryptedValueTransformer.from(transformedValue)).toBe(phoneNumber);
-    });
-
-    it('should handle zero gracefully', async () => {
-      const transformedValue = await encryptedValueTransformer.to(0);
-      expect(transformedValue !== 0 && transformedValue !== '0').toBeTruthy();
-      expect(await encryptedValueTransformer.from(transformedValue)).toBe(0);
-    });
-
-    it('should handle null gracefully', async () => {
+    it('should handle null and undefined gracefully', async () => {
       let transformedValue = await encryptedValueTransformer.to(null);
       expect(transformedValue).toBe(null);
 

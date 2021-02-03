@@ -3,6 +3,7 @@ import { User } from '@eg-domain/user/user';
 import { AddressSchema } from '@eg-persistence/shared/schema/address.embed';
 import { EntityInfoSchema } from '@eg-persistence/shared/schema/entity-info.embed';
 import { PhoneNumberSchema } from '@eg-persistence/shared/schema/phone-number.embed';
+import { EncryptedValueTransformer } from '@eg-persistence/shared/value-transformer/encrypted-value-transformer';
 import { EntitySchema, EntitySchemaColumnOptions } from 'typeorm';
 import { EntitySchemaEmbeddedOptions } from 'typeorm/entity-schema/EntitySchemaEmbeddedOptions';
 import { EntitySchemaOptions } from 'typeorm/entity-schema/EntitySchemaOptions';
@@ -40,8 +41,8 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
   columns: {
     email: {
       type: 'varchar',
-      length: 320,
       nullable: false,
+      transformer: new EncryptedValueTransformer()
     } as EntitySchemaColumnOptions,
 
     username: {

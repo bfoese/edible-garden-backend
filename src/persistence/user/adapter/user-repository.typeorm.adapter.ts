@@ -1,4 +1,5 @@
 import { DeleteResult } from '@bfoese/typeorm';
+import { CryptoService } from '@eg-app/crypto/crypto.service';
 import { User } from '@eg-domain/user/user';
 import { UserRepository } from '@eg-domain/user/user-repository.interface';
 import { UniqueConstraintViolation } from '@eg-persistence/shared/unique-constraint-violation';
@@ -13,30 +14,32 @@ import { UserSchema } from '../schema/user.schema';
 export class UserRepositoryTypeOrmAdapter implements UserRepository {
   private readonly plainToClass: (user: User) => User = (user) => plainToClass(User, user);
 
-  public constructor(private readonly userRepository: UserTypeOrmRepository) {}
+  public constructor(private readonly userRepository: UserTypeOrmRepository, private cryptoService: CryptoService) {}
 
-  public findByEmail(email: string, opts?: { withDeleted: boolean; }): Promise<User> {
+  public async findByEmail(email: string, opts?: { withDeleted: boolean; }): Promise<User> {
     let qb = this.userRepository.createQueryBuilder('user').where('user.email=:email').setParameters({
-      email: email,
+      email: this.cryptoService.deterministicEncryption(email),
     });
 
     if (opts?.withDeleted) {
       qb = qb.withDeleted();
     }
-    return qb.getOne().then(this.plainToClass);
+    const result = await qb.getOne().then(this.plainToClass);
+    return result;
   }
 
-  public findByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
-    return this.userRepository
+  public async findByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
+    const result = await this.userRepository
       .createQueryBuilder('user')
       .where('user.username=:username')
       .orWhere('user.email=:email')
       .setParameters({
         username: usernameOrEmail,
-        email: usernameOrEmail,
+        email: this.cryptoService.deterministicEncryption(usernameOrEmail),
       })
       .getOne()
       .then(this.plainToClass);
+      return result;
   }
 
   public create(user: User): Promise<User | UniqueConstraintViolation> {
@@ -56,8 +59,9 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
       });
   }
 
-  public save(user: User): Promise<User | UniqueConstraintViolation> {
-    return this.userRepository
+  public async save(user: User): Promise<User | UniqueConstraintViolation> {
+
+    const result = await this.userRepository
       .save(user)
       .then(this.plainToClass)
       .catch((error) => {
@@ -71,6 +75,7 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
           return violatedUniqueConstraint;
         } else throw error;
       });
+      return result;
   }
 
   /**
@@ -82,6 +87,10 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
    * @returns Number of deleted rows
    */
   public delete(user: User): Promise<number> {
+
+    if (user?.email) {
+      user.email = this.cryptoService.deterministicEncryption(user.email);
+    }
     return this.userRepository.delete(user).then((result: DeleteResult) => result.affected ?? 0);
   }
 }

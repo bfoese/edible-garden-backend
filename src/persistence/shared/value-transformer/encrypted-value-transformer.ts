@@ -3,24 +3,30 @@ import { CryptoService } from '@eg-app/crypto/crypto.service';
 import { Inject } from '@nestjs/common';
 
 export class EncryptedValueTransformer implements ValueTransformer {
-
   @Inject()
-  private cryptoService: CryptoService
+  private cryptoService: CryptoService;
+
+  public constructor() {
+    // TODO This is super ugly right now, but the injected service is not
+    // resolved at runtime also: the process.env variable is not resolved at the
+    // point of instantiation of this class. CryptoService has an ungly
+    // workaround for that.
+    this.cryptoService = new CryptoService({ secretKey: process.env.BFEG_PERSONAL_DATA_ENCRYPTION_KEY });
+  }
 
   /**
    * Used to marshal data when writing to the database.
    *
    * Value will be encrypted.
    */
-  public to(value: unknown): string | unknown {
-    if (value === null || value === undefined) {
+  public to(value: string | null | undefined): string | number | null | undefined {
+    if (value === null || value === undefined || typeof value !== 'string') {
       return value;
     }
     try {
-      const str = JSON.stringify(value);
-      return this.cryptoService.encryptAes(str);
+      return this.cryptoService.deterministicEncryption(value);
     } catch (error) {
-      console.error('[EncryptedValueTransformer] encryption failed: ' + error);
+      console.error('[EncryptedValueTransformer] encryption failed: ' + error, error);
     }
     return value;
   }
@@ -31,18 +37,14 @@ export class EncryptedValueTransformer implements ValueTransformer {
    * Value will be decrypted.
    */
   public from(value: unknown): unknown {
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || typeof value !== 'string') {
       return value;
     }
     try {
-      if (typeof value === 'string') {
-        const decrypted = this.cryptoService.decryptAes(value);
-        if (!!decrypted) {
-          return JSON.parse(decrypted);
-        }
-      }
+      const result = this.cryptoService.deterministicDecryption(value);
+      return result;
     } catch (error) {
-      console.error('[EncryptedValueTransformer] decryption failed: ' + error);
+      console.error('[EncryptedValueTransformer] decryption failed: ' + value + error, error);
     }
     return value;
   }

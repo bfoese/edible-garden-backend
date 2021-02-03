@@ -29,7 +29,7 @@ import { MailModule } from './mail/mail.module';
     RestApiModule,
     HealthModule,
     AuthModule,
-    CryptoModule.register({ secretKey: process.env.BFEG_ENCRYPTION_KEY }),
+    CryptoModule.register({ secretKey: process.env.BFEG_PERSONAL_DATA_ENCRYPTION_KEY }),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       inject: [redisConfig.KEY],
