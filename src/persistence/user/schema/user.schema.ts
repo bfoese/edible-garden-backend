@@ -29,6 +29,7 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
       type: () => AddressSchema(),
       prefix: 'address',
+      select: false, // senstive personal data; only needed for few use cases
     } as EntitySchemaEmbeddedOptions,
 
     phoneNumber: {
@@ -36,13 +37,15 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
       type: () => PhoneNumberSchema(),
       prefix: 'phone',
+      select: false, // senstive personal data; only needed for few use cases
     } as EntitySchemaEmbeddedOptions,
   },
   columns: {
     email: {
       type: 'varchar',
       nullable: false,
-      transformer: new EncryptedValueTransformer()
+      transformer: new EncryptedValueTransformer(),
+      select: false, // senstive personal data; only needed for few use cases
     } as EntitySchemaColumnOptions,
 
     username: {
@@ -55,6 +58,7 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       type: 'varchar',
       length: 200,
       nullable: false,
+      select: false // vulnerable information; only needed for few use cases
     } as EntitySchemaColumnOptions,
 
     preferredLocale: {
@@ -66,6 +70,7 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
     accountActionToken: {
       type: 'varchar',
       nullable: true,
+      select: false, // vulnerable information; only needed for few use cases
     } as EntitySchemaColumnOptions,
   },
 });

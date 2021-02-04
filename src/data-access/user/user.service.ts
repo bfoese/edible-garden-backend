@@ -1,6 +1,8 @@
 import { UniqueKeyConstraintViolationException } from '@eg-app/exception/unique-key-violation.exception';
 import { ArrayUtils } from '@eg-common/util/array.utils';
+import { CommonFindOptions } from '@eg-domain/user/common-find-options';
 import { User } from '@eg-domain/user/user';
+import { UserFindOptions } from '@eg-domain/user/user-find-options';
 import { UserRepository } from '@eg-domain/user/user-repository.interface';
 import { UserValidation } from '@eg-domain/user/user-validation';
 import { UniqueConstraintViolation } from '@eg-persistence/shared/unique-constraint-violation';
@@ -14,18 +16,20 @@ const UserRepo = () => Inject('UserRepositoryTypeOrm');
 export class UserService {
   public constructor(@UserRepo() private readonly userRepository: UserRepository) {}
 
-  public async findByUsernameOrEmail(usernameOrEmail: string): Promise<User | undefined> {
-    const user = await this.userRepository.findByUsernameOrEmail(usernameOrEmail);
-    return this.unexposePassword(user);
+  public async findByUsernameOrEmail(usernameOrEmail: string, opts?: UserFindOptions): Promise<User | undefined> {
+    const user = await this.userRepository.findByUsernameOrEmail(usernameOrEmail, opts);
+    return user;
   }
 
-  public async findByEmail(email: string, opts?: { withDeleted: boolean; }): Promise<User | undefined> {
+  public async findByEmail(email: string, opts?: CommonFindOptions): Promise<User | undefined> {
     const user = await this.userRepository.findByEmail(email, opts);
-    return this.unexposePassword(user);
+    return user;
   }
 
   public async getPasswordFromUser(usernameOrEmail: string): Promise<string | undefined> {
-    const user = await this.userRepository.findByUsernameOrEmail(usernameOrEmail);
+    const user = await this.userRepository.findByUsernameOrEmail(usernameOrEmail, {
+      withHiddenFields: { password: true },
+    } as UserFindOptions);
     return user ? user.password : undefined;
   }
 
@@ -82,9 +86,9 @@ export class UserService {
    * @returns user object without password
    */
   private unexposePassword(user: User): User {
-    if (user) {
-      user.password = undefined;
-    }
+    // if (user) {
+    //   user.password = undefined;
+    // }
     return user;
   }
 }

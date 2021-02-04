@@ -4,6 +4,7 @@ import { JwtAccountActionTokenPayload } from '@eg-auth/token-payload/jwt-account
 import { JwtUtil } from '@eg-common/util/jwt.util';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
+import { UserFindOptions } from '@eg-domain/user/user-find-options';
 import { UserValidation } from '@eg-domain/user/user-validation';
 import { HashingService } from '@eg-hashing/hashing.service';
 import { AccountRegistrationDuplicateAddressJobContext } from '@eg-mail/contracts/account-registration-duplicate-address.jobcontext';
@@ -130,7 +131,9 @@ export class AuthenticationService {
     payload: JwtAccountActionTokenPayload
   ): Promise<User | null> {
     if (jwtToken && payload?.purpose === 'ActivateAccount') {
-      const user = await this.userService.findByUsernameOrEmail(payload.sub);
+      const user = await this.userService.findByUsernameOrEmail(payload.sub, {
+        withHiddenFields: { accountActionToken: true },
+      } as UserFindOptions);
 
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
