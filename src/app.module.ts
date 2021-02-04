@@ -3,7 +3,6 @@ import authConfig from '@eg-app-config/auth.config';
 import dbConfig from '@eg-app-config/db.config';
 import emailConfig from '@eg-app-config/email.config';
 import redisConfig from '@eg-app-config/redis.config';
-import { CryptoModule } from '@eg-app/crypto/crypto.module';
 import { RestApiModule } from '@eg-rest-api/rest-api.module';
 import { CacheModule, CacheModuleAsyncOptions, Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
@@ -29,7 +28,6 @@ import { MailModule } from './mail/mail.module';
     RestApiModule,
     HealthModule,
     AuthModule,
-    CryptoModule.register({ secretKey: process.env.BFEG_PERSONAL_DATA_ENCRYPTION_KEY }),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       inject: [redisConfig.KEY],

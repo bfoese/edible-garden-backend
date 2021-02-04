@@ -16,6 +16,7 @@ export class CryptoModule {
         CryptoService,
       ],
       exports: [CryptoService],
+      global: options?.global ?? false
     };
   }
 }

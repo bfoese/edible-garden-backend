@@ -1,3 +1,4 @@
+import { CryptoModule } from '@eg-app/crypto/crypto.module';
 import { DomainModule } from '@eg-domain/domain.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -29,6 +30,7 @@ import { UserSchema } from './user/schema/user.schema';
 @Module({
   imports: [
     DomainModule,
+    CryptoModule.register({ secretKey: process.env.BFEG_PERSONAL_DATA_ENCRYPTION_KEY }),
     TypeOrmModule.forFeature([
       BotanicalNodeSchema,
       BotanicalNodeI18nSchema,
