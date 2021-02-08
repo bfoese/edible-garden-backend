@@ -1,4 +1,8 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  INestApplication,
+  NestApplicationOptions,
+  ValidationPipe,
+} from '@nestjs/common';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { HttpsOptions } from '@nestjs/common/interfaces/external/https-options.interface';
 import { NestFactory } from '@nestjs/core';
@@ -12,13 +16,14 @@ import dotenvExpand = require('dotenv-expand');
 import RateLimit = require('express-rate-limit');
 import fs = require('fs');
 import cookieParser = require('cookie-parser');
+
 async function bootstrap(): Promise<void> {
   initEnvironmenVariables();
 
   const httpsOptions = getHttpsOptions();
   const app: INestApplication = await NestFactory.create(AppModule, {
     httpsOptions,
-  });
+  } as NestApplicationOptions);
 
   app.use(cookieParser(process.env.BFEG_COOKIE_SIGNATURE_SECRET)); // needed for JWT refresh token
 
@@ -27,6 +32,7 @@ async function bootstrap(): Promise<void> {
   if (corsOrigins.length > 0) {
     app.enableCors(<CorsOptions>{
       origin: corsOrigins,
+      credentials: true,
     });
   }
 
@@ -64,7 +70,9 @@ function getHttpsOptions(): HttpsOptions {
     const keyPath = process.env.BFEG_SSL_KEY_PATH || '';
     const certPath = process.env.BFEG_SSL_CERT_PATH || '';
     return {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       key: fs.readFileSync(path.join(__dirname, keyPath)),
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       cert: fs.readFileSync(path.join(__dirname, certPath)),
     };
   }

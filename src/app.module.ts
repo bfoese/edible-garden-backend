@@ -3,9 +3,12 @@ import authConfig from '@eg-app-config/auth.config';
 import dbConfig from '@eg-app-config/db.config';
 import emailConfig from '@eg-app-config/email.config';
 import redisConfig from '@eg-app-config/redis.config';
-import { RestApiModule } from '@eg-rest-api/rest-api.module';
+import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
+import { EdibleGardenRestApiModule } from '@eg-rest-api/edible-garden/edible-garden-rest-api.module';
+import { SeedSharingRestApiModule } from '@eg-rest-api/seed-sharing/seed-sharing-rest-api.module';
 import { CacheModule, CacheModuleAsyncOptions, Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import * as redisStore from 'cache-manager-redis-store';
 
 import { HealthModule } from './application/health/health.module';
@@ -25,7 +28,8 @@ import { MailModule } from './mail/mail.module';
       load: [appConfig, redisConfig, emailConfig, authConfig, dbConfig],
     }),
     DomainModule,
-    RestApiModule,
+    EdibleGardenRestApiModule,
+    SeedSharingRestApiModule,
     HealthModule,
     AuthModule,
     CacheModule.registerAsync({
@@ -40,6 +44,11 @@ import { MailModule } from './mail/mail.module';
       },
     }),
   ],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

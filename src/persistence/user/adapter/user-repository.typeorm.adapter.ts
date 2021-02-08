@@ -1,5 +1,8 @@
 import { DeleteResult } from '@bfoese/typeorm';
+import { CryptoService } from '@eg-app/crypto/crypto.service';
+import { CommonFindOptions } from '@eg-domain/user/common-find-options';
 import { User } from '@eg-domain/user/user';
+import { UserFindOptions } from '@eg-domain/user/user-find-options';
 import { UserRepository } from '@eg-domain/user/user-repository.interface';
 import { UniqueConstraintViolation } from '@eg-persistence/shared/unique-constraint-violation';
 import { UniqueConstraintViolationFactory } from '@eg-persistence/shared/unique-constraint-violation.extractor';
@@ -13,33 +16,61 @@ import { UserSchema } from '../schema/user.schema';
 export class UserRepositoryTypeOrmAdapter implements UserRepository {
   private readonly plainToClass: (user: User) => User = (user) => plainToClass(User, user);
 
-  public constructor(private readonly userRepository: UserTypeOrmRepository) {}
+  public constructor(private readonly userRepository: UserTypeOrmRepository, private cryptoService: CryptoService) {}
 
-  public findByEmail(email: string, opts?: { withDeleted: boolean; }): Promise<User> {
-    let qb = this.userRepository.createQueryBuilder('user').where('user.email=:email').setParameters({
-      email: email,
-    });
+  public async findByEmail(email: string, opts?: CommonFindOptions): Promise<User> {
+    const user: User = this.encryptFieldsBeforeQueryQuery({ ...{ email: email } } as User);
+
+    let qb = this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.email')
+      .where('user.email=:email')
+      .setParameters({
+        email: user.email,
+      });
 
     if (opts?.withDeleted) {
       qb = qb.withDeleted();
     }
-    return qb.getOne().then(this.plainToClass);
+    const result = await qb.getOne().then(this.plainToClass);
+    return result;
   }
 
-  public findByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
-    return this.userRepository
+  public async findByUsernameOrEmail(usernameOrEmail: string, opts?: UserFindOptions): Promise<User> {
+    const user: User = this.encryptFieldsBeforeQueryQuery({
+      ...{ email: usernameOrEmail, username: usernameOrEmail },
+    } as User);
+    const qb = this.userRepository
       .createQueryBuilder('user')
+      .addSelect('user.email')
       .where('user.username=:username')
       .orWhere('user.email=:email')
       .setParameters({
-        username: usernameOrEmail,
-        email: usernameOrEmail,
-      })
-      .getOne()
-      .then(this.plainToClass);
+        username: user.username,
+        email: user.email,
+      });
+
+    if (opts?.withHiddenFields?.password) {
+      qb.addSelect('user.password');
+    }
+
+    if (opts?.withHiddenFields?.accountActionToken) {
+      qb.addSelect('user.accountActionToken');
+    }
+
+    if (opts?.withHiddenFields?.address) {
+      qb.addSelect('user.address');
+    }
+
+    if (opts?.withHiddenFields?.phoneNumber) {
+      qb.addSelect('user.phoneNumber');
+    }
+
+    const result = qb.getOne().then(this.plainToClass);
+    return result;
   }
 
-  public create(user: User): Promise<User | UniqueConstraintViolation> {
+  public create(user: User): Promise<User | UniqueConstraintViolation<User>> {
     return this.userRepository
       .save(user)
       .then(this.plainToClass)
@@ -56,8 +87,8 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
       });
   }
 
-  public save(user: User): Promise<User | UniqueConstraintViolation> {
-    return this.userRepository
+  public async save(user: User): Promise<User | UniqueConstraintViolation<User>> {
+    const result = await this.userRepository
       .save(user)
       .then(this.plainToClass)
       .catch((error) => {
@@ -71,6 +102,7 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
           return violatedUniqueConstraint;
         } else throw error;
       });
+    return result;
   }
 
   /**
@@ -82,6 +114,14 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
    * @returns Number of deleted rows
    */
   public delete(user: User): Promise<number> {
+    user = this.encryptFieldsBeforeQueryQuery(user);
     return this.userRepository.delete(user).then((result: DeleteResult) => result.affected ?? 0);
+  }
+
+  private encryptFieldsBeforeQueryQuery(user: User): User {
+    if (user?.email) {
+      user.email = this.cryptoService.deterministicEncryption(user.email);
+    }
+    return user;
   }
 }

@@ -11,6 +11,11 @@ import { GrowingManualFacadeService } from './growing-manual/growing-manual-faca
 import { GrowingManualMapper } from './growing-manual/mapper/growing-manual.mapper';
 import { MixedCultureMapper } from './mixed-culture/mapper/mixed-culture.mapper';
 import { MixedCultureFacadeService } from './mixed-culture/mixed-culture-facade.service';
+import { AddressMapper } from './seed-sharing-offer/mapper/address.mapper';
+import { PhoneNumberMapper } from './seed-sharing-offer/mapper/phone-number.mapper';
+import { SeedSharingOfferCreationMapper } from './seed-sharing-offer/mapper/seed-sharing-offer-creation.mapper';
+import { SeedSharingOfferMapper } from './seed-sharing-offer/mapper/seed-sharing-offer.mapper';
+import { SeedSharingOfferFacadeService } from './seed-sharing-offer/seed-sharing-offer-facade.service';
 
 @Module({
   imports: [DataAccessModule, CoreFacadeModule],
@@ -24,7 +29,17 @@ import { MixedCultureFacadeService } from './mixed-culture/mixed-culture-facade.
     GrowingManualMapper,
     MixedCultureMapper,
     TaxonomicRankMapper,
+    SeedSharingOfferFacadeService,
+    SeedSharingOfferMapper,
+    SeedSharingOfferCreationMapper,
+    AddressMapper,
+    PhoneNumberMapper,
   ],
-  exports: [BotanicalNodeFacadeService, GrowingManualFacadeService, MixedCultureFacadeService],
+  exports: [
+    BotanicalNodeFacadeService,
+    GrowingManualFacadeService,
+    MixedCultureFacadeService,
+    SeedSharingOfferFacadeService,
+  ],
 })
 export class FacadeModule {}

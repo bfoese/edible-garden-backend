@@ -1,4 +1,6 @@
+import { Address } from '@eg-domain/shared/adress';
 import { EntityInfo } from '@eg-domain/shared/entity-info';
+import { PhoneNumber } from '@eg-domain/shared/phone-number';
 import { Type } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, Length, Matches } from 'class-validator';
 
@@ -30,6 +32,12 @@ export class User {
   @IsString()
   @Matches(UserValidation.constraints.password.pattern, { message: 'password too weak' })
   public password: string;
+
+  @Type(() => Address)
+  public address: Address;
+
+  @Type(() => PhoneNumber)
+  public phoneNumber: PhoneNumber;
 
   /**
    * Contains an encrypted JWT token which is usually send to the email account

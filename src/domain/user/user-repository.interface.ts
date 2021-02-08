@@ -1,12 +1,14 @@
 import { UniqueConstraintViolation } from '@eg-persistence/shared/unique-constraint-violation';
 
+import { CommonFindOptions } from './common-find-options';
 import { User } from './user';
+import { UserFindOptions } from './user-find-options';
 
 export interface UserRepository {
-  findByEmail(email: string, opts?: { withDeleted: boolean; }): Promise<User>;
-  findByUsernameOrEmail(usernameOrEmail: string): Promise<User>;
-  create(user: User): Promise<User | UniqueConstraintViolation>;
-  save(user: User): Promise<User | UniqueConstraintViolation>;
+  findByEmail(email: string, opts?: CommonFindOptions): Promise<User>;
+  findByUsernameOrEmail(usernameOrEmail: string, opts?: UserFindOptions): Promise<User>;
+  create(user: User): Promise<User | UniqueConstraintViolation<User>>;
+  save(user: User): Promise<User | UniqueConstraintViolation<User>>;
 
   /**
    * Important: based on the provided user object ONE or MANY users might be

@@ -1,6 +1,9 @@
 import { EntitySchemaUniqueOptions } from '@bfoese/typeorm/entity-schema/EntitySchemaUniqueOptions';
 import { User } from '@eg-domain/user/user';
+import { AddressSchema } from '@eg-persistence/shared/schema/address.embed';
 import { EntityInfoSchema } from '@eg-persistence/shared/schema/entity-info.embed';
+import { PhoneNumberSchema } from '@eg-persistence/shared/schema/phone-number.embed';
+import { EncryptedValueTransformer } from '@eg-persistence/shared/value-transformer/encrypted-value-transformer';
 import { EntitySchema, EntitySchemaColumnOptions } from 'typeorm';
 import { EntitySchemaEmbeddedOptions } from 'typeorm/entity-schema/EntitySchemaEmbeddedOptions';
 import { EntitySchemaOptions } from 'typeorm/entity-schema/EntitySchemaOptions';
@@ -20,12 +23,29 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       type: () => EntityInfoSchema(),
       prefix: '',
     } as EntitySchemaEmbeddedOptions,
+
+    address: {
+      isArray: false,
+      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+      type: () => AddressSchema(),
+      prefix: 'address',
+      select: false, // senstive personal data; only needed for few use cases
+    } as EntitySchemaEmbeddedOptions,
+
+    phoneNumber: {
+      isArray: false,
+      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+      type: () => PhoneNumberSchema(),
+      prefix: 'phone',
+      select: false, // senstive personal data; only needed for few use cases
+    } as EntitySchemaEmbeddedOptions,
   },
   columns: {
     email: {
       type: 'varchar',
-      length: 320,
       nullable: false,
+      transformer: new EncryptedValueTransformer(),
+      select: false, // senstive personal data; only needed for few use cases
     } as EntitySchemaColumnOptions,
 
     username: {
@@ -38,6 +58,7 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       type: 'varchar',
       length: 200,
       nullable: false,
+      select: false // vulnerable information; only needed for few use cases
     } as EntitySchemaColumnOptions,
 
     preferredLocale: {
@@ -49,6 +70,7 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
     accountActionToken: {
       type: 'varchar',
       nullable: true,
+      select: false, // vulnerable information; only needed for few use cases
     } as EntitySchemaColumnOptions,
   },
 });

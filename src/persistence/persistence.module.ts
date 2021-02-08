@@ -1,3 +1,4 @@
+import { CryptoModule } from '@eg-app/crypto/crypto.module';
 import { DomainModule } from '@eg-domain/domain.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -17,6 +18,10 @@ import { MixedCultureRepositoryTypeOrmAdapter } from './mixed-culture/adapter/mi
 import { MixedCultureTypeOrmRepository } from './mixed-culture/repository/mixed-culture.typeorm-repository';
 import { MixedCultureI18nSchema } from './mixed-culture/schema/mixed-culture-i18n.schema';
 import { MixedCultureSchema } from './mixed-culture/schema/mixed-culture.schema';
+import { SeedSharingOfferRepositoryProvider } from './seed-sharing-offer/adapter/seed-sharing-offer-repository.provider';
+import { SeedSharingOfferRepositoryTypeOrmAdapter } from './seed-sharing-offer/adapter/seed-sharing-offer-repository.typeorm.adapter';
+import { SeedSharingOfferTypeOrmRepository } from './seed-sharing-offer/repository/seed-sharing-offer.typeorm-repository';
+import { SeedSharingOfferSchema } from './seed-sharing-offer/schema/seed-sharing-offer.schema';
 import { UserRepositoryProvider } from './user/adapter/user-repository.provider';
 import { UserRepositoryTypeOrmAdapter } from './user/adapter/user-repository.typeorm.adapter';
 import { UserTypeOrmRepository } from './user/repository/user.typeorm-repository';
@@ -25,6 +30,7 @@ import { UserSchema } from './user/schema/user.schema';
 @Module({
   imports: [
     DomainModule,
+    CryptoModule.register({ secretKey: process.env.BFEG_PERSONAL_DATA_ENCRYPTION_KEY }),
     TypeOrmModule.forFeature([
       BotanicalNodeSchema,
       BotanicalNodeI18nSchema,
@@ -40,6 +46,9 @@ import { UserSchema } from './user/schema/user.schema';
 
       UserSchema,
       UserTypeOrmRepository,
+
+      SeedSharingOfferSchema,
+      SeedSharingOfferTypeOrmRepository,
     ]),
   ],
   providers: [
@@ -54,6 +63,9 @@ import { UserSchema } from './user/schema/user.schema';
 
     UserRepositoryProvider,
     UserRepositoryTypeOrmAdapter,
+
+    SeedSharingOfferRepositoryProvider,
+    SeedSharingOfferRepositoryTypeOrmAdapter,
   ],
   exports: [
     BotanicalNodeRepositoryProvider,
@@ -67,6 +79,9 @@ import { UserSchema } from './user/schema/user.schema';
 
     UserRepositoryProvider,
     UserRepositoryTypeOrmAdapter,
+
+    SeedSharingOfferRepositoryProvider,
+    SeedSharingOfferRepositoryTypeOrmAdapter,
   ],
 })
 export class PersistenceModule {}

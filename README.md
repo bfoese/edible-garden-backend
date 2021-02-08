@@ -301,3 +301,11 @@ into that limit by delaying mails above the limit for a few hours.
 <ul>
 <li>Bulls ignores jobs whose jobID is the same as the jobID of a previously performed job, unless you use 'removeOnCompleted'. Using this option will purge the information about previously performed Jobs after completion so they can't be considered the next time you add a job.</li>
 </ul>
+
+## Data Security
+
+<ul>
+    <li>User passwords in database are hashed with pepper and salt.</li>
+    <li>Database must not contain sensitive personal data of the users (real name, email, address, phone, etc.) in plain text (in case the database is being leaked). Therefore this sensitive data is encrypted using AES with ECB mode. This must be considered when querying data: the query must contain the encrypted values.</li>
+</ul>
+
