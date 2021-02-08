@@ -11,7 +11,6 @@ import { PassportModule } from '@nestjs/passport';
 
 import { AuthenticationFacadeService } from './presentation/facade/autentication-facade.service';
 import { RegisterUserMapper } from './presentation/facade/mapper/register-user.mapper';
-import { UserMapper } from './presentation/facade/mapper/user.mapper';
 import { AuthenticationController } from './presentation/rest-api/authentication.controller';
 import { AccountActionEmailService } from './service/account-action-email.service';
 import { AuthenticationService } from './service/authentication.service';
@@ -47,7 +46,6 @@ import { SecureAccountActionStrategy } from './strategies/secure-account-action.
     JwtRefreshStrategy,
     SecureAccountActionStrategy,
     RegisterUserMapper,
-    UserMapper,
     AuthenticationFacadeService,
 
     JwtTokenFactoryService,

@@ -11,7 +11,6 @@ import { IsNotEmpty } from 'class-validator';
 import { SeedSharingOfferValidation } from './seed-sharing-offer-validation';
 
 export class SeedSharingOffer {
-
   public constructor() {
     this.entityInfo = new EntityInfo();
   }
@@ -22,9 +21,9 @@ export class SeedSharingOffer {
   /**
    * User which created the offer
    */
-  @IsNotEmpty({
-    groups: [SeedSharingOfferValidation.groups.createOffer],
-  })
+  // @IsNotEmpty({
+  //   groups: [SeedSharingOfferValidation.groups.createOffer],
+  // })
   @Type(() => User)
   public user: User;
 
@@ -35,9 +34,9 @@ export class SeedSharingOffer {
 
   public cultivationPrinciple: CultivationPrinciple;
 
-  @IsNotEmpty({
-    groups: [SeedSharingOfferValidation.groups.createOffer],
-  })
+  // @IsNotEmpty({
+  //   groups: [SeedSharingOfferValidation.groups.createOffer],
+  // })
   public botanicalNode: BotanicalNode;
 
   /**

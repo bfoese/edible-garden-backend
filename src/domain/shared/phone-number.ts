@@ -1,8 +1,8 @@
-import { IsNumber, MaxLength, MinLength } from 'class-validator';
+import { IsNumber, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class PhoneNumber {
-  @IsNumber()
-  private _phoneNo: number;
+  @IsString()
+  private _phoneNo: string;
 
   /**
    * Without leading zeros.
@@ -16,11 +16,11 @@ export class PhoneNumber {
   @MaxLength(4)
   private _countryCode: number;
 
-  public set phoneNo(phoneNo: number) {
+  public set phoneNo(phoneNo: string) {
     this._phoneNo = phoneNo;
   }
 
-  public get phoneNo(): number {
+  public get phoneNo(): string {
     return this._phoneNo;
   }
 

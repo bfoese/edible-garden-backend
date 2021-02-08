@@ -6,6 +6,15 @@ name: Deploy main branch to prod
 # or API.
 on:
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        default: "master"
+        required: true
+      skipTest:
+        descripion: 'Whether to skip lint and test'
+        default: false
+        required: true
 
 jobs:
   deploy:
@@ -31,6 +40,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.GH_PKG_TOKEN}}
       - name: Lint, Test
+        if: ${{ github.event.inputs.skipTest != true }}
         run: |
           npm run lint
           npm test
@@ -41,7 +51,7 @@ jobs:
       - name: Build and deploy to Heroku
         uses: akhileshns/heroku-deploy@v3.7.8
         with:
-          branch: "master"
+          branch: ${{ github.event.inputs.branch }}
           dontuseforce: false
           # buildpack will build and then prune the node_modules
           buildpack: heroku/nodejs
@@ -68,3 +78,4 @@ jobs:
           HD_BFEG_REDIS_URL: ${{secrets.REDIS_URL}}
           HD_BFEG_EMAIL_TRANSPORT_URL: ${{secrets.EMAIL_TRANSPORT_URL}}
           HD_BFEG_EMAIL_FROM: ${{secrets.EMAIL_FROM}}
+          HD_BFEG_PERSONAL_DATA_ENCRYPTION_KEY: {{secrets.PERSONAL_DATA_ENCRYPTION_KEY}}

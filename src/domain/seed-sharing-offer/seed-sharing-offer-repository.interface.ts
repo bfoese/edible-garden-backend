@@ -14,5 +14,10 @@ export interface SeedSharingOfferRepository {
    * which are unique within the offer schema.
    * @returns Number of deleted rows
    */
-  delete(pffer: SeedSharingOffer): Promise<number>;
+  delete(offer: SeedSharingOffer): Promise<number>;
+
+  findOne(id: string): Promise<SeedSharingOffer>;
+
+  // TODO add paging
+  findByUser(userId: string): Promise<SeedSharingOffer[]>;
 }

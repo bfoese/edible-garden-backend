@@ -29,7 +29,7 @@ export class JwtTokenFactoryService {
   public generateRefreshToken(payload: JwtTokenPayload): string {
     return this.jwtService.sign(payload, {
       secret: this._authConfig.jwtRefreshSecret(),
-      expiresIn: this._authConfig.jwtExpirationTime(),
+      expiresIn: this._authConfig.jwtRefreshExpirationTime(),
     } as JwtSignOptions);
   }
 

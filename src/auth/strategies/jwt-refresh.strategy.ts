@@ -23,7 +23,15 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
       // Refresh token was transferred via cookie
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request): any => {
-          return AuthenticationService.getJwtRefreshCookie(request);
+          const refreshCookie = AuthenticationService.getJwtRefreshCookie(request);
+          console.log(
+            'refreshCookie',
+            refreshCookie,
+            request.signedCookies,
+            'cookies from header',
+            request.headers.cookie
+          );
+          return refreshCookie;
         },
       ]),
       // if our route is supplied with an expired JWT, the request will be

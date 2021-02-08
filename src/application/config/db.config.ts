@@ -7,4 +7,5 @@ export default registerAs('database', () => ({
   migrationsRun: (): boolean => process.env.TYPEORM_MIGRATIONS_RUN === 'true',
   synchronize: (): boolean => process.env.TYPEORM_SYNCHRONIZE === 'true',
   sslCA: (): string => process.env.DB_SSL_CA,
+  enableLogging: (): boolean => process.env.DB_LOGGING === 'true',
 }));

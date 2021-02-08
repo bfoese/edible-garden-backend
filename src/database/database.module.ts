@@ -28,6 +28,7 @@ import { DomainSnakeCaseNamingStrategy } from './strategy/domain-snake-case-nami
             migrationsDir: '/../database/migration-gen',
           },
           synchronize: _dbConfig.synchronize(),
+          logging: _dbConfig.enableLogging(),
 
           ...(_appConfig.isProduction() && {
             ssl: <TlsOptions>{ ca: _dbConfig.sslCA(), rejectUnauthorized: false },

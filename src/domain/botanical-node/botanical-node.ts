@@ -1,6 +1,7 @@
 import { TaxonomicRank } from '@eg-domain-constants/taxonomic-rank.enum';
 import { EntityInfo } from '@eg-domain/shared/entity-info';
 import { HasI18nData } from '@eg-domain/shared/has-i18n-data.interface';
+
 import { BotanicalNodeI18n } from './botanical-node-i18n';
 
 export class BotanicalNode implements HasI18nData<BotanicalNode, BotanicalNodeI18n> {
@@ -14,6 +15,10 @@ export class BotanicalNode implements HasI18nData<BotanicalNode, BotanicalNodeI1
   public parent: BotanicalNode;
 
   public children: BotanicalNode[];
+
+  public constructor() {
+    this.entityInfo = new EntityInfo();
+  }
 
   public set entityInfo(entityInfo: EntityInfo) {
     this._entityInfo = entityInfo;
