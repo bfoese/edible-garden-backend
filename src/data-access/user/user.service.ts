@@ -42,7 +42,7 @@ export class UserService {
       throw new BadRequestException(errors);
     }
 
-    return this.userRepository.create(user).then((result: User | UniqueConstraintViolation) => {
+    return this.userRepository.create(user).then((result: User | UniqueConstraintViolation<User>) => {
       if (result instanceof UniqueConstraintViolation) {
         throw new UniqueKeyConstraintViolationException(result.constraintColumns);
       }
@@ -51,7 +51,7 @@ export class UserService {
   }
 
   public async save(user: User): Promise<User> | never {
-    return this.userRepository.save(user).then((result: User | UniqueConstraintViolation) => {
+    return this.userRepository.save(user).then((result: User | UniqueConstraintViolation<User>) => {
       if (result instanceof UniqueConstraintViolation) {
         throw new UniqueKeyConstraintViolationException(result.constraintColumns);
       }

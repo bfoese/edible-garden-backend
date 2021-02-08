@@ -3,8 +3,8 @@ import { UniqueConstraintViolation } from '@eg-persistence/shared/unique-constra
 import { SeedSharingOffer } from './seed-sharing-offer';
 
 export interface SeedSharingOfferRepository {
-  create(user: SeedSharingOffer): Promise<SeedSharingOffer | UniqueConstraintViolation>;
-  save(offer: SeedSharingOffer): Promise<SeedSharingOffer | UniqueConstraintViolation>;
+  create(user: SeedSharingOffer): Promise<SeedSharingOffer | UniqueConstraintViolation<SeedSharingOffer>>;
+  save(offer: SeedSharingOffer): Promise<SeedSharingOffer | UniqueConstraintViolation<SeedSharingOffer>>;
 
   /**
    * Important: based on the provided object ONE or MANY offers might be

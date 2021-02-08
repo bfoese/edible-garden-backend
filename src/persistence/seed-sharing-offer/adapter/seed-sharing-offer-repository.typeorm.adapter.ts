@@ -16,7 +16,7 @@ export class SeedSharingOfferRepositoryTypeOrmAdapter implements SeedSharingOffe
 
   public constructor(private readonly offerRepository: SeedSharingOfferTypeOrmRepository) {}
 
-  public create(offer: SeedSharingOffer): Promise<SeedSharingOffer | UniqueConstraintViolation> {
+  public create(offer: SeedSharingOffer): Promise<SeedSharingOffer | UniqueConstraintViolation<SeedSharingOffer>> {
     return this.offerRepository
       .save(offer)
       .then(this.plainToClass)
@@ -33,7 +33,7 @@ export class SeedSharingOfferRepositoryTypeOrmAdapter implements SeedSharingOffe
       });
   }
 
-  public save(offer: SeedSharingOffer): Promise<SeedSharingOffer | UniqueConstraintViolation> {
+  public save(offer: SeedSharingOffer): Promise<SeedSharingOffer | UniqueConstraintViolation<SeedSharingOffer>> {
     return this.offerRepository
       .save(offer)
       .then(this.plainToClass)

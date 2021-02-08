@@ -26,7 +26,7 @@ export class SeedSharingOfferService {
 
     return this.seedSharingOfferRepository
       .create(seedSharingOffer)
-      .then((result: SeedSharingOffer | UniqueConstraintViolation) => {
+      .then((result: SeedSharingOffer | UniqueConstraintViolation<SeedSharingOffer>) => {
         if (result instanceof UniqueConstraintViolation) {
           throw new UniqueKeyConstraintViolationException(result.constraintColumns);
         }
@@ -37,7 +37,7 @@ export class SeedSharingOfferService {
   public async save(seedSharingOffer: SeedSharingOffer): Promise<SeedSharingOffer> | never {
     return this.seedSharingOfferRepository
       .save(seedSharingOffer)
-      .then((result: SeedSharingOffer | UniqueConstraintViolation) => {
+      .then((result: SeedSharingOffer | UniqueConstraintViolation<SeedSharingOffer>) => {
         if (result instanceof UniqueConstraintViolation) {
           throw new UniqueKeyConstraintViolationException(result.constraintColumns);
         }

@@ -70,7 +70,7 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
     return result;
   }
 
-  public create(user: User): Promise<User | UniqueConstraintViolation> {
+  public create(user: User): Promise<User | UniqueConstraintViolation<User>> {
     return this.userRepository
       .save(user)
       .then(this.plainToClass)
@@ -87,7 +87,7 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
       });
   }
 
-  public async save(user: User): Promise<User | UniqueConstraintViolation> {
+  public async save(user: User): Promise<User | UniqueConstraintViolation<User>> {
     const result = await this.userRepository
       .save(user)
       .then(this.plainToClass)

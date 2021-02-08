@@ -11,7 +11,7 @@ export class UniqueConstraintViolationFactory {
     queryFailedError: QueryFailedError,
     schema: EntitySchema<T>,
     entity: T
-  ): Promise<UniqueConstraintViolation | undefined> {
+  ): Promise<UniqueConstraintViolation<T> | undefined> {
     const errorMsg = queryFailedError?.message;
     if (errorMsg && schema) {
       const uniqueConstraints: EntitySchemaUniqueOptions[] = schema.options.uniques;
