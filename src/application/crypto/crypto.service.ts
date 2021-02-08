@@ -95,7 +95,7 @@ export class CryptoService {
     if (key) {
       const keyByteSize = Buffer.byteLength(key, 'utf8');
       if (keyByteSize !== 16 && keyByteSize !== 24 && keyByteSize !== 32) {
-        throw `[CryptoService] invalid key length: AES requires key size of 128, 192 or 256 bytes. keyLength=${keyByteSize} key=${key}`;
+        throw `[CryptoService] invalid key length: AES requires key size of 16, 24 or 32. keyLength=${keyByteSize}`;
       }
     }
   }

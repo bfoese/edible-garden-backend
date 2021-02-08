@@ -8,7 +8,18 @@ import { SecureAccountActionGuard } from '@eg-auth/guards/secure-account-action.
 import { AuthenticationService } from '@eg-auth/service/authentication.service';
 import { RequestWithUser } from '@eg-auth/strategies/request-with-user';
 import { User } from '@eg-domain/user/user';
-import { Body, Controller, Get, HttpCode, Inject, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Inject,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -78,9 +89,9 @@ export class AuthenticationController {
     if (activatedUser) {
       response
         .status(302)
-        .redirect(`${this._appConfig.authFrontendUrl}/de_AT/auth/signin?accountActivationSuccess=true`);
+        .redirect(`${this._appConfig.authFrontendUrl()}/de_AT/auth/signin?accountActivationSuccess=true`);
     } else {
-      response.status(302).redirect(`${this._appConfig.authFrontendUrl}/de_AT/auth/signup?invalidActivationToken=true`);
+      response.status(302).redirect(`${this._appConfig.authFrontendUrl()}/de_AT/auth/signup?invalidActivationToken=true`);
     }
   }
 
@@ -106,7 +117,7 @@ export class AuthenticationController {
     const accountDeleted = user ? await this.authenticationFacadeService.deleteAccount(user) : false;
     response
       .status(302)
-      .redirect(`${this._appConfig.authFrontendUrl}/de_AT/auth/feedback?accountDeleted=${accountDeleted}`);
+      .redirect(`${this._appConfig.authFrontendUrl()}/de_AT/auth/feedback?accountDeleted=${accountDeleted}`);
   }
 
   @Public()
