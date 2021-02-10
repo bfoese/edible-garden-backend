@@ -5,16 +5,19 @@ name: Deploy main branch to prod
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
 on:
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to deploy'
-        default: "master"
-        required: true
-      skipTest:
-        descripion: 'Whether to skip lint and test'
-        default: false
-        required: true
+  push:
+    branches:
+      - master
+  # workflow_dispatch:
+  #   inputs:
+  #     branch:
+  #       description: 'Branch to deploy'
+  #       default: "master"
+  #       required: true
+  #     skipTest:
+  #       descripion: 'Whether to skip lint and test'
+  #       default: false
+  #       required: true
 
 jobs:
   deploy:
@@ -51,7 +54,8 @@ jobs:
       - name: Build and deploy to Heroku
         uses: akhileshns/heroku-deploy@v3.7.8
         with:
-          branch: ${{ github.event.inputs.branch }}
+          #branch: ${{ github.event.inputs.branch }}
+          branch: master
           dontuseforce: false
           # buildpack will build and then prune the node_modules
           buildpack: heroku/nodejs
