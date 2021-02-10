@@ -174,7 +174,7 @@ export class AuthenticationController {
       httpOnly: true,
       signed: true,
       secure: true,
-      //domain: this._appConfig.authCookieDomain(),
+      sameSite: true,
       expires: this.authenticationFacadeService.getJwtExpirationDate(refreshToken),
     });
   }
