@@ -32,9 +32,15 @@ export class AuthenticationService {
     private readonly refreshTokenCacheService: RefreshTokenCacheService,
     private readonly jwtTokenFactoryService: JwtTokenFactoryService,
     private readonly mailService: MailService,
-    private readonly accountActionEmailService: AccountActionEmailService
-  ) {}
+    private readonly accountActionEmailService: AccountActionEmailService,
 
+  ) {
+
+
+
+  }
+
+  
   /**
    * @param username -
    * @param email -
@@ -239,6 +245,46 @@ export class AuthenticationService {
     return Promise.resolve(this.jwtTokenFactoryService.generateAccessToken({ sub: user.username }));
   }
 
+  public async login(request: Request, user: User): Promise<string> {
+    if (user) {
+      const accessToken = this.generateAccessToken(user);
+      await this.addRefreshTokenCookie(request, null, user);
+      return accessToken;
+    }
+    return null;
+  }
+
+  /**
+   * Server deletes only the refresh tokens from the given request. The user
+   * will only be logged out in applications, where this refresh token was used:
+   * probably only the tabs within one browser window on one device. The user
+   * should be immediately logged out in this browser, as we also remove the
+   * refresh cookie.
+   * @param request -
+   * @param user -
+   */
+  public async logout(request: Request, user: User): Promise<boolean> {
+    const previousRefreshToken = AuthenticationService.getJwtRefreshCookie(request);
+    this.refreshTokenCacheService.removeOne(user?.username, previousRefreshToken);
+    request.res.clearCookie(AuthenticationService.JwtRefreshCookieName);
+    return Promise.resolve(true);
+  }
+
+  private async addRefreshTokenCookie(
+    request: Request,
+    previousRefreshToken: string,
+    user: User
+  ): Promise<void> {
+    const refreshToken = await this.generateNextRefreshToken(user, previousRefreshToken);
+    request.res.cookie(AuthenticationService.JwtRefreshCookieName, refreshToken, {
+      httpOnly: true,
+      signed: true,
+      secure: true,
+      sameSite: true,
+      expires: this.getJwtExpirationDate(refreshToken),
+    });
+  }
+
   /**
    * Server deletes all refresh tokens from the user. The user will not be
    * immediately logged out on all devices with that, because some of the issued
@@ -248,8 +294,9 @@ export class AuthenticationService {
    * therefore force the user to login with these devices again.
    * @param user -
    */
-  public async logout(user: User): Promise<boolean> {
+  public async logoutFromAllDevices(request: Request, user: User): Promise<boolean> {
     this.refreshTokenCacheService.removeAll(user.username);
+    request.res.clearCookie(AuthenticationService.JwtRefreshCookieName);
     return Promise.resolve(true);
   }
 

@@ -2,6 +2,7 @@ import { AccountActionEmailService } from '@eg-auth/service/account-action-email
 import { AuthenticationService } from '@eg-auth/service/authentication.service';
 import { User } from '@eg-domain/user/user';
 import { Injectable } from '@nestjs/common';
+import { Request } from 'express';
 
 import { JwtTokenDto } from './dto/jwt-token.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -31,6 +32,16 @@ export class AuthenticationFacadeService {
     return this.authenticationService.activateAccount(user);
   }
 
+  public async mapAccessToken(jwtToken: string): Promise<JwtTokenDto> {
+    const tokenDto = {
+      // had to provide secret and expiration time here again, even though its
+      // configured already for the imported JwtModule - don't know why,
+      // whithout it, no secret was found
+      access_token: jwtToken,
+    } as JwtTokenDto;
+    return tokenDto;
+  }
+
   public async generateAccessToken(user: User): Promise<JwtTokenDto> {
     const tokenDto = {
       // had to provide secret and expiration time here again, even though its
@@ -49,7 +60,12 @@ export class AuthenticationFacadeService {
     return this.authenticationService.getJwtExpirationDate(token);
   }
 
-  public async logout(user: User): Promise<boolean> {
-    return this.authenticationService.logout(user);
+  public async login(request: Request, user: User): Promise<JwtTokenDto> {
+    const token = await this.authenticationService.login(request, user);
+    return token ? this.mapAccessToken(token) : null;
+  }
+
+  public async logout(request: Request, user: User): Promise<boolean> {
+    return this.authenticationService.logout(request, user);
   }
 }

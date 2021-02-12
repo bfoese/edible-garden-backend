@@ -125,7 +125,6 @@ export class AuthenticationController {
   @Get('refresh')
   public async refresh(@Req() request: RequestWithUser): Promise<JwtTokenDto> {
     const user = await request.user;
-    console.log('refresh request', user, request.signedCookies, request.cookies);
     const previousRefreshToken = AuthenticationService.getJwtRefreshCookie(request);
 
     const accessToken = this.authenticationFacadeService.generateAccessToken(user);
@@ -140,12 +139,7 @@ export class AuthenticationController {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async login(@Req() request: RequestWithUser, @Body() _loginData: LoginUserDto): Promise<JwtTokenDto> {
     const user = await request.user;
-    if (user) {
-      const accessToken = this.authenticationFacadeService.generateAccessToken(user);
-      await this.addRefreshTokenCookie(request, null, user);
-      return accessToken;
-    }
-    return null;
+    return this.authenticationFacadeService.login(request, user);
   }
 
   @HttpCode(200)
@@ -153,7 +147,7 @@ export class AuthenticationController {
   @Post('logout')
   public async logout(@Req() req: RequestWithUser): Promise<boolean> {
     const user = await req.user;
-    return this.authenticationFacadeService.logout(user);
+    return this.authenticationFacadeService.logout(req, user);
   }
 
   // TODO move to different controller
