@@ -68,8 +68,10 @@ export class AccountActionEmailService {
 
   public getAccountActionUrl(purpose: AccountActionPurpose, actionToken: string): string {
     switch (purpose) {
-      case 'ActivateAccount':
-        return this.getAccountActivationUrl(actionToken);
+      case 'VerifyEmail':
+      case 'VerifyEmailSignup':
+      case 'VerifiyEmailUpdate':
+        return this.getVerifyEmailUrl(actionToken);
       case 'ResetPassword':
         return this.getPasswordResetUrl(actionToken);
       case 'DeleteAccount':
@@ -79,8 +81,8 @@ export class AccountActionEmailService {
     }
   }
 
-  private getAccountActivationUrl(accountActionToken: string): string {
-    return `${this._appConfig.serverUrl()}/edible-garden/auth/${AuthRouteConstants.Path_ActivateAccount}?${
+  private getVerifyEmailUrl(accountActionToken: string): string {
+    return `${this._appConfig.serverUrl()}/edible-garden/auth/${AuthRouteConstants.Path_VerifyEmail}?${
       AuthRouteConstants.QueryParam_Token
     }=${accountActionToken}`;
   }

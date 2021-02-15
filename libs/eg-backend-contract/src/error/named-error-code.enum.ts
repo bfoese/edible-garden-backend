@@ -6,4 +6,5 @@ export enum NamedErrorCode {
   ActionDeniedConsultEmailAccount = 2001,
   InvalidUsernameOrPassword = 2002,
   AccountNotActivated = 2003,
+  EmailNotVerified = 2004
 }

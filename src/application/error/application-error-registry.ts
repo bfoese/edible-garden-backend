@@ -1,3 +1,4 @@
+
 import { NamedErrorCode } from '@bfoese/eg-be-contract/dist';
 
 import { NamedErrorBuilder } from './named-error.builder';
@@ -87,6 +88,18 @@ export class ApplicationErrorRegistry {
         ApplicationErrorRegistry.ifArgs(` - username=${msgArgs}`, ...msgArgs)
     )
     .build();
+
+    /**
+   * Message args: username
+   */
+  public static ActionDeniedEmailVerificationRequired = new NamedErrorBuilder()
+  .errorCodeWithName(NamedErrorCode.EmailNotVerified)
+  .errorMsg(
+    (...msgArgs: string[]) =>
+      'Action denied. The users email address is not verified yet' +
+      ApplicationErrorRegistry.ifArgs(` - username=${msgArgs}`, ...msgArgs)
+  )
+  .build();
 
   /**
    * Returns a given string only if there are arguments provided. Otherwise an empty string will be returned.

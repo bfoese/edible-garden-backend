@@ -52,6 +52,6 @@ export class SecureAccountActionStrategy extends PassportStrategy(Strategy, 'sec
     // instead of reading it here again from the queryParams: thats duplicated
     // logic
     const jwtToken = request.query?.token + '';
-    return this.authenticationService.verifyActivateAccountToken(jwtToken, payload);
+    return this.authenticationService.verifySecureAccountActionToken(jwtToken, payload);
   }
 }

@@ -24,13 +24,6 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request): any => {
           const refreshCookie = AuthenticationService.getJwtRefreshCookie(request);
-          console.log(
-            'refreshCookie',
-            refreshCookie,
-            request.signedCookies,
-            'cookies from header',
-            request.headers.cookie
-          );
           return refreshCookie;
         },
       ]),

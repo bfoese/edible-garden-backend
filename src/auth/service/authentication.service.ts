@@ -7,7 +7,7 @@ import { User } from '@eg-domain/user/user';
 import { UserFindOptions } from '@eg-domain/user/user-find-options';
 import { UserValidation } from '@eg-domain/user/user-validation';
 import { HashingService } from '@eg-hashing/hashing.service';
-import { AccountRegistrationDuplicateAddressJobContext } from '@eg-mail/contracts/account-registration-duplicate-address.jobcontext';
+import { AccountRegistrationDuplicateAddressJobContext as AccountSignupDuplicateAddressJobContext } from '@eg-mail/contracts/account-registration-duplicate-address.jobcontext';
 import { AccountRegistrationUserDeletedEmailJobContext } from '@eg-mail/contracts/account-registration-user-deleted-email.jobcontext';
 import { MailService } from '@eg-mail/mail.service';
 import { LimitTokensPerUserOptions } from '@eg-refresh-token-cache/limit-tokens-per-user.options';
@@ -32,25 +32,20 @@ export class AuthenticationService {
     private readonly refreshTokenCacheService: RefreshTokenCacheService,
     private readonly jwtTokenFactoryService: JwtTokenFactoryService,
     private readonly mailService: MailService,
-    private readonly accountActionEmailService: AccountActionEmailService,
+    private readonly accountActionEmailService: AccountActionEmailService
+  ) {}
 
-  ) {
-
-
-
-  }
-
-  
   /**
    * @param username -
    * @param email -
    * @param password -
    */
-  public async register(username: string, email: string, password: string): Promise<User> {
+  public async signup(username: string, email: string, password: string, preferredLocale?: string): Promise<User> {
     const user = new User();
     user.username = username;
     user.email = email;
     user.password = password;
+    user.preferredLocale = preferredLocale;
 
     validateOrReject(user, { groups: [UserValidation.groups.userRegistration] } as ValidatorOptions);
 
@@ -71,21 +66,21 @@ export class AuthenticationService {
     }
 
     if (alreadyRegisteredUser) {
-      // user already registered with that email and is not deleted
-      // don't override the already registered user object with the new data
-      // send an account reminder email to user
-      // in case the account is not activated yet, create a new activation token and include it in the email
-      const isAccountActivated = alreadyRegisteredUser.isAccountActivated();
+      // user already registered with that email and is not deleted don't
+      // override the already registered user object with the new data send a
+      // reminder email to user in case the email is not yet verified, create a
+      // new verification token and include it in the email
+      const isEmailVerified = alreadyRegisteredUser.isEmailVerified;
 
-      const emailContext: AccountRegistrationDuplicateAddressJobContext = {
+      const emailContext: AccountSignupDuplicateAddressJobContext = {
         usernameForSecondRegistration: user.username,
         recipientEmail: alreadyRegisteredUser.email,
         recipientName: alreadyRegisteredUser.username,
-        showAccountActivationLink: !isAccountActivated,
+        showVerifyEmailLink: !isEmailVerified,
       };
 
-      if (!isAccountActivated) {
-        const accountActionPurpose: AccountActionPurpose = 'ActivateAccount';
+      if (!isEmailVerified) {
+        const accountActionPurpose: AccountActionPurpose = 'VerifyEmailSignup';
         const accountActivationToken: string = this.jwtTokenFactoryService.generateAccountActionToken({
           sub: alreadyRegisteredUser?.username ?? user.username,
           purpose: accountActionPurpose,
@@ -108,7 +103,7 @@ export class AuthenticationService {
         } as User;
         this.userService.save(updateRegisteredUserData);
       }
-      this.mailService.sendAccountRegistrationDuplicateAddress(emailContext);
+      this.mailService.sendAccountSignupDuplicateAddress(emailContext);
       throw new HttpException(
         ApplicationErrorRegistry.ActionDeniedConsultEmailAccount.getMessage(),
         HttpStatus.BAD_REQUEST
@@ -118,53 +113,52 @@ export class AuthenticationService {
       // create an inactive account for the user and send an activation email
       const hashedPassword: string = await this.hashingService.createSaltedPepperedHash(user.password);
       user.password = hashedPassword; // override the plain text password with hashed one
-      user.entityInfo.isActive = false; // do not activate account yet
+      user.entityInfo.isActive = true; // this flag is used to block accounts
+      user.isEmailVerified = false; // prevents the user from signin until email is verified
 
       const createdUser = await this.userService.create(user);
-      this.accountActionEmailService.sendAccountActionEmail('ActivateAccount', createdUser.email);
+      this.accountActionEmailService.sendAccountActionEmail('VerifyEmailSignup', createdUser.email);
       return createdUser;
     }
   }
 
   /**
-   * Will check the validty of the provided token by checking if we have this token stored in the database for the user.
-   * We don't need to perform expiration checks over here as this is done by passport-jwt strategy. Its more of a business rule check.
+   * Will check the validty of the provided token by checking if we have this
+   * token stored in the database for the user. We don't need to perform
+   * expiration checks over here as this is done by passport-jwt strategy. Its
+   * more of a business rule check.
    * @param jwtToken - JWT for account action confirmation
    * @param payload - already decoded payload from that token
    */
-  public async verifyActivateAccountToken(
+  public async verifySecureAccountActionToken (
     jwtToken: string,
     payload: JwtAccountActionTokenPayload
   ): Promise<User | null> {
-    if (jwtToken && payload?.purpose === 'ActivateAccount') {
+    if (jwtToken) {
       const user = await this.userService.findByUsernameOrEmail(payload.sub, {
         withHiddenFields: { accountActionToken: true },
       } as UserFindOptions);
+
 
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
-      if (user.entityInfo.deleted) {
-        throw new HttpException(
-          ApplicationErrorRegistry.ActionDeniedUserSoftDeleted.getMessage(user.username),
-          HttpStatus.FORBIDDEN
-        );
+      const purpose = payload?.purpose;
+
+      if (purpose === 'VerifiyEmailUpdate' || purpose === 'VerifyEmailSignup') {
+        if (user.isEmailVerified) {
+          // could happen if user clicks the link multiple times. Maybe
+          // better to return the user instead of throwing exception. should be
+          // safe because we queried the user from the jwt sub field and
+          // passport-jwt validated the signature of the token
+          return user;
+        }
       }
 
-      if (user.isAccountActivated()) {
-        // could happen if user clicks the activation link multiple time. maybe
-        // better to return the user instead of throwing exception. should be
-        // safe because we queried the user from the jwt sub field and
-        // passport-jwt validated the signature of the token
-        return user;
-      }
-
-      // by design we store only one accountAtionToken. In the future there are
-      // other use cases beside activation where such a token is needed to be
-      // stored on the user. but the general idea is, that the user performs
-      // these actions sequentially and not in parallel and these action tokens
-      // can be considered one-time-tokens
+      // By design we store only one accountActionToken. The general idea is,
+      // that the user performs these actions sequentially and not in parallel
+      // and these action tokens can be considered to bee one-time-tokens
       const userAccountActionToken = user.accountActionToken;
       // the token in the database was hashed for security reasons
       const matchingToken = userAccountActionToken
@@ -178,8 +172,8 @@ export class AuthenticationService {
     return Promise.resolve(null);
   }
 
-  public activateAccount(user: User): Promise<User> {
-    return this.userService.activateAccount(user.username);
+  public verifyEmail(user: User): Promise<User> {
+    return this.userService.verifyEmail(user.username);
   }
 
   public deleteAccount(email: string): Promise<boolean> {
@@ -215,6 +209,13 @@ export class AuthenticationService {
           HttpStatus.UNAUTHORIZED
         );
       }
+
+      if (!user.isEmailVerified) {
+        throw new HttpException(
+          ApplicationErrorRegistry.ActionDeniedEmailVerificationRequired.getMessage(),
+          HttpStatus.UNAUTHORIZED
+        );
+      }
       return user;
     }
     throw new HttpException(
@@ -245,7 +246,7 @@ export class AuthenticationService {
     return Promise.resolve(this.jwtTokenFactoryService.generateAccessToken({ sub: user.username }));
   }
 
-  public async login(request: Request, user: User): Promise<string> {
+  public async signin(request: Request, user: User): Promise<string> {
     if (user) {
       const accessToken = this.generateAccessToken(user);
       await this.addRefreshTokenCookie(request, null, user);
@@ -263,18 +264,14 @@ export class AuthenticationService {
    * @param request -
    * @param user -
    */
-  public async logout(request: Request, user: User): Promise<boolean> {
+  public async signout(request: Request, user: User): Promise<boolean> {
     const previousRefreshToken = AuthenticationService.getJwtRefreshCookie(request);
     this.refreshTokenCacheService.removeOne(user?.username, previousRefreshToken);
     request.res.clearCookie(AuthenticationService.JwtRefreshCookieName);
     return Promise.resolve(true);
   }
 
-  private async addRefreshTokenCookie(
-    request: Request,
-    previousRefreshToken: string,
-    user: User
-  ): Promise<void> {
+  private async addRefreshTokenCookie(request: Request, previousRefreshToken: string, user: User): Promise<void> {
     const refreshToken = await this.generateNextRefreshToken(user, previousRefreshToken);
     request.res.cookie(AuthenticationService.JwtRefreshCookieName, refreshToken, {
       httpOnly: true,

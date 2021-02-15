@@ -1,4 +1,5 @@
 import appConfig from '@eg-app/config/app.config';
+import authConfig from '@eg-app/config/auth.config';
 import { AuthRouteConstants } from '@eg-auth/constants/auth-route-constants';
 import { Public } from '@eg-auth/decorators/public-endpoint.decorator';
 import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
@@ -28,9 +29,10 @@ import { UserDto } from '../../../core/facade/dto/user.dto';
 import { UserMapper } from '../../../core/facade/mapper/user.mapper';
 import { AuthenticationFacadeService } from '../facade/autentication-facade.service';
 import { JwtTokenDto } from '../facade/dto/jwt-token.dto';
-import { LoginUserDto } from '../facade/dto/login-user.dto';
-import { RegisterUserDto } from '../facade/dto/register-user.dto';
 import { SendAccountActionLinkDto } from '../facade/dto/send-account-action-link.dto';
+import { SigninResponseDto } from '../facade/dto/signin-response.dto';
+import { SigninUserDto } from '../facade/dto/signin-user.dto';
+import { SignupUserDto } from '../facade/dto/signup-user.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -39,7 +41,9 @@ export class AuthenticationController {
     private readonly authenticationFacadeService: AuthenticationFacadeService,
     private readonly userMapper: UserMapper,
     @Inject(appConfig.KEY)
-    private readonly _appConfig: ConfigType<typeof appConfig>
+    private readonly _appConfig: ConfigType<typeof appConfig>,
+    @Inject(authConfig.KEY)
+    private readonly _authConfig: ConfigType<typeof authConfig>
   ) {}
 
   /**
@@ -59,39 +63,40 @@ export class AuthenticationController {
    * @param dto - user data
    */
   @Public()
-  @Post('register')
-  public register(@Body() dto: RegisterUserDto): Promise<boolean> {
-    return this.authenticationFacadeService.register(dto);
+  @Post('signup')
+  public signup(@Body() dto: SignupUserDto): Promise<boolean> {
+    return this.authenticationFacadeService.signup(dto);
   }
 
-  /**
-   * This is a GET even though there will be a change performed. This request
-   * will show up within an Email. Using a POST with a form and submit button in
-   * the Email might cause a popup to show up or even worse a popup being
-   * blocked. For more inexperienced users the link with the GET request is
-   * better.
-   * @param request -
-   * @param _token - JWT from the Email to allow account activation
-   */
   @Public()
   @UseGuards(SecureAccountActionGuard)
-  @Get(AuthRouteConstants.Path_ActivateAccount)
+  @Get(AuthRouteConstants.Path_VerifyEmail)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async activateAccount(
+  public async verifyEmail(
     @Req() request: RequestWithUser,
     @Query(AuthRouteConstants.QueryParam_Token) _token: string,
     @Res() response: Response
   ): Promise<any> {
     const user = await request.user;
-    // in case of token validation errors, the user will be user=false
-    const activatedUser = user ? await this.authenticationFacadeService.activateAccount(user) : null;
 
-    if (activatedUser) {
+    if (!user) {
       response
         .status(302)
-        .redirect(`${this._appConfig.authFrontendUrl()}/de_AT/auth/signin?accountActivationSuccess=true`);
+        .redirect(
+          this.buildFrontendUri(
+            this._authConfig.frontendFeedbackPathInvalidTokenVerifyEmail(this.getFrontendLocale(user))
+          )
+        );
     } else {
-      response.status(302).redirect(`${this._appConfig.authFrontendUrl()}/de_AT/auth/signup?invalidActivationToken=true`);
+      const result = await this.authenticationFacadeService.verifyEmail(user);
+      const success = result?.isEmailVerified;
+      response
+        .status(302)
+        .redirect(
+          this.buildFrontendUri(
+            this._authConfig.frontendFeedbackPathEmailVerified(this.getFrontendLocale(user), success)
+          )
+        );
     }
   }
 
@@ -117,7 +122,11 @@ export class AuthenticationController {
     const accountDeleted = user ? await this.authenticationFacadeService.deleteAccount(user) : false;
     response
       .status(302)
-      .redirect(`${this._appConfig.authFrontendUrl()}/de_AT/auth/feedback?accountDeleted=${accountDeleted}`);
+      .redirect(
+        this.buildFrontendUri(
+          this._authConfig.frontendFeedbackPathAccountDeleted(this.getFrontendLocale(user), accountDeleted)
+        )
+      );
   }
 
   @Public()
@@ -135,19 +144,19 @@ export class AuthenticationController {
   @HttpCode(200)
   @Public()
   @UseGuards(LocalAuthenticationGuard)
-  @Post('login')
+  @Post('signin')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async login(@Req() request: RequestWithUser, @Body() _loginData: LoginUserDto): Promise<JwtTokenDto> {
+  public async signin(@Req() request: RequestWithUser, @Body() _signinData: SigninUserDto): Promise<SigninResponseDto> {
     const user = await request.user;
-    return this.authenticationFacadeService.login(request, user);
+    return this.authenticationFacadeService.signin(request, user);
   }
 
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
-  @Post('logout')
-  public async logout(@Req() req: RequestWithUser): Promise<boolean> {
+  @Post('signout')
+  public async signout(@Req() req: RequestWithUser): Promise<boolean> {
     const user = await req.user;
-    return this.authenticationFacadeService.logout(req, user);
+    return this.authenticationFacadeService.signout(req, user);
   }
 
   // TODO move to different controller
@@ -171,5 +180,13 @@ export class AuthenticationController {
       sameSite: true,
       expires: this.authenticationFacadeService.getJwtExpirationDate(refreshToken),
     });
+  }
+
+  private buildFrontendUri(path: string): string {
+    return `${this._appConfig.authFrontendUrl()}${path}`;
+  }
+
+  private getFrontendLocale(user: User): string {
+    return user?.preferredLocale ?? 'en';
   }
 }

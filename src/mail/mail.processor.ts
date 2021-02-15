@@ -1,6 +1,12 @@
 import { ApplicationConstants } from '@eg-app/application-constants';
 import { MailerService } from '@nestjs-modules/mailer';
-import { OnQueueActive, OnQueueCompleted, OnQueueFailed, Process, Processor } from '@nestjs/bull';
+import {
+  OnQueueActive,
+  OnQueueCompleted,
+  OnQueueFailed,
+  Process,
+  Processor,
+} from '@nestjs/bull';
 import { Job } from 'bull';
 
 import { AccountActionEmailJobContext } from './contracts/account-action-email.jobcontext';
@@ -63,12 +69,15 @@ export class MailProcessor {
     let subject;
 
     switch (purpose) {
-      case 'ActivateAccount':
-        subject = `Willkommen bei Krautland! Bitte aktiviere dein Benutzerkonto.`;
+      case 'VerifyEmailSignup':
+        subject = `Willkommen bei Krautland, bitte bestätige deine E-Mail Adresse.`;
         break;
       case 'DeleteAccount':
         subject = `Benutzerkonto löschen`;
         break;
+      case 'VerifiyEmailUpdate':
+        subject = `Änderung der E-Mail Adresse bestätigen`;
+      break;
       case 'ResetPassword':
         subject = `Passwort zurücksetzen`;
         break;

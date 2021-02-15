@@ -1,11 +1,10 @@
-import { EntityInfoDto } from '@eg-core/facade/dto/entity-info.dto';
 import { ApiProperty, ApiPropertyOptions } from '@nestjs/swagger';
 
 export class UserDto {
-  @ApiProperty({
-    type: EntityInfoDto,
+  @ApiProperty(<ApiPropertyOptions>{
+    type: 'string',
   })
-  public entityInfo: EntityInfoDto;
+  public id: string;
 
   @ApiProperty(<ApiPropertyOptions>{
     type: 'string',
@@ -16,4 +15,10 @@ export class UserDto {
     type: 'string',
   })
   public email: string;
+
+  @ApiProperty(<ApiPropertyOptions>{
+    type: 'string',
+    examples: ['de', 'de-AT'],
+  })
+  public preferredLocale: string;
 }

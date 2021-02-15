@@ -1,16 +1,15 @@
 import emailConfig from '@eg-app-config/email.config';
 import redisConfig from '@eg-app-config/redis.config';
 import { ApplicationConstants } from '@eg-app/application-constants';
-import { MailerModule } from '@nestjs-modules/mailer';
+import { MailerModule, MailerOptions } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
+import handlebarsHelpers from 'handlebars-helpers';
 
 import { MailProcessor } from './mail.processor';
 import { MailService } from './mail.service';
-
-import handlebarsHelpers = require('handlebars-helpers');
 
 @Module({
   imports: [
@@ -18,6 +17,10 @@ import handlebarsHelpers = require('handlebars-helpers');
       imports: [ConfigModule],
       inject: [emailConfig.KEY],
       useFactory: (_emailConfig: ConfigType<typeof emailConfig>) => ({
+
+        // transport: { host: 'mail.gandi.net', port: 465,
+        // secureConnection: true, // use SSL,
+        //        auth: { user: '', pass: '' } as SMTPTransport },
         transport: _emailConfig.transportUrl(),
         defaults: {
           from: _emailConfig.from(),
@@ -29,7 +32,7 @@ import handlebarsHelpers = require('handlebars-helpers');
             strict: true,
           },
         },
-      }),
+      } as MailerOptions),
     }),
     BullModule.registerQueueAsync({
       name: ApplicationConstants.QueueOutgoingEmail,

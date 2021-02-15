@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
+import bcrypt from 'bcrypt';
 
 import { HashingModuleOptions } from './hashing-module.options';
-
-import bcrypt = require('bcrypt');
 
 @Injectable()
 export class HashingService {

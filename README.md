@@ -135,7 +135,7 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-### PostgreSQL CLI
+## PostgreSQL
 
 Sometimes it's useful to check Postgres state via CLI.
 
@@ -159,7 +159,7 @@ Restart with clean local database:
 $ docker-compose down --volumes
 ```
 
-# Postgres Error Handling
+### Postgres Error Handling
 
 During development with TypeORM sync mode turned on, exceptions from postgres can arise. Here are some workarounds.
 
@@ -167,7 +167,7 @@ During development with TypeORM sync mode turned on, exceptions from postgres ca
     <li>Exceptions concerning enum types - enum types are stored in 'pg_catalog.pg_enum' and can be deleted with: 'drop type <enumType> cascade;'</li>
 </ul>
 
-# Table Name Conventions
+### Table Name Conventions
 
 Table and column names should be lowercase. With mixed-case or upper-case names you are required to reference table names with double quotes, e.g.
 
@@ -183,7 +183,7 @@ select * from public.foo_my_table
 ```
 Therefore there is a naming strategy defined and registered in TypeORM which will take care of the desired conventions.
 
-## DOTENV Files
+### DOTENV Files
 
 Priority of the files
 
@@ -200,7 +200,7 @@ Conventions for this project:
     <li>Properties which are not secret but rather used can go into the .env.{development|production} files. These files are not on gitignore list and therefore appear in the remote repository where they can be used to serve the CI/CD pipelines as a file import.</li>
 </ul>
 
-## Working with TypeORM
+## TypeORM
 
 <ul><li><strong>Update an entity</strong>It is not necessary to load the entity, map the new fields onto it and then save it. You can also just provide a Partial of the entity with the fields you really want to change plus the primary key of the object. TypeORM will then only change the fields contained in that Partial.</li>
 <li><strong>Loading an entity</strong>In this repo I use external schema files to have a clear separation between domain and persistence layer. The schema files point to classes from the domain, but TypeORM treats these classes as interfaces. When you load an entity from the database with TypeORM, you can cast it to your domain class but it is in fact no class instance. You will receive an object with the properties of that class. If you really want to return a class instance from the persistence layer, you can use a tool like class-transformer which transforms the plain object to the desired class. This is important to know when you have instance methods in your domain objects, which are not getters or setters. These will be undefined in the objects returned from TypeORM, unless you transform that object into a class.</li>
@@ -208,7 +208,7 @@ Conventions for this project:
 <li><strong>Auto-generated migration files</strong>It is possible to let TypeORM auto-generate migration files based on changes in entities or schema files which saves some work of writing them yourself.  However, I noticed that often unneccessary statements are contained (dropping default uuid generation and recreating it). Also statements for dropping sequences which do not exist are being generated. And some statements need manual correction. In summary, you have to check the generated migration files and often need to correct them. At least this is the case when using external schema files. At first I used schema annotations and I don't remember these problems from that time.</li>
 </ul>
 
-Limitations of TypeORM I ran into:
+### Limitations of TypeORM I ran into:
 <ul>
     <li>It is possible to completely separate domain model and persistence model by separating entity definitions into schema files as demonstrated in this repo. However, the external schema implementation lacks some features which are supported by TypeORM Entity decorators.
         <ul><li>The current version 0.2.29 does not support embedded entities in external schema. There is an open issue for that and a pull request with a fix was created, but no sign of progress on this topic: https://github.com/typeorm/typeorm/pull/6318</li>
@@ -218,10 +218,12 @@ Limitations of TypeORM I ran into:
 </ul>
 
 ## Heroku
+### CLI
 
 Infos about customizing Heroku builds for Node.JS: https://devcenter.heroku.com/articles/nodejs-support#heroku-specific-build-steps
 
 ```bash
+$ heroku login
 $ heroku releases
 $ heroku releases:output <release number>
 
@@ -243,6 +245,14 @@ $ heroku run bash --app <app-name>
 $ cd <app-name>
 $ dir
 ```
+
+### Heroku App Organisation
+
+<ul>
+<li>By default the Herku app domains are SSL secured. You can have your own domain for free, but if you want to use the own doamin with SSL, it seems to be 20 EUR per month and app. There is one proposal using Cloudflare in between, but Cloudflare with SSL is also 20 EUR per month</li>
+<li>How to deploy multiple apps (from one or multiple git repos) on the same Heroku instance: https://stackoverflow.com/questions/41461517/deploy-two-separate-heroku-apps-from-same-git-repo</li>
+<li>Reroute to other Heroku App: https://github.com/ryandotsmith/nginx-buildpack/issues/59</li>
+</ul>
 
 ## Self-signed Certificates for HTTPS under localhost
 
@@ -277,7 +287,34 @@ cat "$(mkcert -CAROOT)/rootCA.pem" >> localhost-fullchain.pem
 ```
 
 
-## Send Email via Gmail
+
+## Bulls Queue
+
+<ul>
+<li>Bulls ignores jobs whose jobID is the same as the jobID of a previously performed job, unless you use 'removeOnCompleted'. Using this option will purge the information about previously performed Jobs after completion so they can't be considered the next time you add a job.</li>
+</ul>
+
+## Data Security
+
+<ul>
+    <li>User passwords in database are hashed with pepper and salt.</li>
+    <li>Database must not contain sensitive personal data of the users (real name, email, address, phone, etc.) in plain text (in case the database is being leaked). Therefore this sensitive data is encrypted using AES with ECB mode. This must be considered when querying data: the query must contain the encrypted values.</li>
+    <li>Prevent leaking secrets in Docker history and image layer tarballs: https://www.alexandraulsh.com/2018/06/25/docker-npmrc-security/</li>
+</ul>
+
+
+### Reading
+<ul>
+<li>https://whuysentruit.medium.com/securing-your-single-page-application-anno-2019-754bc4c29119</li></ul>
+
+
+
+## Logging
+https://www.datadoghq.com/blog/node-logging-best-practices/
+
+## Email
+
+### Gmail
 To securely send Emails via a Gmail Account you have to create an App Password
 with access to the Google account email functionality. How to create such a
 password for the app is described here along with the SMTP host and port
@@ -296,16 +333,29 @@ avoid exploitation.
 Its a good idea to have a counter for the apps mail sending queue to not run
 into that limit by delaying mails above the limit for a few hours.
 
-## Bulls Queue
+### Gandi
+SMTP
+https://docs.gandi.net/en/simple_hosting/common_operations/smtp.html
+Nodemailer: https://nodemailer.com/smtp/
+
+
+## Lib Optimization
+
+Lib is currently a CommonJS Module. For Angular it is not optimal, as the
+bundlers an minifiers can not optimize these modules. It would be better to
+implement it as a ECMAScript module. In Angular you can suppress warnings about
+the CommonJS modules by explicitly allowing them in angular.json build options
+for browser builder: allowedCommonJsDependencies
+
+TODO Investigate how to transition the CommonJS lib to a ECMAScript lib. First
+try resulted in errors when starting NestJS.
+
+https://redfin.engineering/node-modules-at-war-why-commonjs-and-es-modules-cant-get-along-9617135eeca1
+https://medium.com/dev-genius/nodejs-using-es-modules-instead-of-commonjs-9c6e801e7508
+
+
+## NestJS
 
 <ul>
-<li>Bulls ignores jobs whose jobID is the same as the jobID of a previously performed job, unless you use 'removeOnCompleted'. Using this option will purge the information about previously performed Jobs after completion so they can't be considered the next time you add a job.</li>
+<li>https://dev.to/nestjs/advanced-nestjs-how-to-build-completely-dynamic-nestjs-modules-1370</li>
 </ul>
-
-## Data Security
-
-<ul>
-    <li>User passwords in database are hashed with pepper and salt.</li>
-    <li>Database must not contain sensitive personal data of the users (real name, email, address, phone, etc.) in plain text (in case the database is being leaked). Therefore this sensitive data is encrypted using AES with ECB mode. This must be considered when querying data: the query must contain the encrypted values.</li>
-</ul>
-

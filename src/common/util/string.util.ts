@@ -48,4 +48,23 @@ export class StringUtil {
 
     return aNormalized.indexOf(substringNormalized) != -1;
   }
+
+  /**
+   * Replaces placeholders within a string with the values from a placeholder map.
+   * 
+   * @param str - A string containing placeholders in curly braces. Placeholders
+   * can be named or numbered.
+   * @param args - An object containing the values for the placeholders of the
+   * message pattern. The object keys must be the names/numbers of the
+   * placeholders.
+   */
+  public static parseMessageFormat(messagePattern: string, args: { [key in string | number]: string; }): string {
+    if (messagePattern && args) {
+      for (const key in args) {
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        messagePattern = messagePattern.replace(new RegExp('\\{' + key + '\\}', 'gi'), args[key]);
+      }
+    }
+    return messagePattern;
+  }
 }

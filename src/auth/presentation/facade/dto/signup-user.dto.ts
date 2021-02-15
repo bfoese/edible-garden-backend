@@ -1,7 +1,7 @@
 import { UserValidation } from '@eg-domain/user/user-validation';
 import { ApiProperty, ApiPropertyOptions } from '@nestjs/swagger';
 
-export class RegisterUserDto {
+export class SignupUserDto {
   @ApiProperty(<ApiPropertyOptions>{
     required: true,
     type: 'string',
@@ -22,4 +22,10 @@ export class RegisterUserDto {
     pattern: UserValidation.constraints.password.pattern.toString(),
   })
   public password: string;
+
+  @ApiProperty(<ApiPropertyOptions>{
+    required: false,
+    type: 'string'
+  })
+  public preferredLocale: string;
 }

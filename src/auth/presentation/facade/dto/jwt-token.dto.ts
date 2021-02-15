@@ -4,5 +4,5 @@ export class JwtTokenDto {
   @ApiProperty(<ApiPropertyOptions>{
     type: 'string',
   })
-  public access_token: string;
+  public token: string;
 }

@@ -10,7 +10,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
 import { AuthenticationFacadeService } from './presentation/facade/autentication-facade.service';
-import { RegisterUserMapper } from './presentation/facade/mapper/register-user.mapper';
+import { JwtTokenDtoMapper } from './presentation/facade/mapper/jwt-token-dto.mapper';
+import { SigninResonseDtoMapper } from './presentation/facade/mapper/signin-response-dto.mapper';
+import { SignupUserDtoMapper } from './presentation/facade/mapper/signup-user-dto.mapper';
 import { AuthenticationController } from './presentation/rest-api/authentication.controller';
 import { AccountActionEmailService } from './service/account-action-email.service';
 import { AuthenticationService } from './service/authentication.service';
@@ -45,7 +47,9 @@ import { SecureAccountActionStrategy } from './strategies/secure-account-action.
     JwtStrategy,
     JwtRefreshStrategy,
     SecureAccountActionStrategy,
-    RegisterUserMapper,
+    JwtTokenDtoMapper,
+    SignupUserDtoMapper,
+    SigninResonseDtoMapper,
     AuthenticationFacadeService,
 
     JwtTokenFactoryService,

@@ -11,7 +11,7 @@ export class SendAccountActionLinkDto {
 
   @ApiProperty(<ApiPropertyOptions>{
     required: true,
-    enum: ['ActivateAccount', 'ResetPassword', 'DeleteAccount'],
+    enum: ['VerifyEmail', 'VerifiyEmailUpdate', 'ResetPassword', 'DeleteAccount'],
   })
   public purpose: AccountActionPurpose;
 }

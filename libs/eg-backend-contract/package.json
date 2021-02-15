@@ -1,6 +1,6 @@
 {
   "name": "@bfoese/eg-be-contract",
-  "version": "0.0.23",
+  "version": "0.0.25-snapshot",
   "description": "Edible Garden backend code to share with frontend - everything that can't be fetched with openapi generator.",
   "author": "Britt Foese <britt.foese@gmail.com>",
   "repository": {

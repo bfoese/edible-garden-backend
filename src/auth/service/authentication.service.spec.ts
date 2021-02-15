@@ -75,7 +75,7 @@ describe('AuthenticationService', () => {
       const spyPasswordHashing = jest.spyOn(hashingService, 'createSaltedPepperedHash');
       const spyUserServiceCreate = jest.spyOn(mockedUserService, 'create');
       const unregisteredUser = UserMockFactory.createInactive();
-      const registeredUser = await authenticationService.register(
+      const registeredUser = await authenticationService.signup(
         unregisteredUser.username,
         unregisteredUser.email,
         unregisteredUser.password
@@ -96,7 +96,7 @@ describe('AuthenticationService', () => {
       const spyUserSvcGetPassword = jest.spyOn(mockedUserService, 'getPasswordFromUser');
       const spyUserSvcFindByUserNameOrMail = jest.spyOn(mockedUserService, 'findByUsernameOrEmail');
 
-      const mockedUser = UserMockFactory.createActive();
+      const mockedUser = UserMockFactory.createSigninAllowed();
 
       const hashedPassword = await hashingService.createSaltedPepperedHash(mockedUser.password);
 
@@ -117,7 +117,7 @@ describe('AuthenticationService', () => {
     it('should throw exception for invalid password', async () => {
       const spyUserSvcGetPassword = jest.spyOn(mockedUserService, 'getPasswordFromUser');
       const spyUserSvcFindByUserNameOrMail = jest.spyOn(mockedUserService, 'findByUsernameOrEmail');
-      const mockedUser = UserMockFactory.createActive();
+      const mockedUser = UserMockFactory.createSigninAllowed();
 
       const hashedPassword = await hashingService.createSaltedPepperedHash(mockedUser.password);
 
@@ -163,6 +163,32 @@ describe('AuthenticationService', () => {
       expect((<HttpException>validationError).getStatus()).toBe(HttpStatus.UNAUTHORIZED);
       expect((<HttpException>validationError).getResponse()).toContain(
         ApplicationErrorRegistry.ActionDeniedAccountNotActivated.errorName
+      );
+    });
+
+    it('should throw exception if the users account requires email verification', async () => {
+      const spyUserSvcGetPassword = jest.spyOn(mockedUserService, 'getPasswordFromUser');
+      const spyUserSvcFindByUserNameOrMail = jest.spyOn(mockedUserService, 'findByUsernameOrEmail');
+      const mockedUser = UserMockFactory.createEmailNotVerified();
+
+      const hashedPassword = await hashingService.createSaltedPepperedHash(mockedUser.password);
+
+      spyUserSvcGetPassword.mockResolvedValue(hashedPassword);
+      spyUserSvcFindByUserNameOrMail.mockReturnValue(
+        Promise.resolve(plainToClass(User, { ...mockedUser, password: hashedPassword } as User))
+      );
+
+      let validationError;
+      try {
+        await authenticationService.validateLoginCredentials(mockedUser.username, mockedUser.password);
+      } catch (error) {
+        validationError = error;
+      }
+      expect(validationError).toBeDefined();
+      expect(validationError).toBeInstanceOf(HttpException);
+      expect((<HttpException>validationError).getStatus()).toBe(HttpStatus.UNAUTHORIZED);
+      expect((<HttpException>validationError).getResponse()).toContain(
+        ApplicationErrorRegistry.ActionDeniedEmailVerificationRequired.errorName
       );
     });
 

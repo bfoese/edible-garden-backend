@@ -1,9 +1,19 @@
 Servus {{ recipientName }},<br/>
 
 <!-- Email main content -->
-{{#compare  "ActivateAccount" "===" purpose}}
-<p>um deine Registrierung bei Krautland abzuschließen, aktiviere bitte dein Benutzerkonto durch Klick auf den nachfolgenden Link:</p>
-<a href="{{ accountActionUrl }}" target="_blank">Benutzerkonto aktivieren</a>
+{{#compare  "VerifyEmail" "===" purpose}}
+<p>du möchtest dein Krautland Benutzerkonto mit dieser E-Mail Adresse verknüpfen? Bitte bestätige die Änderung durch Aufruf des nachfolgenden Links:</p>
+<a href="{{ accountActionUrl }}" target="_blank">E-Mail Adresse bestätigen</a>
+{{/compare }}
+
+{{#compare  "VerifyEmailSignup" "===" purpose}}
+<p>um deine Registrierung bei Krautland abzuschließen, bestätige bitte deine E-Mail Adresse durch Aufruf des nachfolgenden Links:</p>
+<a href="{{ accountActionUrl }}" target="_blank">E-Mail Adresse bestätigen</a>
+{{/compare }}
+
+{{#compare  "VerifiyEmailUpdate" "===" purpose}}
+<p>du möchtest dein Krautland Benutzerkonto mit dieser E-Mail Adresse verknüpfen? Bitte bestätige die Änderung durch Aufruf des nachfolgenden Links:</p>
+<a href="{{ accountActionUrl }}" target="_blank">E-Mail Adresse bestätigen</a>
 {{/compare }}
 
 {{#compare  "ResetPassword" "===" purpose}}
@@ -25,8 +35,16 @@ Servus {{ recipientName }},<br/>
 
 <!-- Closing words-->
 
-{{#compare  "ActivateAccount" "===" purpose}}
+{{#compare  "VerifiyEmail" "===" purpose}}
+<p>Danke,<br/> dein Krautland Team</p>
+{{/compare }}
+
+{{#compare  "VerifyEmailSignup" "===" purpose}}
 <p>Viel Spaß im Krautland!</p>
+{{/compare }}
+
+{{#compare  "VerifiyEmailUpdate" "===" purpose}}
+<p>Danke,<br/> dein Krautland Team</p>
 {{/compare }}
 
 {{#compare  "ResetPassword" "===" purpose}}

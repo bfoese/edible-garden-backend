@@ -1,1 +1,1 @@
-export type AccountActionPurpose = 'ActivateAccount' | 'ResetPassword' | 'DeleteAccount';
+export type AccountActionPurpose = 'VerifyEmail' | 'VerifyEmailSignup' | 'VerifiyEmailUpdate' | 'ResetPassword' | 'DeleteAccount';

@@ -20,7 +20,7 @@ export class MailService {
     private readonly _emailConfig: ConfigType<typeof emailConfig>
   ) {}
 
-  public async sendAccountRegistrationDuplicateAddress(
+  public async sendAccountSignupDuplicateAddress(
     jobContext: AccountRegistrationDuplicateAddressJobContext
   ): Promise<boolean> {
     return this.enqueueEmail(RegisteredEmailId.AccountRegistrationDuplicateAddress, jobContext);

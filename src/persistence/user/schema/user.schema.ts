@@ -29,6 +29,7 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
       type: () => AddressSchema(),
       prefix: 'address',
+      transformer: new EncryptedValueTransformer(),
       select: false, // senstive personal data; only needed for few use cases
     } as EntitySchemaEmbeddedOptions,
 
@@ -37,6 +38,7 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
       type: () => PhoneNumberSchema(),
       prefix: 'phone',
+      transformer: new EncryptedValueTransformer(),
       select: false, // senstive personal data; only needed for few use cases
     } as EntitySchemaEmbeddedOptions,
   },
@@ -46,6 +48,12 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       nullable: false,
       transformer: new EncryptedValueTransformer(),
       select: false, // senstive personal data; only needed for few use cases
+    } as EntitySchemaColumnOptions,
+
+    isEmailVerified: {
+      type: 'boolean',
+      nullable: false,
+      default: false
     } as EntitySchemaColumnOptions,
 
     username: {

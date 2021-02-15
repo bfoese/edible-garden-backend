@@ -70,6 +70,23 @@ export class UserService {
     });
   }
 
+  /**
+   * Switches the isEmailVerified flag of the user to 'true' to indicate, that
+   * the email address was successfully verified.
+   *
+   * @param usernameOrEmail - username or email adress
+   */
+  public async verifyEmail(usernameOrEmail: string): Promise<User> | never {
+    const user = await this.findByUsernameOrEmail(usernameOrEmail);
+    if (!user) {
+      return null;
+    }
+    const newData = { entityInfo: { id: user.entityInfo.id }, isEmailVerified: true } as User
+    return this.userRepository.save(newData).then((result: User) => {
+      return this.unexposePassword(result);
+    });
+  }
+
   public async deleteAccountPermanently(email: string): Promise<boolean> | never {
     if (!email) {
       return false;

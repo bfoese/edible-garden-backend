@@ -2,7 +2,14 @@ import { Address } from '@eg-domain/shared/adress';
 import { EntityInfo } from '@eg-domain/shared/entity-info';
 import { PhoneNumber } from '@eg-domain/shared/phone-number';
 import { Type } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, Length, Matches } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 
 import { UserValidation } from './user-validation';
 
@@ -19,6 +26,16 @@ export class User {
     groups: [UserValidation.groups.userRegistration],
   })
   public email: string;
+
+  /**
+   * Whether the email address was verified to be valid. Until this flag is
+   * 'false' the user should not be able to sign in to the application. When the
+   * user provides a new email address, either during sign up or later to change
+   * the existing email address, this flag will be set to 'false' again until
+   * the verification process of that new address was handled.
+   */
+  @IsBoolean()
+  public isEmailVerified: boolean;
 
   @Length(UserValidation.constraints.username.minLength, UserValidation.constraints.username.maxLength)
   @IsNotEmpty({
@@ -61,6 +78,6 @@ export class User {
   }
 
   public isLoginAllowed(): boolean {
-    return this.entityInfo && !this.entityInfo.deleted && this.isAccountActivated();
+    return this.isEmailVerified && this.entityInfo && !this.isAccountMarkedForDeletion() && this.isAccountActivated();
   }
 }

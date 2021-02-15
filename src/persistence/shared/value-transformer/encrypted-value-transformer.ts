@@ -8,7 +8,7 @@ export class EncryptedValueTransformer implements ValueTransformer {
 
   public constructor() {
     // TODO This is super ugly right now, but the injected service is not
-    // resolved at runtime also: the process.env variable is not resolved at the
+    // resolved at runtime; also: the process.env variable is not resolved at the
     // point of instantiation of this class. CryptoService has an ungly
     // workaround for that.
     this.cryptoService = new CryptoService({ secretKey: process.env.BFEG_PERSONAL_DATA_ENCRYPTION_KEY });

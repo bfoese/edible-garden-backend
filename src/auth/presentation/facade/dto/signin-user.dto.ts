@@ -1,7 +1,7 @@
 import { UserValidation } from '@eg-domain/user/user-validation';
 import { ApiProperty, ApiPropertyOptions } from '@nestjs/swagger';
 
-export class LoginUserDto {
+export class SigninUserDto {
   @ApiProperty(<ApiPropertyOptions>{
     description: 'Provide the unique username or email',
     required: true,

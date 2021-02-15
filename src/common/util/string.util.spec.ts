@@ -51,4 +51,28 @@ describe('StringUtil', () => {
         expect(StringUtil.contains(null, null, true)).toBe(false);
       });
   });
+
+  describe('parseMessageFormat', () => {
+    it('should handle emtpy string gracefully', async () => {
+      expect(StringUtil.parseMessageFormat(null, { ordinal: '2nd', name: 'Artem' })).toBe(null);
+      expect(StringUtil.parseMessageFormat(undefined, { ordinal: '2nd', name: 'Artem' })).toBe(undefined);
+      expect(StringUtil.parseMessageFormat('', { ordinal: '2nd', name: 'Artem' })).toBe('');
+    }),
+      it('should work with string placeholders', async () => {
+        expect(
+          StringUtil.parseMessageFormat(
+            'Hello {name}, how was your {ordinal} day of freedom? See you tomorrow, {name}.',
+            { ordinal: '2nd', name: 'Artem' }
+          )
+        ).toBe('Hello Artem, how was your 2nd day of freedom? See you tomorrow, Artem.');
+      }),
+      it('should work with number placeholders', async () => {
+        expect(
+          StringUtil.parseMessageFormat('Cats have {0} legs, dogs have {0} legs, humans have {1} legs.', {
+            0: '4',
+            1: '2',
+          })
+        ).toBe('Cats have 4 legs, dogs have 4 legs, humans have 2 legs.');
+      });
+  });
 });
