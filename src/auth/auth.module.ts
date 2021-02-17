@@ -9,7 +9,7 @@ import { ConfigModule, ConfigType } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
-import { AuthenticationFacadeService } from './presentation/facade/autentication-facade.service';
+import { AuthenticationFacadeService } from './presentation/facade/authentication-facade.service';
 import { JwtTokenDtoMapper } from './presentation/facade/mapper/jwt-token-dto.mapper';
 import { SigninResonseDtoMapper } from './presentation/facade/mapper/signin-response-dto.mapper';
 import { SignupUserDtoMapper } from './presentation/facade/mapper/signup-user-dto.mapper';

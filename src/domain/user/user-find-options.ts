@@ -1,9 +1,8 @@
 export interface UserFindOptions {
 
   withHiddenFields?: {
+    email?: boolean;
     password?: boolean;
     accountActionToken?: boolean;
-    address?: boolean;
-    phoneNumber?: boolean;
   };
 }

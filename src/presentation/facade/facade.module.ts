@@ -11,6 +11,8 @@ import { GrowingManualFacadeService } from './growing-manual/growing-manual-faca
 import { GrowingManualMapper } from './growing-manual/mapper/growing-manual.mapper';
 import { MixedCultureMapper } from './mixed-culture/mapper/mixed-culture.mapper';
 import { MixedCultureFacadeService } from './mixed-culture/mixed-culture-facade.service';
+import { SeedSharingAccountMapper } from './seed-sharing-account/mapper/seed-sharing-account.mapper';
+import { SeedSharingAccountFacadeService } from './seed-sharing-account/seed-sharing-account-facade.service';
 import { AddressMapper } from './seed-sharing-offer/mapper/address.mapper';
 import { PhoneNumberMapper } from './seed-sharing-offer/mapper/phone-number.mapper';
 import { SeedSharingOfferCreationMapper } from './seed-sharing-offer/mapper/seed-sharing-offer-creation.mapper';
@@ -34,12 +36,15 @@ import { SeedSharingOfferFacadeService } from './seed-sharing-offer/seed-sharing
     SeedSharingOfferCreationMapper,
     AddressMapper,
     PhoneNumberMapper,
+    SeedSharingAccountFacadeService,
+    SeedSharingAccountMapper,
   ],
   exports: [
     BotanicalNodeFacadeService,
     GrowingManualFacadeService,
     MixedCultureFacadeService,
     SeedSharingOfferFacadeService,
+    SeedSharingAccountFacadeService
   ],
 })
 export class FacadeModule {}

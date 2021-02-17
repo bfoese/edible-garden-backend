@@ -6,7 +6,6 @@ import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
 import { JwtRefreshGuard } from '@eg-auth/guards/jwt-refresh.guard';
 import { LocalAuthenticationGuard } from '@eg-auth/guards/local-authentication.guard';
 import { SecureAccountActionGuard } from '@eg-auth/guards/secure-account-action.guard';
-import { AuthenticationService } from '@eg-auth/service/authentication.service';
 import { RequestWithUser } from '@eg-auth/strategies/request-with-user';
 import { User } from '@eg-domain/user/user';
 import {
@@ -25,10 +24,8 @@ import { ConfigType } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-import { UserDto } from '../../../core/facade/dto/user.dto';
 import { UserMapper } from '../../../core/facade/mapper/user.mapper';
-import { AuthenticationFacadeService } from '../facade/autentication-facade.service';
-import { JwtTokenDto } from '../facade/dto/jwt-token.dto';
+import { AuthenticationFacadeService } from '../facade/authentication-facade.service';
 import { SendAccountActionLinkDto } from '../facade/dto/send-account-action-link.dto';
 import { SigninResponseDto } from '../facade/dto/signin-response.dto';
 import { SigninUserDto } from '../facade/dto/signin-user.dto';
@@ -132,13 +129,9 @@ export class AuthenticationController {
   @Public()
   @UseGuards(JwtRefreshGuard)
   @Get('refresh')
-  public async refresh(@Req() request: RequestWithUser): Promise<JwtTokenDto> {
+  public async refresh(@Req() request: RequestWithUser): Promise<SigninResponseDto> {
     const user = await request.user;
-    const previousRefreshToken = AuthenticationService.getJwtRefreshCookie(request);
-
-    const accessToken = this.authenticationFacadeService.generateAccessToken(user);
-    await this.addRefreshTokenCookie(request, previousRefreshToken, user);
-    return accessToken;
+    return this.authenticationFacadeService.refresh(request, user);
   }
 
   @HttpCode(200)
@@ -159,28 +152,6 @@ export class AuthenticationController {
     return this.authenticationFacadeService.signout(req, user);
   }
 
-  // TODO move to different controller
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  public async getProfile(@Req() req: RequestWithUser): Promise<UserDto> {
-    const user = await req.user;
-    return this.userMapper.toDto(user);
-  }
-
-  private async addRefreshTokenCookie(
-    request: RequestWithUser,
-    previousRefreshToken: string,
-    user: User
-  ): Promise<void> {
-    const refreshToken = await this.authenticationFacadeService.generateNextRefreshToken(user, previousRefreshToken);
-    request.res.cookie(AuthenticationService.JwtRefreshCookieName, refreshToken, {
-      httpOnly: true,
-      signed: true,
-      secure: true,
-      sameSite: true,
-      expires: this.authenticationFacadeService.getJwtExpirationDate(refreshToken),
-    });
-  }
 
   private buildFrontendUri(path: string): string {
     return `${this._appConfig.authFrontendUrl()}${path}`;

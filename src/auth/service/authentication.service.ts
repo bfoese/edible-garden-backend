@@ -224,7 +224,7 @@ export class AuthenticationService {
     );
   }
 
-  public async generateNextRefreshToken(user: User, previousRefreshToken: string): Promise<string> {
+  private async generateNextRefreshToken(user: User, previousRefreshToken: string): Promise<string> {
     const refreshToken = this.jwtTokenFactoryService.generateRefreshToken({ sub: user.username });
     if (previousRefreshToken) {
       // invalidate the old token by removing it
@@ -242,8 +242,18 @@ export class AuthenticationService {
    * @param user - validated user
    * @returns JwtToken for the user
    */
-  public generateAccessToken(user: User): Promise<string> {
+  private generateAccessToken(user: User): Promise<string> {
     return Promise.resolve(this.jwtTokenFactoryService.generateAccessToken({ sub: user.username }));
+  }
+
+  public async refresh(request: Request, user: User): Promise<string> {
+    if (user) {
+      const previousRefreshToken = AuthenticationService.getJwtRefreshCookie(request);
+      const accessToken = this.generateAccessToken(user);
+      await this.addRefreshTokenCookie(request, previousRefreshToken, user);
+      return accessToken;
+    }
+    return null;
   }
 
   public async signin(request: Request, user: User): Promise<string> {

@@ -8,7 +8,10 @@ import { PhoneNumberDto } from '../dto/phone-number.dto';
 @Injectable()
 export class PhoneNumberMapper
   implements DtoMapper<PhoneNumberDto, PhoneNumber>, OntoEntityMapper<PhoneNumberDto, PhoneNumberDto> {
-  public toDto(entity: PhoneNumber): PhoneNumberDto {
+  public toDto(entity: PhoneNumber): PhoneNumberDto | undefined {
+    if (!entity) {
+      return undefined;
+    }
     const dto = new PhoneNumberDto();
     dto.phoneNo = entity.phoneNo ?? undefined;
     dto.countryCode = entity.countryCode ?? undefined;

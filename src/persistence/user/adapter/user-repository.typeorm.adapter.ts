@@ -21,13 +21,9 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
   public async findByEmail(email: string, opts?: CommonFindOptions): Promise<User> {
     const user: User = this.encryptFieldsBeforeQueryQuery({ ...{ email: email } } as User);
 
-    let qb = this.userRepository
-      .createQueryBuilder('user')
-      .addSelect('user.email')
-      .where('user.email=:email')
-      .setParameters({
-        email: user.email,
-      });
+    let qb = this.userRepository.createQueryBuilder('user').where('user.email=:email').setParameters({
+      email: user.email,
+    });
 
     if (opts?.withDeleted) {
       qb = qb.withDeleted();
@@ -42,7 +38,6 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
     } as User);
     const qb = this.userRepository
       .createQueryBuilder('user')
-      .addSelect('user.email')
       .where('user.username=:username')
       .orWhere('user.email=:email')
       .setParameters({
@@ -50,20 +45,16 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
         email: user.email,
       });
 
+    if (opts?.withHiddenFields?.email) {
+      qb.addSelect('user.email');
+    }
+
     if (opts?.withHiddenFields?.password) {
       qb.addSelect('user.password');
     }
 
     if (opts?.withHiddenFields?.accountActionToken) {
       qb.addSelect('user.accountActionToken');
-    }
-
-    if (opts?.withHiddenFields?.address) {
-      qb.addSelect('user.address');
-    }
-
-    if (opts?.withHiddenFields?.phoneNumber) {
-      qb.addSelect('user.phoneNumber');
     }
 
     const result = qb.getOne().then(this.plainToClass);

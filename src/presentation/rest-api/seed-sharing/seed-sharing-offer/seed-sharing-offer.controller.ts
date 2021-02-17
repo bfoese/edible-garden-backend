@@ -4,8 +4,8 @@ import { SeedSharingOfferFacadeService } from '@eg-presentation-facade/seed-shar
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Seed Sharing Offer')
-@Controller('v1/seed-sharing-offer')
+@ApiTags('seed-sharing', 'Seed Sharing Offer')
+@Controller('v1/seed-sharing/offer')
 export class SeedSharingOfferController {
   public constructor(private readonly seedSharingOfferFacadeService: SeedSharingOfferFacadeService) {}
 

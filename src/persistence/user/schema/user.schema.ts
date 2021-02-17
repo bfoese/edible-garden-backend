@@ -30,7 +30,8 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       type: () => AddressSchema(),
       prefix: 'address',
       transformer: new EncryptedValueTransformer(),
-      select: false, // senstive personal data; only needed for few use cases
+      // select property does not work right now with schema embeddables
+      // select: false, // senstive personal data; only needed for few use cases
     } as EntitySchemaEmbeddedOptions,
 
     phoneNumber: {
@@ -39,7 +40,8 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       type: () => PhoneNumberSchema(),
       prefix: 'phone',
       transformer: new EncryptedValueTransformer(),
-      select: false, // senstive personal data; only needed for few use cases
+      // select property does not work right now with schema embeddables
+      //select: false, // senstive personal data; only needed for few use cases
     } as EntitySchemaEmbeddedOptions,
   },
   columns: {

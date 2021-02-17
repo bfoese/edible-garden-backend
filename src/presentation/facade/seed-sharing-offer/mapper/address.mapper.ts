@@ -7,7 +7,10 @@ import { AddressDto } from '../dto/address.dto';
 
 @Injectable()
 export class AddressMapper implements DtoMapper<AddressDto, Address>, OntoEntityMapper<AddressDto, Address> {
-  public toDto(entity: Address): AddressDto {
+  public toDto(entity: Address): AddressDto | undefined {
+    if (!entity) {
+      return undefined;
+    }
     const dto = new AddressDto();
     dto.line1 = entity.line1 ?? undefined;
     dto.city = entity.city ?? undefined;

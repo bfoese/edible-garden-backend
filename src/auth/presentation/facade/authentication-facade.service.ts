@@ -4,7 +4,6 @@ import { User } from '@eg-domain/user/user';
 import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
 
-import { JwtTokenDto } from './dto/jwt-token.dto';
 import { SendAccountActionLinkDto } from './dto/send-account-action-link.dto';
 import { SigninResponseDto } from './dto/signin-response.dto';
 import { SignupUserDto } from './dto/signup-user.dto';
@@ -37,17 +36,13 @@ export class AuthenticationFacadeService {
     return this.authenticationService.verifyEmail(user);
   }
 
-  public async generateAccessToken(user: User): Promise<JwtTokenDto> {
-    const token = await this.authenticationService.generateAccessToken(user);
-    return this.jwtTokenDtoMapper.toDto(token);
-  }
-
-  public async generateNextRefreshToken(user: User, previousRefreshToken: string): Promise<string> {
-    return this.authenticationService.generateNextRefreshToken(user, previousRefreshToken);
-  }
-
   public getJwtExpirationDate(token: string): Date | null {
     return this.authenticationService.getJwtExpirationDate(token);
+  }
+
+  public async refresh(request: Request, user: User): Promise<SigninResponseDto> {
+    const token = await this.authenticationService.refresh(request, user);
+    return this.signinResonseDtoMapper.toDto({ user: user, jsonWebToken: token });
   }
 
   public async signin(request: Request, user: User): Promise<SigninResponseDto> {
