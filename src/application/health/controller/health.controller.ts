@@ -1,3 +1,4 @@
+import { Public } from '@eg-auth/decorators/public-endpoint.decorator';
 import { Controller, Get } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import {
@@ -21,7 +22,7 @@ export class HealthController {
    *
    * TODO Extend with DNS check
    */
-
+  @Public()
   @ApiExcludeEndpoint()
   @Get()
   @HealthCheck()
@@ -41,6 +42,7 @@ export class HealthController {
    *     <li>Database is up, but connection refused (e.g. wrong connection settings provided): Request will fail.</li>
    * </ul>
    */
+  @Public()
   @ApiExcludeEndpoint()
   @Get('readiness')
   public checkReadiness(): Promise<HealthCheckResult> {
