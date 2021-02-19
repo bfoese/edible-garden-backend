@@ -34,7 +34,7 @@ export class HealthTasksService {
    */
   @Cron('0 */20 7-23 * * *')
   public async cardiacMassageDyno(): Promise<void> {
-    if (!this._healthConfig.cardiacMassageDynoEnabled) {
+    if (!this._healthConfig.cardiacMassageDynoEnabled()) {
       return;
     }
 
