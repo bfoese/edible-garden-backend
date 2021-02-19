@@ -21,7 +21,7 @@ export class UserService {
     return user;
   }
 
-  public async findByEmail(email: string, opts?: CommonFindOptions): Promise<User | undefined> {
+  public async findByEmail(email: string, opts?: CommonFindOptions & UserFindOptions): Promise<User | undefined> {
     const user = await this.userRepository.findByEmail(email, opts);
     return user;
   }

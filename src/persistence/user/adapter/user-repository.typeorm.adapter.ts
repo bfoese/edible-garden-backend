@@ -1,4 +1,4 @@
-import { DeleteResult } from '@bfoese/typeorm';
+import { DeleteResult, SelectQueryBuilder } from '@bfoese/typeorm';
 import { CryptoService } from '@eg-app/crypto/crypto.service';
 import { CommonFindOptions } from '@eg-domain/user/common-find-options';
 import { User } from '@eg-domain/user/user';
@@ -18,16 +18,18 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
 
   public constructor(private readonly userRepository: UserTypeOrmRepository, private cryptoService: CryptoService) {}
 
-  public async findByEmail(email: string, opts?: CommonFindOptions): Promise<User> {
+  public async findByEmail(email: string, opts?: CommonFindOptions & UserFindOptions): Promise<User> {
     const user: User = this.encryptFieldsBeforeQueryQuery({ ...{ email: email } } as User);
 
-    let qb = this.userRepository.createQueryBuilder('user').where('user.email=:email').setParameters({
+    const qb = this.userRepository.createQueryBuilder('user').where('user.email=:email').setParameters({
       email: user.email,
     });
 
     if (opts?.withDeleted) {
-      qb = qb.withDeleted();
+      qb.withDeleted();
     }
+    this.enhanceSelect(qb, opts);
+
     const result = await qb.getOne().then(this.plainToClass);
     return result;
   }
@@ -45,20 +47,26 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
         email: user.email,
       });
 
-    if (opts?.withHiddenFields?.email) {
-      qb.addSelect('user.email');
-    }
-
-    if (opts?.withHiddenFields?.password) {
-      qb.addSelect('user.password');
-    }
-
-    if (opts?.withHiddenFields?.accountActionToken) {
-      qb.addSelect('user.accountActionToken');
-    }
+    this.enhanceSelect(qb, opts);
 
     const result = qb.getOne().then(this.plainToClass);
     return result;
+  }
+
+  private enhanceSelect(qb: SelectQueryBuilder<User>, opts: UserFindOptions): void {
+    if (qb && opts) {
+      if (opts?.withHiddenFields?.email) {
+        qb.addSelect('user.email');
+      }
+
+      if (opts?.withHiddenFields?.password) {
+        qb.addSelect('user.password');
+      }
+
+      if (opts?.withHiddenFields?.accountActionToken) {
+        qb.addSelect('user.accountActionToken');
+      }
+    }
   }
 
   public create(user: User): Promise<User | UniqueConstraintViolation<User>> {

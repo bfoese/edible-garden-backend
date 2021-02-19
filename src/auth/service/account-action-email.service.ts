@@ -3,6 +3,7 @@ import { AccountActionPurpose } from '@eg-auth/constants/account-action-purpose'
 import { AuthRouteConstants } from '@eg-auth/constants/auth-route-constants';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
+import { UserFindOptions } from '@eg-domain/user/user-find-options';
 import { HashingService } from '@eg-hashing/hashing.service';
 import { AccountActionEmailJobContext } from '@eg-mail/contracts/account-action-email.jobcontext';
 import { MailService } from '@eg-mail/mail.service';
@@ -35,13 +36,11 @@ export class AccountActionEmailService {
     if (!email || !purpose) {
       throw new BadRequestException('Email address and purpose required');
     }
-    const user = await this.userService.findByEmail(email);
-    if (user) {
-      this.sendAccountActionEmailImpl(purpose, user);
+    const user = await this.userService.findByEmail(email, { withHiddenFields: { email: true } } as UserFindOptions);
+    if (!user) {
+      throw new BadRequestException('User not found');
     }
-  }
 
-  private async sendAccountActionEmailImpl(purpose: AccountActionPurpose, user: User): Promise<void> {
     const accountActionToken: string = this.jwtTokenFactoryService.generateAccountActionToken({
       sub: user.username,
       purpose: purpose,

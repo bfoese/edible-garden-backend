@@ -24,7 +24,6 @@ import { ConfigType } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-import { UserMapper } from '../../../core/facade/mapper/user.mapper';
 import { AuthenticationFacadeService } from '../facade/authentication-facade.service';
 import { SendAccountActionLinkDto } from '../facade/dto/send-account-action-link.dto';
 import { SigninResponseDto } from '../facade/dto/signin-response.dto';
@@ -36,7 +35,6 @@ import { SignupUserDto } from '../facade/dto/signup-user.dto';
 export class AuthenticationController {
   public constructor(
     private readonly authenticationFacadeService: AuthenticationFacadeService,
-    private readonly userMapper: UserMapper,
     @Inject(appConfig.KEY)
     private readonly _appConfig: ConfigType<typeof appConfig>,
     @Inject(authConfig.KEY)

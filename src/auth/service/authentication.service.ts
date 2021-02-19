@@ -49,7 +49,11 @@ export class AuthenticationService {
 
     validateOrReject(user, { groups: [UserValidation.groups.userRegistration] } as ValidatorOptions);
 
-    const alreadyRegisteredUser = await this.userService.findByEmail(email);
+    const alreadyRegisteredUser = await this.userService.findByEmail(email, {
+      withHiddenFields: {
+        email: true,
+      },
+    } as UserFindOptions);
     if (alreadyRegisteredUser && alreadyRegisteredUser.entityInfo.deleted) {
       // user is marked for deletion
       this.mailService.sendAccountRegistrationUserDeleted({
@@ -130,7 +134,7 @@ export class AuthenticationService {
    * @param jwtToken - JWT for account action confirmation
    * @param payload - already decoded payload from that token
    */
-  public async verifySecureAccountActionToken (
+  public async verifySecureAccountActionToken(
     jwtToken: string,
     payload: JwtAccountActionTokenPayload
   ): Promise<User | null> {
@@ -138,7 +142,6 @@ export class AuthenticationService {
       const user = await this.userService.findByUsernameOrEmail(payload.sub, {
         withHiddenFields: { accountActionToken: true },
       } as UserFindOptions);
-
 
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);

@@ -1,7 +1,7 @@
 import emailConfig from '@eg-app-config/email.config';
 import { ApplicationConstants } from '@eg-app/application-constants';
 import { InjectQueue } from '@nestjs/bull';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { Queue } from 'bull';
 
@@ -13,6 +13,8 @@ import { RegisteredEmailId } from './registered-email-id';
 
 @Injectable()
 export class MailService {
+  private readonly logger = new Logger(MailService.name);
+
   public constructor(
     @InjectQueue(ApplicationConstants.QueueOutgoingEmail)
     private mailQueue: Queue,
@@ -45,8 +47,7 @@ export class MailService {
       await this.mailQueue.add(emailId, jobContext);
       return true;
     } catch (error) {
-      console.error(`Error queueing emailId=${emailId} for user ${jobContext?.recipientName}`, error);
-      // this.logger.error(`Error queueing confirmation email to user ${user.email}`)
+      this.logger.error(`Error queueing emailId=${emailId} for user ${jobContext?.recipientName}`, error);
       return false;
     }
   }
