@@ -39,7 +39,7 @@ jobs:
       - name: Install Packages
         run: |
           echo "//npm.pkg.github.com/:_authToken=$NODE_AUTH_TOKEN" > ~/.npmrc
-          npm run install:patched
+          npm install
         env:
           NODE_AUTH_TOKEN: ${{secrets.GH_PKG_TOKEN}}
       - name: Lint, Test
