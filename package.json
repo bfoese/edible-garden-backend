@@ -22,6 +22,7 @@
         "build": "nest build",
         "heroku-prebuild": "node ./scripts/create-npmrc.js",
         "heroku-postbuild": "npm run install && npm run prebuild && npm run build && npm run heroku:migration",
+        "heroku-cleanup": "npm run postinstall",
         "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
         "start": "nest start",
         "start:dev": "cross-env NODE_ENV=development nest start --watch",
