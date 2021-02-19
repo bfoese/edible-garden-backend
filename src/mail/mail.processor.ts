@@ -7,6 +7,7 @@ import {
   Process,
   Processor,
 } from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 
 import { AccountActionEmailJobContext } from './contracts/account-action-email.jobcontext';
@@ -17,22 +18,25 @@ import { RegisteredEmailId } from './registered-email-id';
 
 @Processor(ApplicationConstants.QueueOutgoingEmail)
 export class MailProcessor {
+  private readonly logger = new Logger(MailProcessor.name);
+
   public constructor(private readonly mailerService: MailerService) {}
 
   @OnQueueActive()
   public onActive(job: Job): void {
-    console.log(`Processing job ${job.id} of type ${job.name}. Data: ${JSON.stringify(job.data)}`);
+    this.logger.log(`Processing job ${job.id} of type ${job.name}. Data: ${JSON.stringify(job.data)}`);
   }
 
   @OnQueueCompleted()
   public onComplete(job: Job, result: unknown): void {
-    console.log(`Completed job ${job.id} of type ${job.name}. Result: ${JSON.stringify(result)}`);
+    this.logger.log(`Completed job ${job.id} of type ${job.name}. Result: ${JSON.stringify(result)}`);
   }
 
   @OnQueueFailed()
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public onError(job: Job<any>, error: any): void {
-    console.log(`Failed job ${job.id} of type ${job.name}: ${error.message}`, error.stack);
+    // TODO re-schedule
+    this.logger.error(`Failed job ${job.id} of type ${job.name}: ${error.message}`, error.stack);
   }
 
   @Process(RegisteredEmailId.AccountRegistrationUserDeleted)
@@ -77,7 +81,7 @@ export class MailProcessor {
         break;
       case 'VerifiyEmailUpdate':
         subject = `Änderung der E-Mail Adresse bestätigen`;
-      break;
+        break;
       case 'ResetPassword':
         subject = `Passwort zurücksetzen`;
         break;
@@ -99,7 +103,7 @@ export class MailProcessor {
         to: job.data.recipientEmail,
       })
       .catch((error) => {
-        console.error(`Failed to send emailId=${emailId} to '${job.data.recipientName}'`, error.stack);
+        this.logger.error(`Failed to send emailId=${emailId} to '${job.data.recipientName}'`, error.stack);
         throw error;
       });
   }

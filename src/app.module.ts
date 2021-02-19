@@ -3,12 +3,14 @@ import authConfig from '@eg-app-config/auth.config';
 import dbConfig from '@eg-app-config/db.config';
 import emailConfig from '@eg-app-config/email.config';
 import redisConfig from '@eg-app-config/redis.config';
+import healthConfig from '@eg-app/config/health.config';
 import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
 import { EdibleGardenRestApiModule } from '@eg-rest-api/edible-garden/edible-garden-rest-api.module';
 import { SeedSharingRestApiModule } from '@eg-rest-api/seed-sharing/seed-sharing-rest-api.module';
 import { CacheModule, CacheModuleAsyncOptions, Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import * as redisStore from 'cache-manager-redis-store';
 
 import { HealthModule } from './application/health/health.module';
@@ -25,7 +27,7 @@ import { MailModule } from './mail/mail.module';
     DatabaseModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, redisConfig, emailConfig, authConfig, dbConfig],
+      load: [appConfig, redisConfig, emailConfig, authConfig, dbConfig, healthConfig],
     }),
     DomainModule,
     EdibleGardenRestApiModule,
@@ -43,6 +45,7 @@ import { MailModule } from './mail/mail.module';
         } as CacheModuleAsyncOptions;
       },
     }),
+    ScheduleModule.forRoot()
   ],
   providers: [
     {

@@ -308,10 +308,6 @@ cat "$(mkcert -CAROOT)/rootCA.pem" >> localhost-fullchain.pem
 <li>https://whuysentruit.medium.com/securing-your-single-page-application-anno-2019-754bc4c29119</li></ul>
 
 
-
-## Logging
-https://www.datadoghq.com/blog/node-logging-best-practices/
-
 ## Email
 
 ### Gmail
@@ -359,3 +355,13 @@ https://medium.com/dev-genius/nodejs-using-es-modules-instead-of-commonjs-9c6e80
 <ul>
 <li>https://dev.to/nestjs/advanced-nestjs-how-to-build-completely-dynamic-nestjs-modules-1370</li>
 </ul>
+
+### Logging
+https://www.datadoghq.com/blog/node-logging-best-practices/
+
+### Cron Jobs
+
+Cron Jobs which reside in a service will run automagically when the service is
+listed in the provider list of a module (does not even need to be exportet) and
+this module is being imported into the main module. No need to inject the cron
+job service somewhere explicitly.

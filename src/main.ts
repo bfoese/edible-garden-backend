@@ -1,3 +1,4 @@
+import { LoggerService } from '@eg-app/logger/logger.service';
 import {
   INestApplication,
   NestApplicationOptions,
@@ -16,13 +17,13 @@ import dotenvExpand = require('dotenv-expand');
 import RateLimit = require('express-rate-limit');
 import fs = require('fs');
 import cookieParser = require('cookie-parser');
-
 async function bootstrap(): Promise<void> {
   initEnvironmenVariables();
 
   const httpsOptions = getHttpsOptions();
   const app: INestApplication = await NestFactory.create(AppModule, {
     httpsOptions,
+    logger: new LoggerService()
   } as NestApplicationOptions);
 
   app.use(cookieParser(process.env.BFEG_COOKIE_SIGNATURE_SECRET)); // needed for JWT refresh token
