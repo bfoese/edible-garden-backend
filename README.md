@@ -228,6 +228,11 @@ $ heroku releases
 $ heroku releases:output <release number>
 
 ```
+See environment variable names with their values
+```bash
+$ heroku config --app <app-name>
+
+```
 
 Reset Database
 ```bash

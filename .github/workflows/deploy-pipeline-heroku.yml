@@ -73,5 +73,4 @@ jobs:
           HD_BFEG_EMAIL_FROM: ${{secrets.EMAIL_FROM}}
           HD_BFEG_PERSONAL_DATA_ENCRYPTION_KEY: ${{secrets.PERSONAL_DATA_ENCRYPTION_KEY}}
           HD_BFEG_AUTH_FRONTEND_URL: ${{secrets.AUTH_FRONTEND_URL}}
-          HD_BFEG_AUTH_COOKIE_DOMAIN: ${{secrets.AUTH_COOKIE_DOMAIN}}
           HD_SERVER_URL: ${{secrets.SERVER_URL}}

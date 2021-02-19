@@ -68,7 +68,6 @@ jobs:
           delay: 5
           # Only variables prefixed with 'HD_' will be recognized by the action. The prefix will automatically be cropped from the name by the action.
         env:
-          HD_DB_URL: ${{secrets.HEROKU_DB_URL}}
           HD_DB_SCHEMA: ${{secrets.HEROKU_DB_SCHEMA}}
           HD_BFEG_CORS_ORIGINS: ${{secrets.CORS_ORIGINS}}
           HD_NPM_TOKEN: ${{secrets.NPM_TOKEN}}
@@ -79,10 +78,8 @@ jobs:
           HD_BFEG_JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET}}
           HD_BFEG_JWT_ACCOUNT_ACTION_SECRET: ${{secrets.JWT_ACCOUNT_ACTION_SECRET}}
           HD_BFEG_COOKIE_SIGNATURE_SECRET: ${{secrets.COOKIE_SIGNATURE_SECRET}}
-          HD_BFEG_REDIS_URL: ${{secrets.REDIS_URL}}
           HD_BFEG_EMAIL_TRANSPORT_URL: ${{secrets.EMAIL_TRANSPORT_URL}}
           HD_BFEG_EMAIL_FROM: ${{secrets.EMAIL_FROM}}
           HD_BFEG_PERSONAL_DATA_ENCRYPTION_KEY: ${{secrets.PERSONAL_DATA_ENCRYPTION_KEY}}
           HD_BFEG_AUTH_FRONTEND_URL: ${{secrets.AUTH_FRONTEND_URL}}
-          HD_BFEG_AUTH_COOKIE_DOMAIN: ${{secrets.AUTH_COOKIE_DOMAIN}}
           HD_SERVER_URL: ${{secrets.SERVER_URL}}

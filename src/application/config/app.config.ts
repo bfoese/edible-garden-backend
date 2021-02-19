@@ -17,6 +17,5 @@ export default registerAs('app', () => ({
 
   isProduction: (): boolean => process.env.NODE_ENV === 'production',
   serverUrl: (): string => process.env.SERVER_URL,
-  authCookieDomain: (): string => process.env.BFEG_AUTH_COOKIE_DOMAIN,
   authFrontendUrl: (): string => process.env.BFEG_AUTH_FRONTEND_URL,
 }));
