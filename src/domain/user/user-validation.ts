@@ -11,5 +11,6 @@ export class UserValidation {
 
   public static readonly groups = {
     userRegistration: 'user-registration',
+    updateAccountSettings: 'update-account-settings',
   };
 }

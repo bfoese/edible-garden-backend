@@ -3,14 +3,18 @@ import { EntityInfo } from '@eg-domain/shared/entity-info';
 import { PhoneNumber } from '@eg-domain/shared/phone-number';
 import { Type } from 'class-transformer';
 import {
+  Allow,
   IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsString,
   Length,
   Matches,
+  Validate,
+  ValidateNested,
 } from 'class-validator';
 
+import { IsLocaleEnabled } from '../../application/validation/validators/is-locale-enabled.validator';
 import { UserValidation } from './user-validation';
 
 export class User {
@@ -18,6 +22,7 @@ export class User {
     this.entityInfo = new EntityInfo();
   }
 
+  @Allow()
   @Type(() => EntityInfo)
   public entityInfo: EntityInfo;
 
@@ -50,9 +55,11 @@ export class User {
   @Matches(UserValidation.constraints.password.pattern, { message: 'password too weak' })
   public password: string;
 
+  @ValidateNested({ each: true })
   @Type(() => Address)
   public address: Address;
 
+  @ValidateNested({ each: true })
   @Type(() => PhoneNumber)
   public phoneNumber: PhoneNumber;
 
@@ -66,7 +73,10 @@ export class User {
   @IsString()
   public accountActionToken: string;
 
-  @IsString()
+  @IsNotEmpty({ groups: [UserValidation.groups.userRegistration, UserValidation.groups.updateAccountSettings] })
+  @Validate(IsLocaleEnabled, {
+    groups: [UserValidation.groups.userRegistration, UserValidation.groups.updateAccountSettings],
+  })
   public preferredLocale: string;
 
   public isAccountActivated(): boolean {

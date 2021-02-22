@@ -8,6 +8,7 @@ import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.int
 import { HttpsOptions } from '@nestjs/common/interfaces/external/https-options.interface';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { useContainer } from 'class-validator';
 import * as path from 'path';
 
 import { AppModule } from './app.module';
@@ -17,14 +18,18 @@ import dotenvExpand = require('dotenv-expand');
 import RateLimit = require('express-rate-limit');
 import fs = require('fs');
 import cookieParser = require('cookie-parser');
+
 async function bootstrap(): Promise<void> {
   initEnvironmenVariables();
 
   const httpsOptions = getHttpsOptions();
   const app: INestApplication = await NestFactory.create(AppModule, {
     httpsOptions,
-    logger: new LoggerService()
+    logger: new LoggerService(),
   } as NestApplicationOptions);
+
+  // this is needed to be able to define class-validators with service dependencies
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   app.use(cookieParser(process.env.BFEG_COOKIE_SIGNATURE_SECRET)); // needed for JWT refresh token
 

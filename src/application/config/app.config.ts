@@ -18,4 +18,9 @@ export default registerAs('app', () => ({
   isProduction: (): boolean => process.env.NODE_ENV === 'production',
   serverUrl: (): string => process.env.SERVER_URL,
   authFrontendUrl: (): string => process.env.BFEG_AUTH_FRONTEND_URL,
+
+  enabledFrontendLocales: (): string[] => {
+    const envValue = process.env.BFEG_ENABLED_LOCALES;
+    return envValue.split(',');
+  },
 }));

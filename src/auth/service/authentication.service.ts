@@ -1,4 +1,5 @@
 import { ApplicationErrorRegistry } from '@eg-app/error/application-error-registry';
+import { ValidationException } from '@eg-app/exception/validation.exception';
 import { AccountActionPurpose } from '@eg-auth/constants/account-action-purpose';
 import { JwtAccountActionTokenPayload } from '@eg-auth/token-payload/jwt-account-action-token-payload.interface';
 import { JwtUtil } from '@eg-common/util/jwt.util';
@@ -15,7 +16,7 @@ import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ValidatorOptions } from '@nestjs/common/interfaces/external/validator-options.interface';
 import { JwtService } from '@nestjs/jwt';
-import { validateOrReject } from 'class-validator';
+import { validateOrReject, ValidationError } from 'class-validator';
 import { Request } from 'express';
 
 import { AccountActionEmailService } from './account-action-email.service';
@@ -40,14 +41,18 @@ export class AuthenticationService {
    * @param email -
    * @param password -
    */
-  public async signup(username: string, email: string, password: string, preferredLocale?: string): Promise<User> {
+  public async signup(username: string, email: string, password: string, preferredLocale: string): Promise<User> {
     const user = new User();
     user.username = username;
     user.email = email;
     user.password = password;
     user.preferredLocale = preferredLocale;
 
-    validateOrReject(user, { groups: [UserValidation.groups.userRegistration] } as ValidatorOptions);
+    await validateOrReject(user, {
+      groups: [UserValidation.groups.userRegistration],
+    } as ValidatorOptions).catch((errors: ValidationError[]) => {
+      throw new ValidationException(errors);
+    });
 
     const alreadyRegisteredUser = await this.userService.findByEmail(email, {
       withHiddenFields: {

@@ -370,3 +370,36 @@ Cron Jobs which reside in a service will run automagically when the service is
 listed in the provider list of a module (does not even need to be exportet) and
 this module is being imported into the main module. No need to inject the cron
 job service somewhere explicitly.
+
+### Validation via class-validator
+The validator is enabled globally and will validate DTOs which have been
+received by a request automagically. Precondition for validation is, that the
+DTO has validation annotations. The thrown error is a 400 BadRequest exception.
+The "message" field contains an array of messages corresponding to the invalid
+fields.
+
+The domain objects are also annotated with validation annotations, but they must
+be validated manually, by calling the validation functions, e.g.
+```bash
+const newData = {...} as User;
+await validateOrReject(plainToClass(User, newData)).catch((error) => throw new ValidationException(error))
+```
+Notice that the object must be transformed to a class, otherwise no validation
+is being transformed.
+
+While automatic validation on DTO objects from a request is nice, it requires to
+duplicate the Validators across all DTO objects. The DTO objects might overlap
+some fields and changing a validator rule would require to update all DTOs which
+are using a field. Personally, I prefer to thave the validation annotations in
+one place: the domain object. Class-Validator allows you to define groups, which
+provides fine granulated control of when a field should be validated and when
+not. With having theses groups, it should be managable to have the validator
+annotations only in the domain layer. Disadvantage of this solution is, that the
+validation call must be done explicitly as described above.
+So workflow would be:
+<ol><li>Receive data to persist as DTO in Request</li>
+<li>Map DTO onto an domain class instance</li>
+<li>perform validation on domain class instance</li></ol>
+
+Global DTO validation is still turned on and could be used for some edge cases.
+

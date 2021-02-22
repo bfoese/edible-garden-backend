@@ -24,7 +24,7 @@ describe('AddressMapper', () => {
         countryCode: 'UT',
         line1: 'Road to imagination 100',
         postalCode: '54321',
-      });
+      } as Address);
 
       const dto = addressMapper.toDto(addressEntity);
       const dtoKeys = Object.keys(new AddressDto());
@@ -40,7 +40,7 @@ describe('AddressMapper', () => {
         countryCode: 'UT',
         line1: 'Road to imagination 100',
         postalCode: '54321',
-      });
+      } as AddressDto);
 
       const entity = addressMapper.ontoEntity(addressDto, null);
       const entityKeys = Object.keys(new Address());
@@ -51,7 +51,7 @@ describe('AddressMapper', () => {
     it('should override only provided fields', () => {
       const addressDto = plainToClass(AddressDto, {
         city: 'Utopia',
-      });
+      } as AddressDto);
 
       const entity = addressMapper.ontoEntity(
         addressDto,

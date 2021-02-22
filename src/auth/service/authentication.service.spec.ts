@@ -1,23 +1,27 @@
 import appConfig from '@eg-app-config/app.config';
 import { ApplicationErrorRegistry } from '@eg-app/error/application-error-registry';
-import mockedAccountActionEmailService from '@eg-auth/test/mocks/account-action-email.service.mock';
-import mockedJwtTokenFactoryService from '@eg-auth/test/mocks/jwt-token-factory.service.mock';
-import mockedMailService from '@eg-auth/test/mocks/mail.service.mock';
-import { UserMockFactory } from '@eg-auth/test/mocks/user-mock.factory';
+import { ValidationException } from '@eg-app/exception/validation.exception';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
 import { HashingService } from '@eg-hashing/hashing.service';
 import { MailService } from '@eg-mail/mail.service';
 import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
+import mockedAccountActionEmailService from '@eg-test-mocks/auth/account-action-email.service.mock';
+import mockedJwtTokenFactoryService from '@eg-test-mocks/auth/jwt-token-factory.service.mock';
+import { UserMockFactory } from '@eg-test-mocks/domain/user-mock.factory';
+import mockedMailService from '@eg-test-mocks/service/mail.service.mock';
+import mockedUserService from '@eg-test-mocks/service/user.service.mock';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { JwtModuleOptions, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { plainToClass } from 'class-transformer';
+import * as classValidator from 'class-validator';
 
-import mockedUserService from '../test/mocks/user.service.mock';
 import { AccountActionEmailService } from './account-action-email.service';
 import { AuthenticationService } from './authentication.service';
 import { JwtTokenFactoryService } from './jwt-token-factory.service';
+
+//mport * as classValidator from 'class-validator';
 
 describe('AuthenticationService', () => {
   let authenticationService: AuthenticationService;
@@ -71,14 +75,46 @@ describe('AuthenticationService', () => {
   });
 
   describe('when registering a new user', () => {
+    it('the provided input should be validated and an error should throw a BadRequestException on negative validation', async () => {
+      const spyUserServiceCreate = jest.spyOn(mockedUserService, 'create');
+      const spyValidateOrReject = jest.spyOn(classValidator, 'validateOrReject');
+      spyValidateOrReject.mockRejectedValue([
+        {
+          property: 'preferredLoale',
+          constraints: { isNotEmpty: 'Must not be empty' },
+          toString: () => '',
+          children: [],
+        } as classValidator.ValidationError,
+      ]);
+
+      const mockedUser = UserMockFactory.createSigninAllowed();
+
+      let validationError;
+      try {
+        await authenticationService.signup(mockedUser.username, mockedUser.email, mockedUser.password, 'en');
+      } catch (error) {
+        validationError = error;
+      }
+
+      expect(validationError).toBeDefined();
+      expect(validationError).toBeInstanceOf(ValidationException);
+      expect((<ValidationException>validationError).getStatus()).toBe(400);
+      expect((<ValidationException>validationError).message).toBe('preferredLoale: Must not be empty;');
+      expect(spyUserServiceCreate).toBeCalledTimes(0);
+    });
+
     it('the password should be hashed for the database and the returned user must not expose plain text or hashed password', async () => {
       const spyPasswordHashing = jest.spyOn(hashingService, 'createSaltedPepperedHash');
       const spyUserServiceCreate = jest.spyOn(mockedUserService, 'create');
+      const spyValidateOrReject = jest.spyOn(classValidator, 'validateOrReject');
+      spyValidateOrReject.mockResolvedValue(undefined);
+
       const unregisteredUser = UserMockFactory.createInactive();
       const registeredUser = await authenticationService.signup(
         unregisteredUser.username,
         unregisteredUser.email,
-        unregisteredUser.password
+        unregisteredUser.password,
+        'en'
       );
       expect(spyPasswordHashing).toBeCalledTimes(1);
 

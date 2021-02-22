@@ -24,7 +24,7 @@ export class SignupUserDto {
   public password: string;
 
   @ApiProperty(<ApiPropertyOptions>{
-    required: false,
+    required: true,
     type: 'string'
   })
   public preferredLocale: string;

@@ -12,6 +12,7 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
+      "@eg-test-mocks/*": ["src/test/mocks/*"],
       "@eg-app/*": ["src/application/*"],
       "@eg-mail/*": ["src/mail/*"],
       "@eg-refresh-token-cache/*": ["src/refresh-token-cache/*"],

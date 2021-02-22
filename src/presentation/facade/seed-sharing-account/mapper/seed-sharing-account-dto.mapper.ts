@@ -7,7 +7,7 @@ import { Injectable } from '@nestjs/common';
 import { SeedSharingAccountDto } from '../dto/seed-sharing-account.dto';
 
 @Injectable()
-export class SeedSharingAccountMapper implements DtoMapper<SeedSharingAccountDto, User> {
+export class SeedSharingAccountDtoMapper implements DtoMapper<SeedSharingAccountDto, User> {
   public constructor(private addressMapper: AddressMapper, private phoneNumberMapper: PhoneNumberMapper) {}
 
   public toDto(entity: User): SeedSharingAccountDto {

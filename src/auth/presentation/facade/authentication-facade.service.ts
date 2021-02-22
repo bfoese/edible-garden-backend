@@ -7,7 +7,6 @@ import { Request } from 'express';
 import { SendAccountActionLinkDto } from './dto/send-account-action-link.dto';
 import { SigninResponseDto } from './dto/signin-response.dto';
 import { SignupUserDto } from './dto/signup-user.dto';
-import { JwtTokenDtoMapper } from './mapper/jwt-token-dto.mapper';
 import { SigninResonseDtoMapper } from './mapper/signin-response-dto.mapper';
 
 @Injectable()
@@ -15,7 +14,6 @@ export class AuthenticationFacadeService {
   public constructor(
     private authenticationService: AuthenticationService,
     private accountActionEmailService: AccountActionEmailService,
-    private jwtTokenDtoMapper: JwtTokenDtoMapper,
     private signinResonseDtoMapper: SigninResonseDtoMapper
   ) {}
 
@@ -24,7 +22,7 @@ export class AuthenticationFacadeService {
   }
 
   public async signup(dto: SignupUserDto): Promise<boolean> {
-    const user = await this.authenticationService.signup(dto.username, dto.email, dto.password);
+    const user = await this.authenticationService.signup(dto.username, dto.email, dto.password, dto.preferredLocale);
     return Promise.resolve(user ? true : false);
   }
 

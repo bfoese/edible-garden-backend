@@ -1,3 +1,4 @@
+import { ValidationModule } from '@eg-app/validation/validation.module';
 import { CoreFacadeModule } from '@eg-core/facade/core-facade.module';
 import { DataAccessModule } from '@eg-data-access/data-access.module';
 import { Module } from '@nestjs/common';
@@ -11,7 +12,8 @@ import { GrowingManualFacadeService } from './growing-manual/growing-manual-faca
 import { GrowingManualMapper } from './growing-manual/mapper/growing-manual.mapper';
 import { MixedCultureMapper } from './mixed-culture/mapper/mixed-culture.mapper';
 import { MixedCultureFacadeService } from './mixed-culture/mixed-culture-facade.service';
-import { SeedSharingAccountMapper } from './seed-sharing-account/mapper/seed-sharing-account.mapper';
+import { PatchSeedSharingAccountDtoMapper } from './seed-sharing-account/mapper/patch-seed-sharing-account-dto.mapper';
+import { SeedSharingAccountDtoMapper } from './seed-sharing-account/mapper/seed-sharing-account-dto.mapper';
 import { SeedSharingAccountFacadeService } from './seed-sharing-account/seed-sharing-account-facade.service';
 import { AddressMapper } from './seed-sharing-offer/mapper/address.mapper';
 import { PhoneNumberMapper } from './seed-sharing-offer/mapper/phone-number.mapper';
@@ -20,7 +22,7 @@ import { SeedSharingOfferMapper } from './seed-sharing-offer/mapper/seed-sharing
 import { SeedSharingOfferFacadeService } from './seed-sharing-offer/seed-sharing-offer-facade.service';
 
 @Module({
-  imports: [DataAccessModule, CoreFacadeModule],
+  imports: [DataAccessModule, CoreFacadeModule, ValidationModule],
   providers: [
     BotanicalNodeFacadeService,
     GrowingManualFacadeService,
@@ -37,7 +39,8 @@ import { SeedSharingOfferFacadeService } from './seed-sharing-offer/seed-sharing
     AddressMapper,
     PhoneNumberMapper,
     SeedSharingAccountFacadeService,
-    SeedSharingAccountMapper,
+    SeedSharingAccountDtoMapper,
+    PatchSeedSharingAccountDtoMapper
   ],
   exports: [
     BotanicalNodeFacadeService,
