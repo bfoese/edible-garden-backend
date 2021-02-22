@@ -33,7 +33,8 @@ export class AuthenticationService {
     private readonly refreshTokenCacheService: RefreshTokenCacheService,
     private readonly jwtTokenFactoryService: JwtTokenFactoryService,
     private readonly mailService: MailService,
-    private readonly accountActionEmailService: AccountActionEmailService
+    private readonly accountActionEmailService: AccountActionEmailService,
+
   ) {}
 
   /**
@@ -86,6 +87,7 @@ export class AuthenticationService {
         recipientEmail: alreadyRegisteredUser.email,
         recipientName: alreadyRegisteredUser.username,
         showVerifyEmailLink: !isEmailVerified,
+        locale: preferredLocale
       };
 
       if (!isEmailVerified) {

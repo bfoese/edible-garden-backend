@@ -1,0 +1,11 @@
+Hello {{ recipientName }},<br/>
+<p>you just tried to sign up a new user account for the username <em>{{usernameForSecondRegistration}}</em> with this email address. However, we noticed that you already have an user account. This is the user data of your existing account:</p>
+<p>User name: {{recipientName}}<br/>Email: {{recipientEmail}}</p>
+<p>It is not possible to sign up multiple accounts with the same email address.</p>
+
+{{#if showAccountActivationLink}}
+<p>By the way, your email address is not verified yet. To finish the verification process, please open the following link:</p>
+<a href="{{ accountActivationUrl }}" target="_blank">Verify email address</a>
+{{/if}}
+
+<p>Happy gardening!</p>

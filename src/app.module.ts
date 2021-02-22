@@ -4,6 +4,7 @@ import dbConfig from '@eg-app-config/db.config';
 import emailConfig from '@eg-app-config/email.config';
 import redisConfig from '@eg-app-config/redis.config';
 import healthConfig from '@eg-app/config/health.config';
+import { EgI18nModule } from '@eg-app/i18n/eg-i18n.module';
 import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
 import { EdibleGardenRestApiModule } from '@eg-rest-api/edible-garden/edible-garden-rest-api.module';
 import { SeedSharingRestApiModule } from '@eg-rest-api/seed-sharing/seed-sharing-rest-api.module';
@@ -29,6 +30,7 @@ import { MailModule } from './mail/mail.module';
       isGlobal: true,
       load: [appConfig, redisConfig, emailConfig, authConfig, dbConfig, healthConfig],
     }),
+    EgI18nModule.forRoot(),
     DomainModule,
     EdibleGardenRestApiModule,
     SeedSharingRestApiModule,
@@ -45,7 +47,7 @@ import { MailModule } from './mail/mail.module';
         } as CacheModuleAsyncOptions;
       },
     }),
-    ScheduleModule.forRoot()
+    ScheduleModule.forRoot(),
   ],
   providers: [
     {

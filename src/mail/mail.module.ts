@@ -16,23 +16,23 @@ import { MailService } from './mail.service';
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [emailConfig.KEY],
-      useFactory: (_emailConfig: ConfigType<typeof emailConfig>) => ({
-
-        // transport: { host: 'mail.gandi.net', port: 465,
-        // secureConnection: true, // use SSL,
-        //        auth: { user: '', pass: '' } as SMTPTransport },
-        transport: _emailConfig.transportUrl(),
-        defaults: {
-          from: _emailConfig.from(),
-        },
-        template: {
-          dir: __dirname + '/templates',
-          adapter: new HandlebarsAdapter(handlebarsHelpers(['comparison'])),
-          options: {
-            strict: true,
+      useFactory: (_emailConfig: ConfigType<typeof emailConfig>) =>
+        ({
+          // transport: { host: 'mail.gandi.net', port: 465,
+          // secureConnection: true, // use SSL,
+          //        auth: { user: '', pass: '' } as SMTPTransport },
+          transport: _emailConfig.transportUrl(),
+          defaults: {
+            from: _emailConfig.from(),
           },
-        },
-      } as MailerOptions),
+          template: {
+            dir: __dirname + '/templates',
+            adapter: new HandlebarsAdapter(handlebarsHelpers(['comparison'])),
+            options: {
+              strict: true,
+            },
+          },
+        } as MailerOptions),
     }),
     BullModule.registerQueueAsync({
       name: ApplicationConstants.QueueOutgoingEmail,

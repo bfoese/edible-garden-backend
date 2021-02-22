@@ -1,0 +1,57 @@
+Hello {{ recipientName }},<br/>
+
+<!-- Email main content -->
+{{#compare  "VerifyEmail" "===" purpose}}
+<p>to verify your email address, please open the following link:</p>
+<a href="{{ accountActionUrl }}" target="_blank">Verify email address</a>
+{{/compare }}
+
+{{#compare  "VerifyEmailSignup" "===" purpose}}
+<p>to finish the signup process, please verify your email address by opening the following link:</p>
+<a href="{{ accountActionUrl }}" target="_blank">Verify email address</a>
+{{/compare }}
+
+{{#compare  "VerifiyEmailUpdate" "===" purpose}}
+<p>to verify your new email address, please open the following link:</p>
+<a href="{{ accountActionUrl }}" target="_blank">Verify email address</a>
+{{/compare }}
+
+{{#compare  "ResetPassword" "===" purpose}}
+<p>we've heard that you lost your Krautland password. Don't worry, you can open the following link to create a new password for your user account:</p>
+<a href="{{ accountActionUrl }}" target="_blank">Create new password</a>
+{{/compare }}
+
+{{#compare  "DeleteAccount" "===" purpose}}
+<p>wir haben gehört, dass du dein Krautland Benutzerkonto löschen möchtest. Schade. Du kannst den folgenden Link aufrufen, um dein Benutzerkonto endgültig zu löschen:</p>
+<a href="{{ accountActionUrl }}" target="_blank">Delete my account</a>
+{{/compare }}
+
+
+<!-- Link expiration time-->
+
+{{#if urlExpirationHours}}
+<p>This link expires after {{urlExpirationHours}} hours.</p>
+{{/if }}
+
+<!-- Closing words-->
+
+{{#compare  "VerifyEmail" "===" purpose}}
+<p>Thank you,<br/> your Krautland team</p>
+{{/compare }}
+
+{{#compare  "VerifyEmailSignup" "===" purpose}}
+<p>Enjoy your time with Krautland!</p>
+{{/compare }}
+
+{{#compare  "VerifiyEmailUpdate" "===" purpose}}
+<p>Thank you,<br/> your Krautland team</p>
+{{/compare }}
+
+{{#compare  "ResetPassword" "===" purpose}}
+<p>Thank you,<br/> your Krautland team</p>
+{{/compare }}
+
+{{#compare  "DeleteAccount" "===" purpose}}
+<p>Über Verbesserungsvorschläge oder Kritik würden wir uns sehr freuen. Du kannst uns jederzeit eine Nachricht über das Kontaktformular auf der Webseite zukommen lassen.</p>
+<p>Danke für die gemeinsame Zeit,<br/> dein Krautland Team</p>
+{{/compare }}

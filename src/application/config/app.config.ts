@@ -1,5 +1,5 @@
-import { Locale } from '@eg-core/i18n/locale.enum';
-import { LocaleMatcher } from '@eg-core/i18n/locale.matcher';
+import { Locale } from '@eg-app/i18n/locale.enum';
+import { LocaleMatcher } from '@eg-app/i18n/locale.matcher';
 import { registerAs } from '@nestjs/config';
 
 export default registerAs('app', () => ({
@@ -23,4 +23,5 @@ export default registerAs('app', () => ({
     const envValue = process.env.BFEG_ENABLED_LOCALES;
     return envValue.split(',');
   },
+  productName: (): string => 'Krautland',
 }));

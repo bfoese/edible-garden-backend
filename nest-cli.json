@@ -14,6 +14,9 @@
       }
     ],
     "deleteOutDir": true,
-    "assets": [{"include": "/mail/templates/**/*.hbs", "watchAssets": true, "outDir": "dist/src/"}]
+    "assets": [
+      { "include": "/mail/templates/**/*.hbs", "watchAssets": true, "outDir": "dist/src/" },
+      { "include": "/application/i18n/assets/**/*", "watchAssets": true, "outDir": "dist/src/" }
+    ]
   }
 }

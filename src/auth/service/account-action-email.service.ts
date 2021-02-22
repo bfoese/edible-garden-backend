@@ -53,7 +53,8 @@ export class AccountActionEmailService {
       recipientName: user.username,
       accountActionUrl: accountActivationUrl,
       purpose: purpose,
-      urlExpirationHours: 12, // TODO don't hardcode
+      urlExpirationHours: 12, // TODO don't hardcode,
+      locale: user.preferredLocale
     };
 
     // update activation token on user object
@@ -76,7 +77,7 @@ export class AccountActionEmailService {
       case 'DeleteAccount':
         return this.getAccountDeletionUrl(actionToken);
       default:
-        return undefined;
+        return `${purpose}`;
     }
   }
 

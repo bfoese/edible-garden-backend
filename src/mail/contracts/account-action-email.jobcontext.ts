@@ -6,4 +6,5 @@ export interface AccountActionEmailJobContext extends EmailRecipientJobContext {
   accountActionUrl: string;
   purpose: AccountActionPurpose;
   urlExpirationHours: number;
+  locale: string;
 }

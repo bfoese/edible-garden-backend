@@ -6,14 +6,11 @@ An extended [Nest](https://github.com/nestjs/nest) framework TypeScript starter 
 
 <ul>
 <li>NestJS</li>
-<li>Typescript</li>
 <li>Swagger</li>
-<li>TypeORM</li>
+<li>TypeORM with external schema definition</li>
 <li>Postgres</li>
-<li>Postgres Admin</li>
-<li>Docker multi-stage build</li>
-<li>Docker Compose for the app and its related services</li>
-<li>.ENV-FLOW for switching between multiple environments (e.g. development, production)</li>
+<li>Redis<li/>
+<li>Passport JWT<li/>
 </ul>
 
 ## Installation
@@ -339,6 +336,19 @@ SMTP
 https://docs.gandi.net/en/simple_hosting/common_operations/smtp.html
 Nodemailer: https://nodemailer.com/smtp/
 
+### Handlebars Templates
+
+#### i18n
+
+I was looking for possibilies to translate the emails. Considerations:
+
+The templates contain html tags and the amount of html and css tags will likely increase in the future to provide styled emails.
+It is not very handy to have the html tags inside the translations files, changing the html would be a nightmare.
+It is also not very handy to create translations for text within a html tag (e.g. <p>{{i18n content}}<br>{{i18n content2}}</p>), because this would be a nightmare for the translator to define the translations in a semantic way for each language.
+
+As a sidenote, I started to create a handlebar helper function that could be used to translate a key within a template by reusing the apps i18n service. But this helper would have been asynchron and according to this post https://stackoverflow.com/a/23939596/11964644 it is not possible to define an asnychronous handlebars helper function (the post is rather old, might have changed, but not high priority right now to further investigate).
+
+So best idea at this point is to duplicate the email templates for each language. This offers the benefit of customized templates per locale with the disadvantage of some overhead when template variables etc. need to be changed.
 
 ## Lib Optimization
 
@@ -378,8 +388,26 @@ DTO has validation annotations. The thrown error is a 400 BadRequest exception.
 The "message" field contains an array of messages corresponding to the invalid
 fields.
 
-The domain objects are also annotated with validation annotations, but they must
-be validated manually, by calling the validation functions, e.g.
+While automatic validation on DTO objects from a request is nice, it requires to
+duplicate the Validators across all DTO objects when you have multiple DTOs for
+different use cases concerning a domain object. For example, you might have a
+DTO for signup and one for password change. Both contain a password field which
+must be validated by the rules of the password field in the domain layer. You
+could copy the validation decorators from the domain object to both of the DTOs,
+but then you have three places which would require change when the password
+pattern changes. I prefer to thave the validation annotations in only one place:
+the domain object.
+
+Class-Validator allows you to define groups, which provides fine
+granulated control of when a field should be validated and when not. With having
+theses groups, it should be managable to have the validator annotations only in
+the domain layer. Disadvantage of this solution is, that the validation call
+must be done explicitly as described above. So workflow would be:
+<ol><li>Receive data as DTO in Request</li>
+<li>Map DTO onto a domain class instance</li>
+<li>perform validation on domain class instance</li></ol>
+
+The domain objects must be validated manually, by calling the validation functions, e.g.
 ```bash
 const newData = {...} as User;
 await validateOrReject(plainToClass(User, newData)).catch((error) => throw new ValidationException(error))
@@ -387,19 +415,23 @@ await validateOrReject(plainToClass(User, newData)).catch((error) => throw new V
 Notice that the object must be transformed to a class, otherwise no validation
 is being transformed.
 
-While automatic validation on DTO objects from a request is nice, it requires to
-duplicate the Validators across all DTO objects. The DTO objects might overlap
-some fields and changing a validator rule would require to update all DTOs which
-are using a field. Personally, I prefer to thave the validation annotations in
-one place: the domain object. Class-Validator allows you to define groups, which
-provides fine granulated control of when a field should be validated and when
-not. With having theses groups, it should be managable to have the validator
-annotations only in the domain layer. Disadvantage of this solution is, that the
-validation call must be done explicitly as described above.
-So workflow would be:
-<ol><li>Receive data to persist as DTO in Request</li>
-<li>Map DTO onto an domain class instance</li>
-<li>perform validation on domain class instance</li></ol>
-
 Global DTO validation is still turned on and could be used for some edge cases.
 
+### i18n
+
+Docs: https://github.com/ToonvanStrijp/nestjs-i18n
+
+We have a field user.preferredLocale. Requests for a registered user should
+favor this locale. If a request without associated user must be handled, a custom
+header sent by the frontend application could be the second preference.
+Localization by query param is also active, in case we need to generate links
+without user context. And last preference would be the accept language of the
+users browser agent.
+In the application code, the resolved locale can be accessed like this:
+
+```bash
+  @Get() sample(@I18nLang() lang: string) {}
+```
+
+Outside of a controller you need to considrate whether the code runs inside or outside the context of a request.
+Eg18nService has to methods which can be used for each of both cases.

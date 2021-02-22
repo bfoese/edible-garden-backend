@@ -1,5 +1,7 @@
 import { ApplicationConstants } from '@eg-app/application-constants';
-import { MailerService } from '@nestjs-modules/mailer';
+import appConfig from '@eg-app/config/app.config';
+import { EgI18nService } from '@eg-app/i18n/eg-i18n.service';
+import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import {
   OnQueueActive,
   OnQueueCompleted,
@@ -7,7 +9,8 @@ import {
   Process,
   Processor,
 } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { Job } from 'bull';
 
 import { AccountActionEmailJobContext } from './contracts/account-action-email.jobcontext';
@@ -20,7 +23,12 @@ import { RegisteredEmailId } from './registered-email-id';
 export class MailProcessor {
   private readonly logger = new Logger(MailProcessor.name);
 
-  public constructor(private readonly mailerService: MailerService) {}
+  public constructor(
+    private readonly mailerService: MailerService,
+    private readonly i18n: EgI18nService,
+    @Inject(appConfig.KEY)
+    private readonly _appConfig: ConfigType<typeof appConfig>
+  ) {}
 
   @OnQueueActive()
   public onActive(job: Job): void {
@@ -44,9 +52,11 @@ export class MailProcessor {
     job: Job<AccountRegistrationUserDeletedEmailJobContext>
   ): Promise<any> {
     const emailId = RegisteredEmailId.AccountRegistrationUserDeleted;
-    const template = 'account-registration-user-deleted';
-    const subject = `Deine Registrierung bei Krautland`;
-
+    const template = 'accountSignupUserDeleted';
+    const locale = job?.data?.locale;
+    const subject = await this.i18n.localize(locale, 'auth.email.subject.AccountSignupUserDeleted', {
+      productName: this._appConfig.productName(),
+    });
     this.sendMail(job, emailId, template, subject);
   }
 
@@ -55,9 +65,9 @@ export class MailProcessor {
     job: Job<AccountRegistrationDuplicateAddressJobContext>
   ): Promise<any> {
     const emailId = RegisteredEmailId.AccountRegistrationDuplicateAddress;
-    const template = 'account-registration-duplicate-address';
-    const subject = `Deine Registrierung`;
-
+    const template = 'accountSignupDuplicateAddress';
+    const locale = job?.data?.locale;
+    const subject = await this.i18n.localize(locale, 'auth.email.subject.AccountSignupDuplicateAddress');
     this.sendMail(job, emailId, template, subject);
   }
 
@@ -68,22 +78,24 @@ export class MailProcessor {
       return; // skip if purpose not defined
     }
     const emailId = RegisteredEmailId.AccountActionLink;
-    const template = 'account-action-link';
-
+    const locale = job?.data?.locale;
+    const template = 'accountActionLink';
     let subject;
 
     switch (purpose) {
       case 'VerifyEmailSignup':
-        subject = `Willkommen bei Krautland, bitte bestätige deine E-Mail Adresse.`;
+        subject = await this.i18n.localize(locale, 'auth.email.subject.VerifyEmailSignup', {
+          productName: this._appConfig.productName(),
+        });
         break;
       case 'DeleteAccount':
         subject = `Benutzerkonto löschen`;
         break;
       case 'VerifiyEmailUpdate':
-        subject = `Änderung der E-Mail Adresse bestätigen`;
+        subject = await this.i18n.localize(locale, 'auth.email.subject.VerifiyEmailUpdate');
         break;
       case 'ResetPassword':
-        subject = `Passwort zurücksetzen`;
+        subject = await this.i18n.localize(locale, 'auth.email.subject.ResetPassword');
         break;
     }
     this.sendMail(job, emailId, template, subject);
@@ -95,20 +107,25 @@ export class MailProcessor {
     template: string,
     subject: string
   ): Promise<any> {
+
+    template = `${template}--${job.data.locale}`;
     return this.mailerService
       .sendMail({
         template: template,
         subject: this.getStandardizedEmailSubject(subject),
         context: { ...job.data },
         to: job.data.recipientEmail,
-      })
+      } as ISendMailOptions)
       .catch((error) => {
-        this.logger.error(`Failed to send emailId=${emailId} to '${job.data.recipientName}'`, error.stack);
+        this.logger.error(
+          `Failed to send emailId=${emailId} to '${job.data.recipientName}' template=${template}`,
+          error.stack
+        );
         throw error;
       });
   }
 
   private getStandardizedEmailSubject(subject: string): string {
-    return `[Krautland] ${subject}`;
+    return `[${this._appConfig.productName()}] ${subject}`;
   }
 }
