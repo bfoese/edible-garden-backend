@@ -51,7 +51,7 @@
     },
     "dependencies": {
         "@bfoese/eg-be-contract": "^0.0.25-snapshot",
-        "@bfoese/typeorm": "^0.2.30-snapshot",
+        "@bfoese/typeorm": "^0.2.32-snapshot",
         "@nestjs-modules/mailer": "^1.5.1",
         "@nestjs/bull": "^0.3.1",
         "@nestjs/common": "^7.6.5",
