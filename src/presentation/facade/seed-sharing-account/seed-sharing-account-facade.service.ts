@@ -35,14 +35,13 @@ export class SeedSharingAccountFacadeService {
 
   public async patchSettings(user: User, dto: PatchSeedSharingAccountDto): Promise<SeedSharingAccountDto> {
     let newData = { entityInfo: { id: user.entityInfo.id } } as User;
+    newData = this.patchAccountDtoMapper.ontoEntity(dto, newData);
 
     await validateOrReject(plainToClass(User, newData), {
       groups: [UserValidation.groups.updateAccountSettings],
     } as ValidatorOptions).catch((errors: ValidationError[]) => {
       throw new ValidationException(errors);
     });
-
-    newData = this.patchAccountDtoMapper.ontoEntity(dto, newData);
     return this.userService.save(newData).then((entity: User) => this.accountDtoMapper.toDto(entity));
   }
 }

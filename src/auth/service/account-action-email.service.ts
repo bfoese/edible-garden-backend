@@ -87,7 +87,7 @@ export class AccountActionEmailService {
     }=${accountActionToken}`;
   }
   private getPasswordResetUrl(accountActionToken: string): string {
-    return `${this._appConfig.serverUrl()}/edible-garden/auth/reset-password?${
+    return `${this._appConfig.serverUrl()}/edible-garden/auth/change-password?${
       AuthRouteConstants.QueryParam_Token
     }=${accountActionToken}`;
   }
