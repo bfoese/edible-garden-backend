@@ -11,6 +11,7 @@ export class UserValidation {
 
   public static readonly groups = {
     userRegistration: 'user-registration',
+    userExtAuthProviderRegistration: 'user-ext-auth-provider-registration',
     updateAccountSettings: 'update-account-settings',
   };
 }

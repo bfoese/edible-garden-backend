@@ -2,6 +2,7 @@ import appConfig from '@eg-app/config/app.config';
 import authConfig from '@eg-app/config/auth.config';
 import { AuthRouteConstants } from '@eg-auth/constants/auth-route-constants';
 import { Public } from '@eg-auth/decorators/public-endpoint.decorator';
+import { GoogleAuthGuard } from '@eg-auth/guards/google-auth.guard';
 import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
 import { JwtRefreshGuard } from '@eg-auth/guards/jwt-refresh.guard';
 import { LocalAuthenticationGuard } from '@eg-auth/guards/local-authentication.guard';
@@ -150,9 +151,43 @@ export class AuthenticationController {
     return this.authenticationFacadeService.signout(req, user);
   }
 
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google')
+  public async signinWithGoogle(): Promise<void> {
+    // empty on purpose: passport google strategy will initiate the google authentication acknowledgement dialog
+  }
+
+  /**
+   * Injecting I18nLang here will just return the fallback language of
+   * i18nModule. Due to lack of ExecutionContext in the passport strategy, the
+   * frontend is required to make a separate call to propagate the preferred
+   * locale of the third party signin user.
+   *
+   * @param request -
+   * @param response -
+   */
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/redirect')
+  public async signinWithGoogleCallback(@Req() request: RequestWithUser, @Res() response: Response): Promise<any> {
+    const user = await request.user;
+    if (user) {
+      // This will ensure that the tokens are appended to the header, which would allow the client to make a refresh request.
+      // We can't return the SigninResponseDto from here, the client must perform another refresh request to receive the SigninResponseDto.
+      await this.authenticationFacadeService.signin(request, user);
+      // We don't have the correct locale at this point, but it doesn't matter.
+      // We only need to provide one of the valid frontend locales to generate a
+      // valid URL. This call will be intercepted in the frontend to close the
+      // Google consent window and return the focus to the previously opened
+      // application window which is displayed in the users preferred locale.
+      // TODO would be even better, if the client would provide the preferred redirect URL when calling /auth/google
+      response.redirect(this.buildFrontendUri(this._authConfig.frontendFeedbackPath3rdPartySignin(this.getFrontendLocale(user))));
+    }
+  }
 
   private buildFrontendUri(path: string): string {
-    return `${this._appConfig.authFrontendUrl()}${path}`;
+    return `${this._authConfig.authFrontendUrl()}${path}`;
   }
 
   private getFrontendLocale(user: User): string {

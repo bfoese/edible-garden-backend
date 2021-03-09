@@ -4,6 +4,7 @@ import { AccountActionPurpose } from '@eg-auth/constants/account-action-purpose'
 import { JwtAccountActionTokenPayload } from '@eg-auth/token-payload/jwt-account-action-token-payload.interface';
 import { JwtUtil } from '@eg-common/util/jwt.util';
 import { UserService } from '@eg-data-access/user/user.service';
+import { ExternalAuthProvider } from '@eg-domain/user/external-auth-provider.enum';
 import { User } from '@eg-domain/user/user';
 import { UserFindOptions } from '@eg-domain/user/user-find-options';
 import { UserValidation } from '@eg-domain/user/user-validation';
@@ -33,8 +34,7 @@ export class AuthenticationService {
     private readonly refreshTokenCacheService: RefreshTokenCacheService,
     private readonly jwtTokenFactoryService: JwtTokenFactoryService,
     private readonly mailService: MailService,
-    private readonly accountActionEmailService: AccountActionEmailService,
-
+    private readonly accountActionEmailService: AccountActionEmailService
   ) {}
 
   /**
@@ -87,15 +87,15 @@ export class AuthenticationService {
         recipientEmail: alreadyRegisteredUser.email,
         recipientName: alreadyRegisteredUser.username,
         showVerifyEmailLink: !isEmailVerified,
-        locale: preferredLocale
+        locale: preferredLocale,
       };
 
       if (!isEmailVerified) {
         const accountActionPurpose: AccountActionPurpose = 'VerifyEmailSignup';
-        const accountActivationToken: string = this.jwtTokenFactoryService.generateAccountActionToken({
-          sub: alreadyRegisteredUser?.username ?? user.username,
-          purpose: accountActionPurpose,
-        });
+        const accountActivationToken: string = this.jwtTokenFactoryService.generateAccountActionToken(
+          alreadyRegisteredUser ? alreadyRegisteredUser : user,
+          accountActionPurpose
+        );
         const encryptedAccountActivationToken: string = await this.hashingService.createSaltedHash(
           accountActivationToken
         );
@@ -133,6 +133,54 @@ export class AuthenticationService {
     }
   }
 
+  public async signupOrUpdateExtAuthProviderUser(
+    extAuthProvider: ExternalAuthProvider,
+    externalUserId: string,
+    email: string,
+    username: string,
+    preferredLocale: string
+  ): Promise<User | undefined> {
+    const user = await this.userService.findByExtAuthProviderId(extAuthProvider, externalUserId, {
+      withHiddenFields: {
+        email: true,
+      },
+    } as UserFindOptions);
+
+    if (user) {
+      // user data on provider side might have changed: update our user if necessary
+      const changedFields = {} as User;
+      if (user.email !== email) {
+        changedFields.email = email;
+      }
+      if (user.username !== username) {
+        changedFields.username = username;
+      }
+      if (user.preferredLocale !== preferredLocale) {
+        changedFields.preferredLocale = preferredLocale;
+      }
+      if (Object.keys(changedFields).length > 0) {
+        const newData = { entityInfo: { id: user.entityInfo.id }, ...changedFields } as User;
+        await this.userService.save(newData);
+      }
+      return user;
+    } else {
+      const user = new User();
+      user.email = email;
+      user.extAuthProvider = extAuthProvider;
+      user.extAuthProviderUserId = externalUserId;
+      user.username = username;
+      user.preferredLocale = preferredLocale;
+
+      // actually Goolge provides information if email is verified or not, but
+      // at this point I will ignore it and always consider email of external
+      // auth provider as being verified
+      user.isEmailVerified = true;
+
+      this.userService.create(user);
+    }
+    return user;
+  }
+
   /**
    * Will check the validty of the provided token by checking if we have this
    * token stored in the database for the user. We don't need to perform
@@ -146,7 +194,8 @@ export class AuthenticationService {
     payload: JwtAccountActionTokenPayload
   ): Promise<User | null> {
     if (jwtToken) {
-      const user = await this.userService.findByUsernameOrEmail(payload.sub, {
+      const userId = this.jwtTokenFactoryService.getUserIdFromPayload(payload);
+      const user = await this.userService.findById(userId, {
         withHiddenFields: { accountActionToken: true },
       } as UserFindOptions);
 
@@ -183,11 +232,11 @@ export class AuthenticationService {
   }
 
   public verifyEmail(user: User): Promise<User> {
-    return this.userService.verifyEmail(user.username);
+    return this.userService.verifyEmail(user.entityInfo.id);
   }
 
-  public deleteAccount(email: string): Promise<boolean> {
-    return this.userService.deleteAccountPermanently(email);
+  public deleteAccount(userId: string): Promise<boolean> {
+    return this.userService.deleteAccountPermanently(userId);
   }
 
   /**
@@ -235,12 +284,12 @@ export class AuthenticationService {
   }
 
   private async generateNextRefreshToken(user: User, previousRefreshToken: string): Promise<string> {
-    const refreshToken = this.jwtTokenFactoryService.generateRefreshToken({ sub: user.username });
+    const refreshToken = this.jwtTokenFactoryService.generateRefreshToken(user);
     if (previousRefreshToken) {
       // invalidate the old token by removing it
-      this.refreshTokenCacheService.removeOne(user.username, previousRefreshToken);
+      this.refreshTokenCacheService.removeOne(user.entityInfo.id, previousRefreshToken);
     }
-    this.refreshTokenCacheService.add(user.username, refreshToken, {
+    this.refreshTokenCacheService.add(user.entityInfo.id, refreshToken, {
       maxNoOfTokens: 5,
       maxNoOfTokensReducer: (prev: string, curr: string) => this.removeOldestJwtReducer(prev, curr),
     } as LimitTokensPerUserOptions);
@@ -253,7 +302,7 @@ export class AuthenticationService {
    * @returns JwtToken for the user
    */
   private generateAccessToken(user: User): Promise<string> {
-    return Promise.resolve(this.jwtTokenFactoryService.generateAccessToken({ sub: user.username }));
+    return Promise.resolve(this.jwtTokenFactoryService.generateAccessToken(user));
   }
 
   public async refresh(request: Request, user: User): Promise<string> {
@@ -286,7 +335,7 @@ export class AuthenticationService {
    */
   public async signout(request: Request, user: User): Promise<boolean> {
     const previousRefreshToken = AuthenticationService.getJwtRefreshCookie(request);
-    this.refreshTokenCacheService.removeOne(user?.username, previousRefreshToken);
+    this.refreshTokenCacheService.removeOne(user?.entityInfo?.id, previousRefreshToken);
     request.res.clearCookie(AuthenticationService.JwtRefreshCookieName);
     return Promise.resolve(true);
   }
@@ -312,7 +361,7 @@ export class AuthenticationService {
    * @param user -
    */
   public async logoutFromAllDevices(request: Request, user: User): Promise<boolean> {
-    this.refreshTokenCacheService.removeAll(user.username);
+    this.refreshTokenCacheService.removeAll(user.entityInfo.id);
     request.res.clearCookie(AuthenticationService.JwtRefreshCookieName);
     return Promise.resolve(true);
   }

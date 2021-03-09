@@ -1,5 +1,6 @@
 import authConfig from '@eg-app-config/auth.config';
 import { AuthenticationService } from '@eg-auth/service/authentication.service';
+import { JwtTokenFactoryService } from '@eg-auth/service/jwt-token-factory.service';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
 import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
@@ -17,7 +18,8 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
     @Inject(authConfig.KEY)
     private readonly _authConfig: ConfigType<typeof authConfig>,
     private readonly userService: UserService,
-    private readonly refreshTokenCacheService: RefreshTokenCacheService
+    private readonly refreshTokenCacheService: RefreshTokenCacheService,
+    private readonly jwtTokenFactoryService: JwtTokenFactoryService
   ) {
     super({
       // Refresh token was transferred via cookie
@@ -54,10 +56,13 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
     const refreshToken = AuthenticationService.getJwtRefreshCookie(request);
 
     if (refreshToken) {
-      const user = await this.userService.findByUsernameOrEmail(payload.sub);
-      const tokenBelongsToUser = await this.refreshTokenCacheService.contains(user.username, refreshToken);
-      if (tokenBelongsToUser) {
-        return user;
+      const userId = this.jwtTokenFactoryService.getUserIdFromPayload(payload);
+      const user = userId ? await this.userService.findById(userId) : undefined;
+      if (user) {
+        const tokenBelongsToUser = await this.refreshTokenCacheService.contains(user.entityInfo.id, refreshToken);
+        if (tokenBelongsToUser) {
+          return user;
+        }
       }
     }
     return null;

@@ -6,7 +6,7 @@ import { I18nResolver } from 'nestjs-i18n';
  * is made with a user context.
  *
  * It is possible to provide options from outside by using
- * @I18nResolverOptions() in the constructor. See docs of nestjs-i18n lib for
+ * \@I18nResolverOptions() in the constructor. See docs of nestjs-i18n lib for
  * more info if needed.
  */
 @Injectable()

@@ -41,10 +41,7 @@ export class AccountActionEmailService {
       throw new BadRequestException('User not found');
     }
 
-    const accountActionToken: string = this.jwtTokenFactoryService.generateAccountActionToken({
-      sub: user.username,
-      purpose: purpose,
-    });
+    const accountActionToken: string = this.jwtTokenFactoryService.generateAccountActionToken(user, purpose);
     const encryptedAccountActionToken: string = await this.hashingService.createSaltedHash(accountActionToken);
     const accountActivationUrl = this.getAccountActionUrl(purpose, accountActionToken);
 

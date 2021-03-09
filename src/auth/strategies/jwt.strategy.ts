@@ -1,4 +1,5 @@
 import authConfig from '@eg-app-config/auth.config';
+import { JwtTokenFactoryService } from '@eg-auth/service/jwt-token-factory.service';
 import { UserService } from '@eg-data-access/user/user.service';
 import { User } from '@eg-domain/user/user';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
@@ -13,7 +14,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   public constructor(
     @Inject(authConfig.KEY)
     private readonly _authConfig: ConfigType<typeof authConfig>,
-    private userService: UserService
+    private userService: UserService,
+    private jwtTokenFactoryService: JwtTokenFactoryService
   ) {
     super({
       // We use the standard approach of supplying a bearer token in the
@@ -39,7 +41,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    *
    */
   public async validate(payload: JwtTokenPayload): Promise<User> {
-    const user = await this.userService.findByUsernameOrEmail(payload.sub);
+    const userId = this.jwtTokenFactoryService.getUserIdFromPayload(payload);
+    const user = userId ? await this.userService.findById(userId) : undefined;
     if (user) {
       return user;
     }

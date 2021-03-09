@@ -13,7 +13,7 @@ export class CryptoService {
 
   /**
    * Encrypt a message using AES with a non-deterministic mode, which results in
-   * different ciphers for the same input and with  the possibility to decrypt
+   * different ciphers for the same input and with the possibility to decrypt
    * the original message.
    *
    * @see https://stackoverflow.com/a/47096284/11964644

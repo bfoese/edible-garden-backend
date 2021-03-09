@@ -1,6 +1,7 @@
 import { DeleteResult, SelectQueryBuilder } from '@bfoese/typeorm';
 import { CryptoService } from '@eg-app/crypto/crypto.service';
 import { CommonFindOptions } from '@eg-domain/user/common-find-options';
+import { ExternalAuthProvider } from '@eg-domain/user/external-auth-provider.enum';
 import { User } from '@eg-domain/user/user';
 import { UserFindOptions } from '@eg-domain/user/user-find-options';
 import { UserRepository } from '@eg-domain/user/user-repository.interface';
@@ -17,6 +18,40 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
   private readonly plainToClass: (user: User) => User = (user) => plainToClass(User, user);
 
   public constructor(private readonly userRepository: UserTypeOrmRepository, private cryptoService: CryptoService) {}
+
+  public async findById(userId: string, opts?: CommonFindOptions & UserFindOptions): Promise<User> {
+    const qb = this.userRepository.createQueryBuilder('user').where('user.id=:userId').setParameters({
+      userId: userId,
+    });
+
+    if (opts?.withDeleted) {
+      qb.withDeleted();
+    }
+    this.enhanceSelect(qb, opts);
+
+    const result = await qb.getOne().then(this.plainToClass);
+    return result;
+  }
+
+  public async findByExtAuthProviderId(
+    provider: ExternalAuthProvider,
+    externalUserId: string,
+    opts?: UserFindOptions
+  ): Promise<User> {
+    const qb = this.userRepository
+      .createQueryBuilder('user')
+      .where('user.extAuthProviderUserId=:externalUserId')
+      .andWhere('user.extAuthProvider=:extAuthProvider')
+      .setParameters({
+        externalUserId: externalUserId,
+        extAuthProvider: provider,
+      });
+
+    this.enhanceSelect(qb, opts);
+
+    const result = await qb.getOne().then(this.plainToClass);
+    return result;
+  }
 
   public async findByEmail(email: string, opts?: CommonFindOptions & UserFindOptions): Promise<User> {
     const user: User = this.encryptFieldsBeforeQueryQuery({ ...{ email: email } } as User);

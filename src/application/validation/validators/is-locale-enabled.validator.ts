@@ -2,11 +2,17 @@ import appConfig from '@eg-app/config/app.config';
 import { StringUtil } from '@eg-common/util/string.util';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import { ValidationArguments, ValidatorConstraint } from 'class-validator';
+import {
+  registerDecorator,
+  ValidationArguments,
+  ValidationOptions,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
 
-@ValidatorConstraint({ name: 'isLocaleEnabled', async: true })
+@ValidatorConstraint({ async: true })
 @Injectable()
-export class IsLocaleEnabled {
+export class IsLocaleEnabledValidator implements ValidatorConstraintInterface {
   public constructor(
     @Inject(appConfig.KEY)
     private readonly _appConfig: ConfigType<typeof appConfig>
@@ -23,4 +29,18 @@ export class IsLocaleEnabled {
   public defaultMessage(args: ValidationArguments): string {
     return `Invalid locale: ${args?.value}`;
   }
+}
+
+export function IsLocaleEnabled(validationOptions?: ValidationOptions): PropertyDecorator {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  return function (object: Object, propertyName: string): void {
+    registerDecorator({
+      name: 'isLocaleEnabled',
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: validationOptions,
+      validator: IsLocaleEnabledValidator,
+    });
+  };
 }

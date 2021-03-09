@@ -1,4 +1,5 @@
 import { EntitySchemaUniqueOptions } from '@bfoese/typeorm/entity-schema/EntitySchemaUniqueOptions';
+import { ExternalAuthProvider } from '@eg-domain/user/external-auth-provider.enum';
 import { User } from '@eg-domain/user/user';
 import { AddressSchema } from '@eg-persistence/shared/schema/address.embed';
 import { EntityInfoSchema } from '@eg-persistence/shared/schema/entity-info.embed';
@@ -12,8 +13,9 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
   name: 'user',
 
   uniques: [
-    <EntitySchemaUniqueOptions>{ name: 'UQ_username', columns: ['username'] },
-    <EntitySchemaUniqueOptions>{ name: 'UQ_email', columns: ['email'] },
+    { name: 'UQ_username', columns: ['username', 'extAuthProvider'] } as EntitySchemaUniqueOptions,
+    { name: 'UQ_email', columns: ['email', 'extAuthProvider'] }  as EntitySchemaUniqueOptions,
+    { name: 'UQ_extUserid', columns: ['extAuthProviderUserId', 'extAuthProvider'] }  as EntitySchemaUniqueOptions,
   ],
 
   embeddeds: {
@@ -60,15 +62,25 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
 
     username: {
       type: 'varchar',
-      length: 20,
       nullable: false,
     } as EntitySchemaColumnOptions,
 
     password: {
       type: 'varchar',
-      length: 200,
-      nullable: false,
+      nullable: true,
       select: false // vulnerable information; only needed for few use cases
+    } as EntitySchemaColumnOptions,
+
+    extAuthProvider: {
+      type: 'enum',
+      enum: ExternalAuthProvider,
+      nullable: true,
+    } as EntitySchemaColumnOptions,
+
+    extAuthProviderUserId: {
+      type: 'varchar',
+      nullable: true,
+      default: null
     } as EntitySchemaColumnOptions,
 
     preferredLocale: {

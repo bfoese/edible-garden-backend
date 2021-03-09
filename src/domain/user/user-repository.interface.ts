@@ -1,11 +1,31 @@
 import { UniqueConstraintViolation } from '@eg-persistence/shared/unique-constraint-violation';
 
 import { CommonFindOptions } from './common-find-options';
+import { ExternalAuthProvider } from './external-auth-provider.enum';
 import { User } from './user';
 import { UserFindOptions } from './user-find-options';
 
 export interface UserRepository {
+
+
+  findById(email: string, opts?: UserFindOptions): Promise<User>;
+
+  findByExtAuthProviderId(provider: ExternalAuthProvider, externalUserId: string, opts?: UserFindOptions): Promise<User>;
+
+  /**
+   * Important: Since email is only unique per auth provider, this
+   * method will ONLY query accounts without external auth provider.
+   * @param usernameOrEmail -
+   * @param opts -
+   */
   findByEmail(email: string, opts?: CommonFindOptions): Promise<User>;
+
+  /**
+   * Important: Since username and email are only unique per auth provider, this
+   * method will ONLY query accounts without external auth provider.
+   * @param usernameOrEmail -
+   * @param opts -
+   */
   findByUsernameOrEmail(usernameOrEmail: string, opts?: UserFindOptions): Promise<User>;
   create(user: User): Promise<User | UniqueConstraintViolation<User>>;
   save(user: User): Promise<User | UniqueConstraintViolation<User>>;

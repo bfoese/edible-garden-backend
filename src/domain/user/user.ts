@@ -1,3 +1,5 @@
+import { IsLocaleEnabled } from '@eg-app/validation/validators/is-locale-enabled.validator';
+import { IsNotEmptyIfExtAuthProvider } from '@eg-app/validation/validators/is-not-empty-if-ext-auth-provider.validator';
 import { Address } from '@eg-domain/shared/adress';
 import { EntityInfo } from '@eg-domain/shared/entity-info';
 import { PhoneNumber } from '@eg-domain/shared/phone-number';
@@ -6,15 +8,15 @@ import {
   Allow,
   IsBoolean,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsString,
   Length,
   Matches,
-  Validate,
   ValidateNested,
 } from 'class-validator';
 
-import { IsLocaleEnabled } from '../../application/validation/validators/is-locale-enabled.validator';
+import { ExternalAuthProvider } from './external-auth-provider.enum';
 import { UserValidation } from './user-validation';
 
 export class User {
@@ -26,9 +28,17 @@ export class User {
   @Type(() => EntityInfo)
   public entityInfo: EntityInfo;
 
+  /**
+   * Email address of the user. When the user registered through an external
+   * auth provider, this field contains the email address that was provided by
+   * the external provider. This field will be updated on every login with an
+   * external provider, in case the provider communicates a new email address.
+   * The email is unique per auth provider, implying a user could create multiple
+   * accounts by using different auth providers.
+   */
   @IsEmail()
   @IsNotEmpty({
-    groups: [UserValidation.groups.userRegistration],
+    groups: [UserValidation.groups.userRegistration, UserValidation.groups.userExtAuthProviderRegistration],
   })
   public email: string;
 
@@ -42,9 +52,20 @@ export class User {
   @IsBoolean()
   public isEmailVerified: boolean;
 
+  /**
+   * The username is being used as a "display name". Users can use it to
+   * obfuscate their real identity. By default, users will be represented by
+   * their display name within the app and they can choose to use their real
+   * name for it. The display name can be changed but I would prefer it to be
+   * "unique", otherwise a user could pretend to be another user by using the
+   * same username. I used "unique" in quotation mark to emphasize a
+   * semi-uniqueness. Because with the integration of multiple auth providers,
+   * there is no chance to guarantee a globally unique username/display name
+   * within the application. It can only be unique per auth provider.
+   */
   @Length(UserValidation.constraints.username.minLength, UserValidation.constraints.username.maxLength)
   @IsNotEmpty({
-    groups: [UserValidation.groups.userRegistration],
+    groups: [UserValidation.groups.userRegistration, UserValidation.groups.userExtAuthProviderRegistration],
   })
   public username: string;
 
@@ -54,6 +75,30 @@ export class User {
   @IsString()
   @Matches(UserValidation.constraints.password.pattern, { message: 'password too weak' })
   public password: string;
+
+  @IsNotEmpty({
+    groups: [UserValidation.groups.userExtAuthProviderRegistration],
+  })
+  @IsEnum(ExternalAuthProvider, {
+    groups: [UserValidation.groups.userExtAuthProviderRegistration]
+  })
+  public extAuthProvider: undefined | ExternalAuthProvider;
+
+  /**
+   * The userId from the external auth provier. Is only required when the user registered with an external auth provider.
+   */
+  @IsNotEmptyIfExtAuthProvider('extAuthProvider', {
+    //groups: [UserValidation.groups.userRegistration],
+  })
+  public extAuthProviderUserId: string;
+
+  /**
+   * The username (display name) from the external auth provier. Is only required when the user registered with an external auth provider.
+   */
+  @IsNotEmptyIfExtAuthProvider('extAuthProvider', {
+    // groups: [UserValidation.groups.userRegistration],
+  })
+  public extAuthProviderUsername: string;
 
   @ValidateNested({ each: true })
   @Type(() => Address)
@@ -74,7 +119,7 @@ export class User {
   public accountActionToken: string;
 
   @IsNotEmpty({ groups: [UserValidation.groups.userRegistration, UserValidation.groups.updateAccountSettings] })
-  @Validate(IsLocaleEnabled, {
+  @IsLocaleEnabled({
     groups: [UserValidation.groups.userRegistration, UserValidation.groups.updateAccountSettings],
   })
   public preferredLocale: string;

@@ -1,4 +1,5 @@
 import authConfig from '@eg-app-config/auth.config';
+import { CryptoModule } from '@eg-app/crypto/crypto.module';
 import { CoreFacadeModule } from '@eg-core/facade/core-facade.module';
 import { DataAccessModule } from '@eg-data-access/data-access.module';
 import { HashingModule } from '@eg-hashing/hashing.module';
@@ -17,10 +18,12 @@ import { AuthenticationController } from './presentation/rest-api/authentication
 import { AccountActionEmailService } from './service/account-action-email.service';
 import { AuthenticationService } from './service/authentication.service';
 import { JwtTokenFactoryService } from './service/jwt-token-factory.service';
+import { GoogleStrategy } from './strategies/google-strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { SecureAccountActionStrategy } from './strategies/secure-account-action.strategy';
+import { UserSerializer } from './strategies/user.serializer';
 
 @Module({
   imports: [
@@ -39,6 +42,7 @@ import { SecureAccountActionStrategy } from './strategies/secure-account-action.
     RefreshTokenCacheModule,
 
     HashingModule.register({ saltRounds: 10, pepper: process.env.BFEG_AUTH_HASHING_PEPPER }),
+    CryptoModule.register({ secretKey: process.env.BFEG_PERSONAL_DATA_ENCRYPTION_KEY }),
   ],
   providers: [
     AuthenticationService,
@@ -47,10 +51,12 @@ import { SecureAccountActionStrategy } from './strategies/secure-account-action.
     JwtStrategy,
     JwtRefreshStrategy,
     SecureAccountActionStrategy,
+    GoogleStrategy,
     JwtTokenDtoMapper,
     SignupUserDtoMapper,
     SigninResonseDtoMapper,
     AuthenticationFacadeService,
+    UserSerializer,
 
     JwtTokenFactoryService,
   ],

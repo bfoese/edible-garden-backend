@@ -1,5 +1,6 @@
 import { AccountActionEmailService } from '@eg-auth/service/account-action-email.service';
 import { AuthenticationService } from '@eg-auth/service/authentication.service';
+import { ExternalAuthProvider } from '@eg-domain/user/external-auth-provider.enum';
 import { User } from '@eg-domain/user/user';
 import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
@@ -26,8 +27,24 @@ export class AuthenticationFacadeService {
     return Promise.resolve(user ? true : false);
   }
 
+  public signupOrUpdateExtAuthProviderUser(
+    extAuthProvider: ExternalAuthProvider,
+    externalUserId: string,
+    email: string,
+    username: string,
+    preferredLocale: string
+  ): Promise<User | undefined> {
+    return this.authenticationService.signupOrUpdateExtAuthProviderUser(
+      extAuthProvider,
+      externalUserId,
+      email,
+      username,
+      preferredLocale
+    );
+  }
+
   public deleteAccount(user: User): Promise<boolean> {
-    return this.authenticationService.deleteAccount(user?.email);
+    return this.authenticationService.deleteAccount(user?.entityInfo?.id);
   }
 
   public verifyEmail(user: User): Promise<User> {

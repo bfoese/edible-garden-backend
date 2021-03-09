@@ -14,10 +14,10 @@ export class EgI18nService {
   /**
    * This should only used when executed within the scope of a request because
    * only then the locale context is given.
-   * @param key
-   * @param opts
+   * @param key -
+   * @param opts -
    */
-  public localizeInRequestScope(key: string, opts?: translateOptions) {
+  public localizeInRequestScope(key: string, opts?: translateOptions): Promise<string> {
     try {
       return this.i18nRequestScope.translate(key, opts);
     } catch (error) {
@@ -29,13 +29,13 @@ export class EgI18nService {
   /**
    * This can be safely called from anywhere, as the locale is being manually
    * provided. From inside of a request scope the locale can be accessed with:
-   * <code>@I18nLang() lang: string</code>
+   * <code>\@I18nLang() lang: string</code>
    *
-   * @param locale
-   * @param key
-   * @param args
+   * @param locale -
+   * @param key -
+   * @param args -
    */
-  public localize(locale: string, key: string, args?: object): Promise<string> {
+  public localize(locale: string, key: string, args?: Record<string, unknown>): Promise<string> {
     try {
       return this.i18nService.translate(key, {
         lang: locale,
