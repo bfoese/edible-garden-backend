@@ -44,7 +44,7 @@
         "schema:log": "npm run prebuild && npm run build && npm run typeorm:cli -- schema:log",
         "schema:drop": "npm run typeorm:cli -- schema:drop",
         "migration:show": "npm run typeorm:cli -- migration:show",
-        "heroku:migration": "typeorm -f dist/src/database/config/ormconfig.js -- migration:run",
+        "heroku:migration": "typeorm migration:run -f dist/src/database/config/ormconfig.js",
         "patch:lib": "cd libs/eg-backend-contract && npm version patch",
         "publish:lib": "cd libs/eg-backend-contract && npm publish",
         "create:npmrc": "node scripts/create-npmrc.js"

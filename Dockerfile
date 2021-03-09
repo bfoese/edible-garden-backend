@@ -1,55 +1,43 @@
-# Tell docker to use an official node image. Alpine images are lighter, but can have unexpected behaviour
-# This is a multi stage build, therefore the 'as' statement to name the image
-# Thanks to the multi-stage build feature, we can keep our final image (here called production) as slim as possible by
-# keeping all the unnecessary bloat in the development image
-# Here we install only devDependencies due to the container being used as a “builder” that takes all the necessary
-# tools to build the application and later send a clean /dist folder to the production image.
-FROM node:12.13-alpine as development
-ARG NODE_ENV=development
-ENV NODE_ENV=${NODE_ENV}
-# each following command will be executed from this context
-WORKDIR /usr/src/app
-# First copy package.json and package-lock.json
-COPY package*.json ./
-# second run npm install
-RUN npm install --only=development
-# Third the rest of the application files into the docker container
-# The order of statements is very important here due to how Docker caches layers. Each statement in the Dockerfile
-# generates a new image layer, which is cached.
-# If we copied all files at once and then ran npm install, each file change would cause Docker to think it should run
-# npm install all over again.
-# By first copying only package*.json files, we are telling Docker that it should run npm install and all the commands
-# appearing afterwards only when either package.json or package-lock.json files change.
-COPY . .
-# Finally, we make sure the app is built in the /dist folder. Since our application uses TypeScript and other
-# build-time dependencies, we have to execute this command in the development image.
-RUN npm run build
-
-
-# By using the FROM statement again, we are telling Docker that it should create a new, fresh image without any
-# connection to the previous one. This time we are naming it production.
-FROM node:12.13-alpine as production
-
-# ARG is for building the docker image and not available in the running container,
-# ENV is available during build and in the running container and can change, after the image was built
-# Here we are using the ARG statement to define the default value for NODE_ENV
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
+FROM node:14.15-alpine as builder
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-# This time, we are making sure that we install only dependencies defined in dependencies in package.json by using
-# the --only=production argument. This way we don’t install packages such as TypeScript that would cause our final
-# image to increase in size.
-RUN npm install --only=production
+# scripts are necessary for postinstall step
+COPY ./scripts ./scripts
 
-COPY . .
-# Here we copy the built /dist folder from the development image. This way we are only getting the /dist directory,
-# without the devDependencies, installed in our final image.
-COPY --from=development /usr/src/app/dist ./dist
+ARG GH_PKG_TOKEN
 
-# Here we define the default command to execute when the image is run
+# Creates npmrc file on the fly to enable download of private packages from
+# github package registry. npmrc file will be removed afterwards to not end up
+# in the tarball of this command layer. Careful: the build argument
+# $GH_PKG_TOKEN would show up in docker commit history of the image if the build
+# would consist only of one stage, because the build steps of the  final stage
+# will show up in the commit history.
+#
+# I don't know if npm ci also implicitly runs the postinstall script, therefore I
+# do it explicitly. The postinstall script will fix the paths of the typeorm
+# patch package.
+RUN echo "//npm.pkg.github.com/:_authToken=${GH_PKG_TOKEN}" > .npmrc && \
+    echo "@bfoese:registry=https://npm.pkg.github.com/" >> .npmrc && \
+    echo "always-auth = true" >> .npmrc && \
+    npm ci && npm run postinstall && rm -f .npmrc
+
+# Copy the rest of the files
+COPY . ./
+
+# build the app and remove the dev dependencies from node_modules
+# also apply patch script after pruning
+RUN npm run build --prod && npm prune --production && npm run postinstall
+# Create a second stage to make this a multi stage build: only the final build
+# will show up in the commit history of the docker image. With this second
+# stage, the secret $GH_PKG_TOKEN from previous stage is not going to be visible in
+# the commit history of the image.
+FROM node:14.15-alpine as production
+
+WORKDIR /usr/src/app
+
+# Copy the built /dist folder from the builder image
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/node_modules ./node_modules
 CMD ["node", "dist/src/main"]
-
-

@@ -1,0 +1,8 @@
+.git
+.vscode
+*.md
+docker-compose.yml
+app.json
+node_modules/
+npm-debug
+.github/

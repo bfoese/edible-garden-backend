@@ -1,0 +1,83 @@
+# This is a basic workflow that is manually triggered
+
+name: Deploy Heroku Prod as NodeJS
+
+on:
+  # push:
+  #   branches:
+  #     - master
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        default: "master"
+        required: true
+      skipTest:
+        descripion: 'Whether to skip lint and test'
+        default: false
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [15]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node_version: ${{ matrix.node-version }}
+          always-auth: true
+          registry-url: https://npm.pkg.github.com
+          scope: '@bfoese'
+      - name: Install Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=$NODE_AUTH_TOKEN" > ~/.npmrc
+          npm install
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GH_PKG_TOKEN}}
+      - name: Lint, Test
+        if: ${{ github.event.inputs.skipTest != true }}
+        run: |
+          npm run lint
+          npm test
+
+      - name: Reset potential local changes from previous step
+        run: git reset --hard
+
+      - name: Build and deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.7.8
+        with:
+          #branch: ${{ github.event.inputs.branch }}
+          branch: master
+          dontuseforce: false
+          # buildpack will build and then prune the node_modules
+          buildpack: heroku/nodejs
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+          region: eu
+          env_file: ".env.production"
+          healthcheck: "https://${{secrets.HEROKU_APP_NAME}}.herokuapp.com/edible-garden/health"
+          delay: 5
+          # Only variables prefixed with 'HD_' will be recognized by the action. The prefix will automatically be cropped from the name by the action.
+        env:
+          HD_DB_SCHEMA: ${{secrets.HEROKU_DB_SCHEMA}}
+          HD_BFEG_CORS_ORIGINS: ${{secrets.CORS_ORIGINS}}
+          HD_NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+          HD_DB_SSL_CA: ${{secrets.HEROKU_CA}}
+          HD_GH_PKG_TOKEN: ${{secrets.GH_PKG_TOKEN}}
+          HD_BFEG_AUTH_HASHING_PEPPER: ${{secrets.AUTH_HASHING_PEPPER}}
+          HD_BFEG_JWT_SECRET: ${{secrets.JWT_SECRET}}
+          HD_BFEG_JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET}}
+          HD_BFEG_JWT_ACCOUNT_ACTION_SECRET: ${{secrets.JWT_ACCOUNT_ACTION_SECRET}}
+          HD_BFEG_COOKIE_SIGNATURE_SECRET: ${{secrets.COOKIE_SIGNATURE_SECRET}}
+          HD_BFEG_EMAIL_TRANSPORT_URL: ${{secrets.EMAIL_TRANSPORT_URL}}
+          HD_BFEG_EMAIL_FROM: ${{secrets.EMAIL_FROM}}
+          HD_BFEG_PERSONAL_DATA_ENCRYPTION_KEY: ${{secrets.PERSONAL_DATA_ENCRYPTION_KEY}}
+          HD_BFEG_AUTH_FRONTEND_URL: ${{secrets.AUTH_FRONTEND_URL}}
+          HD_SERVER_URL: ${{secrets.SERVER_URL}}
