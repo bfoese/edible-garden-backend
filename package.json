@@ -5,7 +5,7 @@
     "description": "",
     "engines": {
         "node": "15.x",
-        "npm": "6.x"
+        "npm": "7.6.x"
     },
     "bugs": {
         "url": "https://github.com/bfoese/edible-garden-backend/issues"
@@ -67,7 +67,7 @@
         "@types/bcrypt": "^3.0.0",
         "@types/cookie-parser": "^1.4.2",
         "@types/passport-local": "^1.0.33",
-        "bcrypt": "^5.0.0",
+        "bcryptjs": "^2.4.3",
         "bull": "^3.20.0",
         "cache-manager": "^3.4.0",
         "cache-manager-redis-store": "^2.0.0",
