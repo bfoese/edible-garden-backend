@@ -6,47 +6,62 @@ An extended [Nest](https://github.com/nestjs/nest) framework TypeScript starter 
 
 <ul>
 <li>NestJS</li>
-<li>Swagger</li>
+<li>OpenAPI</li>
 <li>TypeORM with external schema definition</li>
 <li>Postgres</li>
 <li>Redis<li/>
 <li>Passport JWT<li/>
 </ul>
 
-## Installation
+## Installation & Running
+
+The application requires Redis and Postgres instances to run, which can be
+startet via Docker Compose. The docker-compose declaration will also start the
+application in a container named 'main'. For local development I prefer to stop
+the main container while leaving the others running and install and start the
+application locally via npm, because the main container is watching file changes
+but local node_modules changes are not reflected and require a rebuild.
 
 ```bash
 $ npm install
-```
-
-## Running the app
-
-```bash
-# development
-$ npm run start
-
-# watch mode
+# development with watch mode
 $ npm run start:dev
 
 # production mode
 $ npm run start:prod
 
 # Start all Services & App with Docker Compose
-$ docker-compose up
+$ docker-compose --env-file .env.container.dev build --build-arg GH_PKG_TOKEN="secret"
+$ docker-compose --env-file .env.container.dev up
 
 # Only start Database with Docker Compose
-$ docker-compose start postgres
+$ docker-compose start postgres redis
 ```
 
-In the Docker Container for the application the node_modules directory is defined as an anonymous volume. These types
-of volumes only get removed, when their parent container is removed. This means that node_module updates on the
-local machine aren't reflected in the container!!
-After adding/removing libraries in package.json you need to enforce the deletion of the anonymous volume:
+In the Docker Container for the application the node_modules directory is
+defined as an anonymous volume. These types of volumes only get removed, when
+their parent container is removed. This means that node_module updates on the
+local machine aren't reflected in the container!! After adding/removing
+libraries in package.json you need to enforce the deletion of the anonymous
+volume:
 
 ```bash
-# Enforces an npm install and the -v argument will remove any anonymous volumes and create them again
+# Enforces an npm install and the -v argument will remove any anonymous
+# volumes and create them again as well as removing orphan containers
+docker-compose up --build -V --remove-o
+```
 
-docker-compose up --build -V
+## Test
+
+```bash
+# unit tests
+$ npm run test
+
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
 ```
 
 ## Debugging in VSCode
@@ -64,7 +79,27 @@ There are different options for debugging a NestJS app. The easiest seems to be 
 </ul>
 
 
-## API Documentation
+## Application Specifics
+### DOTENV Files
+
+Priority of the files
+
+<ul>
+    <li>Dev: (npm start): .env.development.local, .env.development, .env.local, .env</li>
+    <li>Prod: (npm run build): .env.production.local, .env.production, .env.local, .env</li>
+</ul>
+
+Conventions for this project:
+
+<ul>
+    <li>Properties which should be handled as a secret belong into the .env.{development|production}.local files. These files are on gitignore list and won't appear in the remote repository. These properties will be configured manually in the CI/CD pipeline tools</li>
+    <li>Secrets that are used both in development and production can go into the .env.local file, which is also on gitignore list</li>
+    <li>Properties which are not secret but rather used can go into the .env.{development|production} files. These files are not on gitignore list and therefore appear in the remote repository where they can be used to serve the CI/CD pipelines as a file import.</li>
+</ul>
+
+### API Documentation
+
+API endpoint is currently only available in ENV development.
 
 ```bash
 # Browsing the Swagger Documentation of the exposed endpoints
@@ -74,27 +109,46 @@ http://localhost:3000/api
 http://localhost:3000/api-json
 ```
 
-## Database & ORM
+### Database & ORM
 
-This project uses Postgres database. The docker-compose file also setups a Postgres Admin interface connected to the
-postgres database container.
+The main database being used is PostgreSQL in combination with a Redis database for certain use cases. The ORM Tool of choice is TypeORM.
 
-This project also uses TypeORM and is configured to utilize the TypeORM migration mechanism instead of auto-synchronizing
-the database based on the model.
-There are two different migration directories configured: 'migration-gen' is used as a sink for the auto-generated
-migration files. This directory is in the gitignore list as it is only meant to be a holder for untested migration files
-which are work in progress. The second directory 'migration' is being used as the source directory for the actual
-migration process. Migration files which need to be tested as well as the final ones need to be copied into
-this directory. Before committing a new migration file, make sure to manually test it by running the 'migration:run'
-command and afterwards 'migration:revert' for proper cleanup.
+#### Table Name Conventions
 
-TypeORM Migration Preconditions:
+Table and column names should be in lowercase snake-case format. With mixed-case or upper-case names
+you are required to reference table names with double quotes in some database admin tools,
+which is a pain, e.g.
+
+```bash
+select * from public."FOO_MyTable"
+```
+This is the preferred table name format which is automatically enforced by a custom naming strategy that is registered in TypeORM:
+
+```bash
+select * from public.foo_my_table
+```
+#### Database Migration
+
+The project is configured to utilize the TypeORM migration mechanism instead of
+auto-synchronizing the database based on the model. There are two different
+migration directories configured: 'migration-gen' is used as a sink for the
+auto-generated migration files. This directory is in the gitignore list as it is
+only meant to be a holder for untested migration files which are work in
+progress. The second directory 'migration' is being used as the source directory
+for the actual migration process. Migration files which need to be tested as
+well as the final ones need to be copied into this directory. Before committing
+a new migration file, make sure to manually test it by running the
+'migration:run' command and afterwards 'migration:revert' for proper cleanup.
+
+##### TypeORM Migration Preconditions:
 
 <ul>
 <li>Build app: TypeORM migration operates on the generated JS code. In order to detect changes, we need to build the project first.</li>
 <li>There should be a ormconfig.js file being generated into the build output dir.</li>
 <li>`npm run schema:log` - This command will display the schema changes. If the result says that there are no changes, but you know there should, it is possible, that the property cli.entitiesDir in the ormconfig file is not properly defined. The path of that property must be relative to the ormconfig file and the general context is the build output directory</li>
 </ul>
+
+##### TypeORM Migration Commands
 
 ```bash
 # See schema changes which are not reflected within the database yet
@@ -117,22 +171,17 @@ $npm run typeorm:cli -- <command>
 
 ```
 
-Auto-generated migration files will be created in a local directory.
+#### Working with TypeORM
 
-## Test
+Currently I use a patched version of TypeORM that supports embedded entities in external schema definition: https://github.com/typeorm/typeorm/pull/6318. Waiting for it to be released.
 
-```bash
-# unit tests
-$ npm run test
+<ul><li><strong>Update an entity</strong>It is not necessary to load the entity, map the new fields onto it and then save it. You can also just provide a Partial of the entity with the fields you really want to change plus the primary key of the object. TypeORM will then only change the fields contained in that Partial.</li>
+<li><strong>Loading an entity</strong>In this repo I use external schema files to have a clear separation between domain and persistence layer. The schema files point to classes from the domain, but TypeORM treats these classes as interfaces. When you load an entity from the database with TypeORM, you can cast it to your domain class but it is in fact no class instance. You will receive an object with the properties of that class. If you really want to return a class instance from the persistence layer, you can use a tool like class-transformer which transforms the plain object to the desired class. This is important to know when you have instance methods in your domain objects, which are not getters or setters. These will be undefined in the objects returned from TypeORM, unless you transform that object into a class.</li>
+<li><strong>Loading relationships</strong>By default, the relationships of an object are not loaded when you load the object, unless you defined them to be eager or you explicitly name them in the query. TypeORM also has an experimental lazy-load mechanism which would work like lazy-loading in Hinbernate: the first time you access the field of the relationship, it will be loaded. Therefore these relationship fields are provided as Promises. But, as far as I read, lazy loading is still considered to be experimental.</li>
+<li><strong>Auto-generated migration files</strong>It is possible to let TypeORM auto-generate migration files based on changes in entities or schema files which saves some work of writing them yourself.  However, I noticed that often unneccessary statements are contained (dropping default uuid generation and recreating it). Also statements for dropping sequences which do not exist are being generated. And some statements need manual correction. In summary, you have to check the generated migration files and often need to correct them. At least this is the case when using external schema files. At first I used schema annotations and I don't remember these problems from that time.</li>
+</ul>
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## PostgreSQL
+#### PostgreSQL
 
 Sometimes it's useful to check Postgres state via CLI.
 
@@ -156,7 +205,7 @@ Restart with clean local database:
 $ docker-compose down --volumes
 ```
 
-### Postgres Error Handling
+##### Postgres Error Handling
 
 During development with TypeORM sync mode turned on, exceptions from postgres can arise. Here are some workarounds.
 
@@ -164,57 +213,109 @@ During development with TypeORM sync mode turned on, exceptions from postgres ca
     <li>Exceptions concerning enum types - enum types are stored in 'pg_catalog.pg_enum' and can be deleted with: 'drop type <enumType> cascade;'</li>
 </ul>
 
-### Table Name Conventions
+### i18n
 
-Table and column names should be lowercase. With mixed-case or upper-case names you are required to reference table names with double quotes, e.g.
+Docs: https://github.com/ToonvanStrijp/nestjs-i18n
+
+We have a field user.preferredLocale. Requests for a registered user should
+favor this locale. If a request without associated user must be handled, a custom
+header sent by the frontend application could be the second preference.
+Localization by query param is also active, in case we need to generate links
+without user context. And last preference would be the accept language of the
+users browser agent.
+In the application code, the resolved locale can be accessed like this:
 
 ```bash
-select * from public."FOO_MyTable"
+  @Get() sample(@I18nLang() lang: string) {}
 ```
-at least in SQLDeveloper. Also some features, like data view, can't be used at all because of thrown exceptions. PGAdmin can handle these table names, but I personally don't like the user experience with that tool.
 
-So with lower-case table names, you can use all features of SQLDeveloper and SQL statements can be done without double quotes, e.g.
+Outside of a controller you need to considrate whether the code runs inside or outside the context of a request.
+Eg18nService has to methods which can be used for each of both cases.
 
-```bash
-select * from public.foo_my_table
-```
-Therefore there is a naming strategy defined and registered in TypeORM which will take care of the desired conventions.
-
-### DOTENV Files
-
-Priority of the files
+### Bulls Queue
 
 <ul>
-    <li>Dev: (npm start): .env.development.local, .env.development, .env.local, .env</li>
-    <li>Prod: (npm run build): .env.production.local, .env.production, .env.local, .env</li>
+<li>Bulls ignores jobs whose jobID is the same as the jobID of a previously performed job, unless you use 'removeOnCompleted'. Using this option will purge the information about previously performed Jobs after completion so they can't be considered the next time you add a job.</li>
 </ul>
 
-Conventions for this project:
+### Data Security
 
 <ul>
-    <li>Properties which should be handled as a secret belong into the .env.{development|production}.local files. These files are on gitignore list and won't appear in the remote repository. These properties will be configured manually in the CI/CD pipeline tools</li>
-    <li>Secrets that are used both in development and production can go into the .env.local file, which is also on gitignore list</li>
-    <li>Properties which are not secret but rather used can go into the .env.{development|production} files. These files are not on gitignore list and therefore appear in the remote repository where they can be used to serve the CI/CD pipelines as a file import.</li>
+    <li>User passwords in database are hashed with pepper and salt.</li>
+    <li>Database must not contain sensitive personal data of the users (real name, email, address, phone, etc.) in plain text (in case the database is being leaked). Therefore this sensitive data is encrypted using AES with ECB mode. This must be considered when querying data: the query must contain the encrypted values.</li>
+    <li>Prevent leaking secrets in Docker history and image layer tarballs: https://www.alexandraulsh.com/2018/06/25/docker-npmrc-security/</li>
 </ul>
 
-## TypeORM
+### Email
 
-<ul><li><strong>Update an entity</strong>It is not necessary to load the entity, map the new fields onto it and then save it. You can also just provide a Partial of the entity with the fields you really want to change plus the primary key of the object. TypeORM will then only change the fields contained in that Partial.</li>
-<li><strong>Loading an entity</strong>In this repo I use external schema files to have a clear separation between domain and persistence layer. The schema files point to classes from the domain, but TypeORM treats these classes as interfaces. When you load an entity from the database with TypeORM, you can cast it to your domain class but it is in fact no class instance. You will receive an object with the properties of that class. If you really want to return a class instance from the persistence layer, you can use a tool like class-transformer which transforms the plain object to the desired class. This is important to know when you have instance methods in your domain objects, which are not getters or setters. These will be undefined in the objects returned from TypeORM, unless you transform that object into a class.</li>
-<li><strong>Loading relationships</strong>By default, the relationships of an object are not loaded when you load the object, unless you defined them to be eager or you explicitly name them in the query. TypeORM also has an experimental lazy-load mechanism which would work like lazy-loading in Hinbernate: the first time you access the field of the relationship, it will be loaded. Therefore these relationship fields are provided as Promises. But, as far as I read, lazy loading is still considered to be experimental.</li>
-<li><strong>Auto-generated migration files</strong>It is possible to let TypeORM auto-generate migration files based on changes in entities or schema files which saves some work of writing them yourself.  However, I noticed that often unneccessary statements are contained (dropping default uuid generation and recreating it). Also statements for dropping sequences which do not exist are being generated. And some statements need manual correction. In summary, you have to check the generated migration files and often need to correct them. At least this is the case when using external schema files. At first I used schema annotations and I don't remember these problems from that time.</li>
-</ul>
+#### Gmail
+To securely send Emails via a Gmail Account you have to create an App Password
+with access to the Google account email functionality. How to create such a
+password for the app is described here along with the SMTP host and port
+information to set everything up:
+https://support.google.com/mail/answer/7126229?p=BadCredentials&visit_id=637466758146187794-1782866574&rd=2#cantsignin
 
-### Limitations of TypeORM I ran into:
-<ul>
-    <li>It is possible to completely separate domain model and persistence model by separating entity definitions into schema files as demonstrated in this repo. However, the external schema implementation lacks some features which are supported by TypeORM Entity decorators.
-        <ul><li>The current version 0.2.29 does not support embedded entities in external schema. There is an open issue for that and a pull request with a fix was created, but no sign of progress on this topic: https://github.com/typeorm/typeorm/pull/6318</li>
-        <li>TypeORM has different implementations for tree structures, e.g. closure tables. Didn't find options to define a closure table or the other tree implementations in external schema. Assume it's not supported yet.</li></ul>
-    </li>
-<li>Quite long standing open issue concerning performance issues with queries: https://github.com/typeorm/typeorm/issues/3857#issuecomment-609863113</li>
-</ul>
+In short: You have to enable 2-Factor-Authentication for the Google Account,
+then choose Google Account > Security > Sign In with Google > "App Passwords"
+and here you can create a password which only has access to the Email
+functionalities of your account.
+
+Gmail Sending limits: According to one page there is a limit of 500 outgoing
+Mails within 24 hours. I assume the mails above that limit will be purged to
+avoid exploitation.
+
+Its a good idea to have a counter for the apps mail sending queue to not run
+into that limit by delaying mails above the limit for a few hours.
+
+#### Gandi
+SMTP
+https://docs.gandi.net/en/simple_hosting/common_operations/smtp.html
+Nodemailer: https://nodemailer.com/smtp/
+
+#### Handlebars Templates
+
+##### i18n
+
+I was looking for possibilies to translate the emails. Considerations:
+
+The templates contain html tags and the amount of html and css tags will likely increase in the future to provide styled emails.
+It is not very handy to have the html tags inside the translations files, changing the html would be a nightmare.
+It is also not very handy to create translations for text within a html tag (e.g. <p>{{i18n content}}<br>{{i18n content2}}</p>), because this would be a nightmare for the translator to define the translations in a semantic way for each language.
+
+As a sidenote, I started to create a handlebar helper function that could be used to translate a key within a template by reusing the apps i18n service. But this helper would have been asynchron and according to this post https://stackoverflow.com/a/23939596/11964644 it is not possible to define an asnychronous handlebars helper function (the post is rather old, might have changed, but not high priority right now to further investigate).
+
+So best idea at this point is to duplicate the email templates for each language. This offers the benefit of customized templates per locale with the disadvantage of some overhead when template variables etc. need to be changed.
+
 
 ## Heroku
+
+### Deployment
+
+NodeJS apps kann be deployed to Heroku via the NodeJS buildback or as a containerized application. These solutions need slightly differen configuration.
+
+#### Deployment with NodeJS Buildpack
+
+<ul>
+<li>See GitHub Action "deploy-nodejs-prod"</li>
+<li>Does NOT require the "heroku.yml" File. And I haven't testet, if the file has a negative effect.</li>
+<li>Requires the Procfile file it would only be used as a fallback when no heroku.yml file exists</li>
+<li>package.json contains some scripts prefixed with "heroku:" these are not used by Heroku, as we provide a Container. However, you can manually call them from heroku.yaml or the Dockerfile</li>
+</ul>
+
+### Deployment as Container
+
+<ul>
+<li>See GitHub Action "deploy-container-prod"</li>
+<li>Requires the "heroku.yml" File</li>
+<li>Does NOT require the Procfile file. It would only be used as a fallback when no heroku.yml file exists</li>
+<li>package.json contains some scripts prefixed with "heroku:" these are not used by Heroku, as we provide a Container. However, you can manually call them from heroku.yaml or the Dockerfile</li>
+</ul>
+
+
+
+There are two Github Actions defined for deployment: one for deploying as NodeJS app and one for deploying as containerized NodeJS app.
+
+
 ### CLI
 
 Infos about customizing Heroku builds for Node.JS: https://devcenter.heroku.com/articles/nodejs-support#heroku-specific-build-steps
@@ -258,18 +359,11 @@ $ dir
 
 ## Self-signed Certificates for HTTPS under localhost
 
-For using HTTPS under localhost (or other local dev domain, e.g. dev.local or whatever) you can use a self signed certificate that can be generated with the tool mkcert.
-The certificate and the key can be easily provided in the NestJS bootstrap process: https://docs.nestjs.com/faq/multiple-servers
-This way the server is quickly running under https://localhost.
-
-But I ran into problems when generating the OpenAPI source code for the Angular
-client using ng-openapi-gen. First error that was shown was "unable to verify
-the first certificate". This error occured when I only registered the
-localhost-key.pem and localhost.pem file with NestJS. The problem can be solved
-by concatenating the root certificate together with the localhost certificate
-into one file and register that with NestJS as shown below. Second error
-afterwards was "self signed certificate in certificate chain". But this must be
-solved on client side.
+For using HTTPS under localhost (or other local dev domain, e.g. dev.local or
+whatever) you can use a self signed certificate that can be generated with the
+tool mkcert. The certificate and the key can be easily provided in the NestJS
+bootstrap process: https://docs.nestjs.com/faq/multiple-servers This way the
+server is quickly running under https://localhost.
 
 <ol>
 <li>Install mkcert</li>
@@ -290,65 +384,13 @@ cat "$(mkcert -CAROOT)/rootCA.pem" >> localhost-fullchain.pem
 
 
 
-## Bulls Queue
 
-<ul>
-<li>Bulls ignores jobs whose jobID is the same as the jobID of a previously performed job, unless you use 'removeOnCompleted'. Using this option will purge the information about previously performed Jobs after completion so they can't be considered the next time you add a job.</li>
-</ul>
-
-## Data Security
-
-<ul>
-    <li>User passwords in database are hashed with pepper and salt.</li>
-    <li>Database must not contain sensitive personal data of the users (real name, email, address, phone, etc.) in plain text (in case the database is being leaked). Therefore this sensitive data is encrypted using AES with ECB mode. This must be considered when querying data: the query must contain the encrypted values.</li>
-    <li>Prevent leaking secrets in Docker history and image layer tarballs: https://www.alexandraulsh.com/2018/06/25/docker-npmrc-security/</li>
-</ul>
-
-
-### Reading
+## Reading
 <ul>
 <li>https://whuysentruit.medium.com/securing-your-single-page-application-anno-2019-754bc4c29119</li></ul>
 
 
-## Email
 
-### Gmail
-To securely send Emails via a Gmail Account you have to create an App Password
-with access to the Google account email functionality. How to create such a
-password for the app is described here along with the SMTP host and port
-information to set everything up:
-https://support.google.com/mail/answer/7126229?p=BadCredentials&visit_id=637466758146187794-1782866574&rd=2#cantsignin
-
-In short: You have to enable 2-Factor-Authentication for the Google Account,
-then choose Google Account > Security > Sign In with Google > "App Passwords"
-and here you can create a password which only has access to the Email
-functionalities of your account.
-
-Gmail Sending limits: According to one page there is a limit of 500 outgoing
-Mails within 24 hours. I assume the mails above that limit will be purged to
-avoid exploitation.
-
-Its a good idea to have a counter for the apps mail sending queue to not run
-into that limit by delaying mails above the limit for a few hours.
-
-### Gandi
-SMTP
-https://docs.gandi.net/en/simple_hosting/common_operations/smtp.html
-Nodemailer: https://nodemailer.com/smtp/
-
-### Handlebars Templates
-
-#### i18n
-
-I was looking for possibilies to translate the emails. Considerations:
-
-The templates contain html tags and the amount of html and css tags will likely increase in the future to provide styled emails.
-It is not very handy to have the html tags inside the translations files, changing the html would be a nightmare.
-It is also not very handy to create translations for text within a html tag (e.g. <p>{{i18n content}}<br>{{i18n content2}}</p>), because this would be a nightmare for the translator to define the translations in a semantic way for each language.
-
-As a sidenote, I started to create a handlebar helper function that could be used to translate a key within a template by reusing the apps i18n service. But this helper would have been asynchron and according to this post https://stackoverflow.com/a/23939596/11964644 it is not possible to define an asnychronous handlebars helper function (the post is rather old, might have changed, but not high priority right now to further investigate).
-
-So best idea at this point is to duplicate the email templates for each language. This offers the benefit of customized templates per locale with the disadvantage of some overhead when template variables etc. need to be changed.
 
 ## Lib Optimization
 
@@ -365,7 +407,7 @@ https://redfin.engineering/node-modules-at-war-why-commonjs-and-es-modules-cant-
 https://medium.com/dev-genius/nodejs-using-es-modules-instead-of-commonjs-9c6e801e7508
 
 
-## NestJS
+## NestJS Notes
 
 <ul>
 <li>https://dev.to/nestjs/advanced-nestjs-how-to-build-completely-dynamic-nestjs-modules-1370</li>
@@ -417,21 +459,4 @@ is being transformed.
 
 Global DTO validation is still turned on and could be used for some edge cases.
 
-### i18n
 
-Docs: https://github.com/ToonvanStrijp/nestjs-i18n
-
-We have a field user.preferredLocale. Requests for a registered user should
-favor this locale. If a request without associated user must be handled, a custom
-header sent by the frontend application could be the second preference.
-Localization by query param is also active, in case we need to generate links
-without user context. And last preference would be the accept language of the
-users browser agent.
-In the application code, the resolved locale can be accessed like this:
-
-```bash
-  @Get() sample(@I18nLang() lang: string) {}
-```
-
-Outside of a controller you need to considrate whether the code runs inside or outside the context of a request.
-Eg18nService has to methods which can be used for each of both cases.

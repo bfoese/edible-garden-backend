@@ -93,6 +93,7 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       type: 'varchar',
       nullable: true,
       select: false, // vulnerable information; only needed for few use cases
+      transformer: new EncryptedValueTransformer(),
     } as EntitySchemaColumnOptions,
   },
 });

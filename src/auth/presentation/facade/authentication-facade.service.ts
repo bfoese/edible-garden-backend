@@ -68,4 +68,9 @@ export class AuthenticationFacadeService {
   public async signout(request: Request, user: User): Promise<boolean> {
     return this.authenticationService.signout(request, user);
   }
+
+  public async changePassword(userId: string, plainTextPassword: string, token: string): Promise<User> {
+    return this.authenticationService.changePassword(userId, plainTextPassword, token);
+  }
+
 }

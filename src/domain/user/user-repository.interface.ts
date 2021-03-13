@@ -27,8 +27,8 @@ export interface UserRepository {
    * @param opts -
    */
   findByUsernameOrEmail(usernameOrEmail: string, opts?: UserFindOptions): Promise<User>;
-  create(user: User): Promise<User | UniqueConstraintViolation<User>>;
-  save(user: User): Promise<User | UniqueConstraintViolation<User>>;
+  create(user: Partial<User>): Promise<User | UniqueConstraintViolation<User>>;
+  save(user: Partial<User>): Promise<User | UniqueConstraintViolation<User>>;
 
   /**
    * Important: based on the provided user object ONE or MANY users might be
@@ -38,5 +38,5 @@ export interface UserRepository {
    * which are unique within the user schema.
    * @returns Number of deleted rows
    */
-  delete(user: User): Promise<number>;
+  delete(user: Partial<User>): Promise<number>;
 }

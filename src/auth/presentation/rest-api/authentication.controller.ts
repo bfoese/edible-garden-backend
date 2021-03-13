@@ -1,4 +1,3 @@
-import appConfig from '@eg-app/config/app.config';
 import authConfig from '@eg-app/config/auth.config';
 import { AuthRouteConstants } from '@eg-auth/constants/auth-route-constants';
 import { Public } from '@eg-auth/decorators/public-endpoint.decorator';
@@ -10,22 +9,26 @@ import { SecureAccountActionGuard } from '@eg-auth/guards/secure-account-action.
 import { RequestWithUser } from '@eg-auth/strategies/request-with-user';
 import { User } from '@eg-domain/user/user';
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   HttpCode,
   Inject,
+  Patch,
   Post,
   Query,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
 import { AuthenticationFacadeService } from '../facade/authentication-facade.service';
+import { PatchPasswordDto } from '../facade/dto/patch-password.dto';
 import { SendAccountActionLinkDto } from '../facade/dto/send-account-action-link.dto';
 import { SigninResponseDto } from '../facade/dto/signin-response.dto';
 import { SigninUserDto } from '../facade/dto/signin-user.dto';
@@ -36,8 +39,6 @@ import { SignupUserDto } from '../facade/dto/signup-user.dto';
 export class AuthenticationController {
   public constructor(
     private readonly authenticationFacadeService: AuthenticationFacadeService,
-    @Inject(appConfig.KEY)
-    private readonly _appConfig: ConfigType<typeof appConfig>,
     @Inject(authConfig.KEY)
     private readonly _authConfig: ConfigType<typeof authConfig>
   ) {}
@@ -48,6 +49,7 @@ export class AuthenticationController {
    *
    * @param dto - containing user data and type of email to be send
    */
+  @HttpCode(204)
   @Public()
   @Post('account-action-email')
   public sendAccountActionEmail(@Body() dto: SendAccountActionLinkDto): Promise<void> {
@@ -183,6 +185,46 @@ export class AuthenticationController {
       // application window which is displayed in the users preferred locale.
       // TODO would be even better, if the client would provide the preferred redirect URL when calling /auth/google
       response.redirect(this.buildFrontendUri(this._authConfig.frontendFeedbackPath3rdPartySignin(this.getFrontendLocale(user))));
+
+  @ApiExcludeEndpoint()
+  @Public()
+  @UseGuards(SecureAccountActionGuard)
+  @Get(AuthRouteConstants.Path_ResetPassword)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async resetPassword(
+    @Req() request: RequestWithUser,
+    @Query(AuthRouteConstants.QueryParam_Token) token: string,
+    @Res() response: Response
+  ): Promise<any> {
+    const user = await request.user;
+
+    if (!user) {
+      response
+        .status(302)
+        .redirect(
+          this.buildFrontendUri(`/${user.preferredLocale}/auth/feedback?req=resetPassword&res=invalidToken`)
+        );
+    } else {
+      response
+        .status(302)
+        .redirect(
+          this.buildFrontendUri(this._authConfig.frontendFeedbackPathChangePassword(user.preferredLocale, token, user.username))
+        );
+    }
+  }
+
+  @HttpCode(204)
+  @Public()
+  @UseGuards(SecureAccountActionGuard)
+  @Patch('password')
+  public async patchPassword(@Req() request: RequestWithUser, @Body() patchPasswordData: PatchPasswordDto): Promise<void> {
+    const user = await request.user;
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    const updatedUser = await this.authenticationFacadeService.changePassword(user.entityInfo.id, patchPasswordData.password, patchPasswordData.token);
+    if (!updatedUser) {
+      throw new BadRequestException('Update failed');
     }
   }
 

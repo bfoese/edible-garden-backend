@@ -11,7 +11,6 @@ export class SeedSharingOfferController {
 
   @Post('create')
   public createOffer(@Body() dto: SeedSharingOfferCreationDto): Promise<SeedSharingOfferDto> {
-    console.log(dto);
     return this.seedSharingOfferFacadeService.createOffer(null, dto);
   }
 

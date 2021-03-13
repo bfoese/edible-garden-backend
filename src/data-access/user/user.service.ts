@@ -59,7 +59,16 @@ export class UserService {
     });
   }
 
-  public async save(user: User): Promise<User> | never {
+  /**
+   * Can be used to partially update the user data except for some fields, which
+   * will be omitted. The omitted fields are considered sensitive and must be
+   * updated via dedicated methods.
+   *
+   * @param user - Omitted values can only be updated via other dedicated
+   * methods.
+   * @returns
+   */
+  public async save(user: Omit<User, 'username' | 'email' | 'password' | 'isEmailVerified'>): Promise<User> | never {
     return this.userRepository.save(user).then((result: User | UniqueConstraintViolation<User>) => {
       if (result instanceof UniqueConstraintViolation) {
         throw new UniqueKeyConstraintViolationException(result.constraintColumns);
@@ -72,14 +81,37 @@ export class UserService {
    * Switches the isEmailVerified flag of the user to 'true' to indicate, that
    * the email address was successfully verified.
    *
-   * @param usernameOrEmail - username or email adress
+   * @param userId -
    */
   public async verifyEmail(userId: string): Promise<User> | never {
-    const user = await this.findById(userId);
-    if (!user) {
+    if (!userId) {
       return null;
     }
-    const newData = { entityInfo: { id: user.entityInfo.id }, isEmailVerified: true } as User
+    const newData = { entityInfo: { id: userId }, isEmailVerified: true } as User
+    return this.userRepository.save(newData).then((result: User) => {
+      return result;
+    });
+  }
+
+  /**
+   * Updated the users password to the new value.
+   * @param userId
+   * @param hashedPassword - Must be the hashed passwort, the database schema won't perform the hashing!
+   * @returns
+   */
+  public async changePassword(userId: string, hashedPassword: string): Promise<User> | never {
+    if (!userId) {
+      return null;
+    }
+
+    const newData = { entityInfo: { id: userId }, password: hashedPassword } as User
+    const errors: ValidationError[] = await validate(newData, <ValidatorOptions>{
+      groups: [UserValidation.groups.updatePassword],
+    });
+
+    if (!ArrayUtils.isEmpty(errors)) {
+      throw new BadRequestException(errors);
+    }
     return this.userRepository.save(newData).then((result: User) => {
       return result;
     });

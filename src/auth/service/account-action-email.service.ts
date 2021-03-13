@@ -38,11 +38,10 @@ export class AccountActionEmailService {
     }
     const user = await this.userService.findByEmail(email, { withHiddenFields: { email: true } } as UserFindOptions);
     if (!user) {
-      throw new BadRequestException('User not found');
+      return; // do NOT throw error in this case
     }
 
     const accountActionToken: string = this.jwtTokenFactoryService.generateAccountActionToken(user, purpose);
-    const encryptedAccountActionToken: string = await this.hashingService.createSaltedHash(accountActionToken);
     const accountActivationUrl = this.getAccountActionUrl(purpose, accountActionToken);
 
     const emailContext: AccountActionEmailJobContext = {
@@ -56,7 +55,7 @@ export class AccountActionEmailService {
 
     // update activation token on user object
     const updateUserData = {
-      accountActionToken: encryptedAccountActionToken,
+      accountActionToken: accountActionToken,
       entityInfo: { id: user.entityInfo.id },
     } as User;
     this.userService.save(updateUserData);
@@ -84,7 +83,7 @@ export class AccountActionEmailService {
     }=${accountActionToken}`;
   }
   private getPasswordResetUrl(accountActionToken: string): string {
-    return `${this._appConfig.serverUrl()}/edible-garden/auth/change-password?${
+    return `${this._appConfig.serverUrl()}/edible-garden/auth/${AuthRouteConstants.Path_ResetPassword}?${
       AuthRouteConstants.QueryParam_Token
     }=${accountActionToken}`;
   }

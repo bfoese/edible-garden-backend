@@ -96,9 +96,6 @@ export class AuthenticationService {
           alreadyRegisteredUser ? alreadyRegisteredUser : user,
           accountActionPurpose
         );
-        const encryptedAccountActivationToken: string = await this.hashingService.createSaltedHash(
-          accountActivationToken
-        );
         const accountActivationUrl = this.accountActionEmailService.getAccountActionUrl(
           accountActionPurpose,
           accountActivationToken
@@ -107,9 +104,8 @@ export class AuthenticationService {
         emailContext.accountActivationUrl = accountActivationUrl;
 
         // update activation token on user object
-        alreadyRegisteredUser.accountActionToken = encryptedAccountActivationToken;
         const updateRegisteredUserData = {
-          accountActionToken: encryptedAccountActivationToken,
+          accountActionToken: accountActivationToken,
           entityInfo: { id: alreadyRegisteredUser.entityInfo.id },
         } as User;
         this.userService.save(updateRegisteredUserData);
@@ -122,8 +118,7 @@ export class AuthenticationService {
     } else {
       // this is really a completely new user
       // create an inactive account for the user and send an activation email
-      const hashedPassword: string = await this.hashingService.createSaltedPepperedHash(user.password);
-      user.password = hashedPassword; // override the plain text password with hashed one
+      user.password = await this.hashUserPassword(user.password); // override the plain text password with hashed one
       user.entityInfo.isActive = true; // this flag is used to block accounts
       user.isEmailVerified = false; // prevents the user from signin until email is verified
 
@@ -131,6 +126,10 @@ export class AuthenticationService {
       this.accountActionEmailService.sendAccountActionEmail('VerifyEmailSignup', createdUser.email);
       return createdUser;
     }
+  }
+
+  private async hashUserPassword(plainTextPassword: string): Promise<string | undefined> {
+    return plainTextPassword ?  await this.hashingService.createSaltedPepperedHash(plainTextPassword) : undefined;
   }
 
   public async signupOrUpdateExtAuthProviderUser(
@@ -195,6 +194,7 @@ export class AuthenticationService {
   ): Promise<User | null> {
     if (jwtToken) {
       const userId = this.jwtTokenFactoryService.getUserIdFromPayload(payload);
+
       const user = await this.userService.findById(userId, {
         withHiddenFields: { accountActionToken: true },
       } as UserFindOptions);
@@ -215,15 +215,16 @@ export class AuthenticationService {
         }
       }
 
+      if (purpose === 'ResetPassword' && user.extAuthProvider) {
+        throw new HttpException('Not allowed for third party auth provider account', HttpStatus.BAD_REQUEST);
+      }
+
       // By design we store only one accountActionToken. The general idea is,
       // that the user performs these actions sequentially and not in parallel
-      // and these action tokens can be considered to bee one-time-tokens
+      // and these action tokens can be considered to be one-time-tokens
       const userAccountActionToken = user.accountActionToken;
       // the token in the database was hashed for security reasons
-      const matchingToken = userAccountActionToken
-        ? await this.hashingService.verifyUnpepperedHash(jwtToken, userAccountActionToken)
-        : false;
-
+      const matchingToken = userAccountActionToken === jwtToken
       if (matchingToken) {
         return user;
       }
@@ -233,6 +234,20 @@ export class AuthenticationService {
 
   public verifyEmail(user: User): Promise<User> {
     return this.userService.verifyEmail(user.entityInfo.id);
+  }
+
+  public async changePassword(userId: string, plainTextPassword: string, _token: string): Promise<User> {
+
+    const validationObj = {password: plainTextPassword} as User;
+
+    await validateOrReject(validationObj, {
+      groups: [UserValidation.groups.userRegistration],
+    } as ValidatorOptions).catch((errors: ValidationError[]) => {
+      throw new ValidationException(errors);
+    });
+
+    const hashedPassword = await this.hashUserPassword(plainTextPassword)
+    return this.userService.changePassword(userId, hashedPassword);
   }
 
   public deleteAccount(userId: string): Promise<boolean> {

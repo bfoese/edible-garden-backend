@@ -5,4 +5,16 @@ docker-compose.yml
 app.json
 node_modules/
 npm-debug
-.github/
+.github
+coverage
+dist
+*.env.*.local
+*.env.local
+.npmrc
+*.dev
+*.local
+notizen.txt
+import-sorter.json
+commitlint.*
+.prettierrc
+.eslintrc

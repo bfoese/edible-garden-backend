@@ -39,6 +39,14 @@ export default registerAs('auth', () => ({
     });
   },
 
+  frontendFeedbackPathChangePassword: (localeValue: string, token: string, username: string): string => {
+    return StringUtil.parseMessageFormat(process.env.BFEG_FE_FEEDBACK_PATH_CHANGE_PASSWORD, {
+      locale: localeValue,
+      token: token,
+      username: username
+    });
+  },
+
   googleAuthClientId: (): string => process.env.BFEG_GOOGLE_AUTH_CLIENT_ID,
   googleAuthClientSecret: (): string => process.env.BFEG_GOOGLE_AUTH_CLIENT_SECRET,
   googleAuthRedirectUri: (): string => process.env.BFEG_GOOGLE_AUTH_REDIRECT_URI,

@@ -6,7 +6,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ExtractJwt, JwtFromRequestFunction, Strategy } from 'passport-jwt';
 
 /**
  * Strategy to implement secure actions on sensitive user account data (e.g.
@@ -19,14 +19,18 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
  */
 @Injectable()
 export class SecureAccountActionStrategy extends PassportStrategy(Strategy, 'secure-account-action') {
+
+  private static jwtFromRequestFunction: JwtFromRequestFunction = (request: Request) => {
+    return ExtractJwt.fromUrlQueryParameter('token')(request) ?? ExtractJwt.fromBodyField('token')(request);
+  };
+
   public constructor(
     private readonly authenticationService: AuthenticationService,
     @Inject(authConfig.KEY)
     private readonly _authConfig: ConfigType<typeof authConfig>
   ) {
     super({
-      // Refresh token was transferred via cookie
-      jwtFromRequest: ExtractJwt.fromUrlQueryParameter('token'),
+      jwtFromRequest: SecureAccountActionStrategy.jwtFromRequestFunction,
       // if we are supplied with an expired JWT, the request will be
       // denied and a 401 Unauthorized response sent
       ignoreExpiration: false,
@@ -45,13 +49,9 @@ export class SecureAccountActionStrategy extends PassportStrategy(Strategy, 'sec
    * valid user.
    * @returns - The return value of this method will be used by Passport to
    * build a 'user' object and attach it as a property on the Request object.
-   *
    */
   public async validate(request: Request, payload: JwtAccountActionTokenPayload): Promise<User> {
-    // TODO find better way to access the token from the strategy instance
-    // instead of reading it here again from the queryParams: thats duplicated
-    // logic
-    const jwtToken = request.query?.token + '';
+    const jwtToken = SecureAccountActionStrategy.jwtFromRequestFunction(request);
     return this.authenticationService.verifySecureAccountActionToken(jwtToken, payload);
   }
 }

@@ -54,7 +54,7 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
   }
 
   public async findByEmail(email: string, opts?: CommonFindOptions & UserFindOptions): Promise<User> {
-    const user: User = this.encryptFieldsBeforeQueryQuery({ ...{ email: email } } as User);
+    const user: User = this.encryptFieldsBeforeQuery({ ...{ email: email } } as User);
 
     const qb = this.userRepository.createQueryBuilder('user').where('user.email=:email').setParameters({
       email: user.email,
@@ -70,7 +70,7 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
   }
 
   public async findByUsernameOrEmail(usernameOrEmail: string, opts?: UserFindOptions): Promise<User> {
-    const user: User = this.encryptFieldsBeforeQueryQuery({
+    const user: User = this.encryptFieldsBeforeQuery({
       ...{ email: usernameOrEmail, username: usernameOrEmail },
     } as User);
     const qb = this.userRepository
@@ -148,11 +148,11 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
    * @returns Number of deleted rows
    */
   public delete(user: User): Promise<number> {
-    user = this.encryptFieldsBeforeQueryQuery(user);
+    user = this.encryptFieldsBeforeQuery(user);
     return this.userRepository.delete(user).then((result: DeleteResult) => result.affected ?? 0);
   }
 
-  private encryptFieldsBeforeQueryQuery(user: User): User {
+  private encryptFieldsBeforeQuery(user: User): User {
     if (user?.email) {
       user.email = this.cryptoService.deterministicEncryption(user.email);
     }
