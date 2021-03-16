@@ -152,6 +152,10 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
     return this.userRepository.delete(user).then((result: DeleteResult) => result.affected ?? 0);
   }
 
+  public async deleteAccountActionToken(userId: string, token: string): Promise<void> {
+    await this.userRepository.update({ entityInfo: { id: userId }, accountActionToken: token } as User, { accountActionToken: null } as User);
+  }
+
   private encryptFieldsBeforeQuery(user: User): User {
     if (user?.email) {
       user.email = this.cryptoService.deterministicEncryption(user.email);

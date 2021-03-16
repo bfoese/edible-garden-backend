@@ -32,10 +32,16 @@ export default registerAs('auth', () => ({
       locale: localeValue,
     });
   },
+  frontendFeedbackPathInvalidTokenResetPassword: (localeValue: string): string => {
+    return StringUtil.parseMessageFormat(process.env.BFEG_FE_FEEDBACK_PATH_INVALID_TOKEN_RESET_PASSWORD, {
+      locale: localeValue,
+    });
+  },
 
-  frontendFeedbackPath3rdPartySignin: (localeValue: string): string => {
+  frontendFeedbackPath3rdPartySignin: (localeValue: string, token: string): string => {
     return StringUtil.parseMessageFormat(process.env.BFEG_FE_FEEDBACK_PATH_3RD_PARTY_SIGNIN, {
       locale: localeValue,
+      token: `${token}`
     });
   },
 

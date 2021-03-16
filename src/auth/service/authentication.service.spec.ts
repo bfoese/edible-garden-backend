@@ -11,7 +11,11 @@ import mockedJwtTokenFactoryService from '@eg-test-mocks/auth/jwt-token-factory.
 import { UserMockFactory } from '@eg-test-mocks/domain/user-mock.factory';
 import mockedMailService from '@eg-test-mocks/service/mail.service.mock';
 import mockedUserService from '@eg-test-mocks/service/user.service.mock';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtModuleOptions, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { plainToClass } from 'class-transformer';
@@ -171,7 +175,7 @@ describe('AuthenticationService', () => {
       expect(validationError).toBeDefined();
       expect(validationError).toBeInstanceOf(HttpException);
       expect((<HttpException>validationError).getStatus()).toBe(HttpStatus.UNAUTHORIZED);
-      expect((<HttpException>validationError).getResponse()).toContain(
+      expect((<UnauthorizedException>validationError).message).toContain(
         ApplicationErrorRegistry.InvalidUserNameOrPassword.errorName
       );
     });
@@ -197,7 +201,7 @@ describe('AuthenticationService', () => {
       expect(validationError).toBeDefined();
       expect(validationError).toBeInstanceOf(HttpException);
       expect((<HttpException>validationError).getStatus()).toBe(HttpStatus.UNAUTHORIZED);
-      expect((<HttpException>validationError).getResponse()).toContain(
+      expect((<HttpException>validationError).message).toContain(
         ApplicationErrorRegistry.ActionDeniedAccountNotActivated.errorName
       );
     });
@@ -223,7 +227,7 @@ describe('AuthenticationService', () => {
       expect(validationError).toBeDefined();
       expect(validationError).toBeInstanceOf(HttpException);
       expect((<HttpException>validationError).getStatus()).toBe(HttpStatus.UNAUTHORIZED);
-      expect((<HttpException>validationError).getResponse()).toContain(
+      expect((<HttpException>validationError).message).toContain(
         ApplicationErrorRegistry.ActionDeniedEmailVerificationRequired.errorName
       );
     });
@@ -249,7 +253,7 @@ describe('AuthenticationService', () => {
       expect(validationError).toBeDefined();
       expect(validationError).toBeInstanceOf(HttpException);
       expect((<HttpException>validationError).getStatus()).toBe(HttpStatus.UNAUTHORIZED);
-      expect((<HttpException>validationError).getResponse()).toContain(
+      expect((<HttpException>validationError).message).toContain(
         ApplicationErrorRegistry.InvalidUserNameOrPassword.errorName
       );
     });

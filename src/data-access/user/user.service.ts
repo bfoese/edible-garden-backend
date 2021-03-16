@@ -95,7 +95,7 @@ export class UserService {
 
   /**
    * Updated the users password to the new value.
-   * @param userId
+   * @param userId -
    * @param hashedPassword - Must be the hashed passwort, the database schema won't perform the hashing!
    * @returns
    */
@@ -115,6 +115,10 @@ export class UserService {
     return this.userRepository.save(newData).then((result: User) => {
       return result;
     });
+  }
+
+  public async deleteToken(userId: string, token: string): Promise<void> {
+    return this.userRepository.deleteAccountActionToken(userId, token);
   }
 
   public async deleteAccountPermanently(userId: string): Promise<boolean> | never {

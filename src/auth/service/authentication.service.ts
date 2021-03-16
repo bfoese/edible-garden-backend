@@ -14,18 +14,23 @@ import { AccountRegistrationUserDeletedEmailJobContext } from '@eg-mail/contract
 import { MailService } from '@eg-mail/mail.service';
 import { LimitTokensPerUserOptions } from '@eg-refresh-token-cache/limit-tokens-per-user.options';
 import { RefreshTokenCacheService } from '@eg-refresh-token-cache/refresh-token-cache.service';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ValidatorOptions } from '@nestjs/common/interfaces/external/validator-options.interface';
 import { JwtService } from '@nestjs/jwt';
 import { validateOrReject, ValidationError } from 'class-validator';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 import { AccountActionEmailService } from './account-action-email.service';
 import { JwtTokenFactoryService } from './jwt-token-factory.service';
 
 @Injectable()
 export class AuthenticationService {
-  public static readonly JwtRefreshCookieName = 'JwtRefresh';
+  public static readonly JwtRefreshCookieName = 'EgJwtRefresh';
 
   public constructor(
     private readonly userService: UserService,
@@ -129,7 +134,7 @@ export class AuthenticationService {
   }
 
   private async hashUserPassword(plainTextPassword: string): Promise<string | undefined> {
-    return plainTextPassword ?  await this.hashingService.createSaltedPepperedHash(plainTextPassword) : undefined;
+    return plainTextPassword ? await this.hashingService.createSaltedPepperedHash(plainTextPassword) : undefined;
   }
 
   public async signupOrUpdateExtAuthProviderUser(
@@ -224,7 +229,7 @@ export class AuthenticationService {
       // and these action tokens can be considered to be one-time-tokens
       const userAccountActionToken = user.accountActionToken;
       // the token in the database was hashed for security reasons
-      const matchingToken = userAccountActionToken === jwtToken
+      const matchingToken = userAccountActionToken === jwtToken;
       if (matchingToken) {
         return user;
       }
@@ -236,9 +241,8 @@ export class AuthenticationService {
     return this.userService.verifyEmail(user.entityInfo.id);
   }
 
-  public async changePassword(userId: string, plainTextPassword: string, _token: string): Promise<User> {
-
-    const validationObj = {password: plainTextPassword} as User;
+  public async changePassword(userId: string, plainTextPassword: string, token: string): Promise<User> {
+    const validationObj = { password: plainTextPassword } as User;
 
     await validateOrReject(validationObj, {
       groups: [UserValidation.groups.userRegistration],
@@ -246,8 +250,13 @@ export class AuthenticationService {
       throw new ValidationException(errors);
     });
 
-    const hashedPassword = await this.hashUserPassword(plainTextPassword)
-    return this.userService.changePassword(userId, hashedPassword);
+    const hashedPassword = await this.hashUserPassword(plainTextPassword);
+    const user = await this.userService.changePassword(userId, hashedPassword);
+
+    if (user) {
+      await this.userService.deleteToken(userId, token);
+    }
+    return user;
   }
 
   public deleteAccount(userId: string): Promise<boolean> {
@@ -272,30 +281,18 @@ export class AuthenticationService {
     if (passwordMatches) {
       const user = await this.userService.findByUsernameOrEmail(usernameOrEmail);
       if (user.isAccountMarkedForDeletion()) {
-        throw new HttpException(
-          ApplicationErrorRegistry.InvalidUserNameOrPassword.getMessage(usernameOrEmail),
-          HttpStatus.UNAUTHORIZED
-        );
+        throw new UnauthorizedException(ApplicationErrorRegistry.InvalidUserNameOrPassword.getMessage(usernameOrEmail));
       }
       if (!user.isAccountActivated()) {
-        throw new HttpException(
-          ApplicationErrorRegistry.ActionDeniedAccountNotActivated.getMessage(),
-          HttpStatus.UNAUTHORIZED
-        );
+        throw new UnauthorizedException(ApplicationErrorRegistry.ActionDeniedAccountNotActivated.getMessage());
       }
 
       if (!user.isEmailVerified) {
-        throw new HttpException(
-          ApplicationErrorRegistry.ActionDeniedEmailVerificationRequired.getMessage(),
-          HttpStatus.UNAUTHORIZED
-        );
+        throw new UnauthorizedException(ApplicationErrorRegistry.ActionDeniedEmailVerificationRequired.getMessage());
       }
       return user;
     }
-    throw new HttpException(
-      ApplicationErrorRegistry.InvalidUserNameOrPassword.getMessage(usernameOrEmail),
-      HttpStatus.UNAUTHORIZED
-    );
+    throw new UnauthorizedException(ApplicationErrorRegistry.InvalidUserNameOrPassword.getMessage(usernameOrEmail));
   }
 
   private async generateNextRefreshToken(user: User, previousRefreshToken: string): Promise<string> {
@@ -327,7 +324,7 @@ export class AuthenticationService {
       await this.addRefreshTokenCookie(request, previousRefreshToken, user);
       return accessToken;
     }
-    return null;
+    throw new UnauthorizedException();
   }
 
   public async signin(request: Request, user: User): Promise<string> {
@@ -336,7 +333,7 @@ export class AuthenticationService {
       await this.addRefreshTokenCookie(request, null, user);
       return accessToken;
     }
-    return null;
+    throw new UnauthorizedException();
   }
 
   /**
@@ -348,11 +345,10 @@ export class AuthenticationService {
    * @param request -
    * @param user -
    */
-  public async signout(request: Request, user: User): Promise<boolean> {
+  public async signout(request: Request, user: User, response: Response): Promise<void> {
     const previousRefreshToken = AuthenticationService.getJwtRefreshCookie(request);
     this.refreshTokenCacheService.removeOne(user?.entityInfo?.id, previousRefreshToken);
-    request.res.clearCookie(AuthenticationService.JwtRefreshCookieName);
-    return Promise.resolve(true);
+    response.clearCookie(AuthenticationService.JwtRefreshCookieName, { path: '/' }).status(204).send();
   }
 
   private async addRefreshTokenCookie(request: Request, previousRefreshToken: string, user: User): Promise<void> {

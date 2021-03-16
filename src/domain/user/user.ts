@@ -73,7 +73,7 @@ export class User {
     groups: [UserValidation.groups.userRegistration, UserValidation.groups.updatePassword],
   })
   @IsString()
-  @Matches(UserValidation.constraints.password.pattern, { message: 'password too weak'})
+  @Matches(UserValidation.constraints.password.pattern, { message: 'password too weak' })
   public password: string;
 
   @IsNotEmpty({

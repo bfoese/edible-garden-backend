@@ -3,7 +3,7 @@ import { AuthenticationService } from '@eg-auth/service/authentication.service';
 import { ExternalAuthProvider } from '@eg-domain/user/external-auth-provider.enum';
 import { User } from '@eg-domain/user/user';
 import { Injectable } from '@nestjs/common';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 import { SendAccountActionLinkDto } from './dto/send-account-action-link.dto';
 import { SigninResponseDto } from './dto/signin-response.dto';
@@ -65,12 +65,11 @@ export class AuthenticationFacadeService {
     return this.signinResonseDtoMapper.toDto({ user: user, jsonWebToken: token });
   }
 
-  public async signout(request: Request, user: User): Promise<boolean> {
-    return this.authenticationService.signout(request, user);
+  public async signout(request: Request, user: User, response: Response): Promise<void> {
+    return this.authenticationService.signout(request, user, response);
   }
 
   public async changePassword(userId: string, plainTextPassword: string, token: string): Promise<User> {
     return this.authenticationService.changePassword(userId, plainTextPassword, token);
   }
-
 }

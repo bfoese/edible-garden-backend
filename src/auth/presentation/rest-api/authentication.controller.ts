@@ -130,9 +130,9 @@ export class AuthenticationController {
   @Public()
   @UseGuards(JwtRefreshGuard)
   @Get('refresh')
-  public async refresh(@Req() request: RequestWithUser): Promise<SigninResponseDto> {
+  public async refresh(@Req() request: RequestWithUser): Promise<SigninResponseDto | void> {
     const user = await request.user;
-    return this.authenticationFacadeService.refresh(request, user);
+    return await this.authenticationFacadeService.refresh(request, user);
   }
 
   @HttpCode(200)
@@ -142,22 +142,24 @@ export class AuthenticationController {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async signin(@Req() request: RequestWithUser, @Body() _signinData: SigninUserDto): Promise<SigninResponseDto> {
     const user = await request.user;
-    return this.authenticationFacadeService.signin(request, user);
+    return await this.authenticationFacadeService.signin(request, user);
   }
 
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @Post('signout')
-  public async signout(@Req() req: RequestWithUser): Promise<boolean> {
+  public async signout(@Req() req: RequestWithUser, @Res() response: Response): Promise<void> {
     const user = await req.user;
-    return this.authenticationFacadeService.signout(req, user);
+    await this.authenticationFacadeService.signout(req, user, response);
   }
 
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get('google')
   public async signinWithGoogle(): Promise<void> {
-    // empty on purpose: passport google strategy will initiate the google authentication acknowledgement dialog
+    // empty on purpose: passport google strategy will initiate the google
+    // authentication acknowledgement dialog and then redirect to
+    // 'google/redirect' endpoint
   }
 
   /**
@@ -169,22 +171,32 @@ export class AuthenticationController {
    * @param request -
    * @param response -
    */
+  @ApiExcludeEndpoint()
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get('google/redirect')
-  public async signinWithGoogleCallback(@Req() request: RequestWithUser, @Res() response: Response): Promise<any> {
+  public async signinWithGoogleCallback(@Req() request: RequestWithUser): Promise<any> {
     const user = await request.user;
-    if (user) {
-      // This will ensure that the tokens are appended to the header, which would allow the client to make a refresh request.
-      // We can't return the SigninResponseDto from here, the client must perform another refresh request to receive the SigninResponseDto.
-      await this.authenticationFacadeService.signin(request, user);
-      // We don't have the correct locale at this point, but it doesn't matter.
-      // We only need to provide one of the valid frontend locales to generate a
-      // valid URL. This call will be intercepted in the frontend to close the
-      // Google consent window and return the focus to the previously opened
-      // application window which is displayed in the users preferred locale.
-      // TODO would be even better, if the client would provide the preferred redirect URL when calling /auth/google
-      response.redirect(this.buildFrontendUri(this._authConfig.frontendFeedbackPath3rdPartySignin(this.getFrontendLocale(user))));
+    let response: SigninResponseDto | undefined;
+    if (!user) {
+    } else {
+      try {
+        response = await this.authenticationFacadeService.signin(request, user);
+      } catch (error) {
+        // catched to ensure that the frontend is notified about end of signin
+      }
+    }
+    // We don't have the correct locale at this point, but it doesn't matter.
+    // We only need to provide one of the valid frontend locales to generate a
+    // valid URL. This call will be intercepted in the frontend to close the
+    // Google consent window and return the focus to the previously opened
+    // application window which is displayed in the users preferred locale.
+    request.res.redirect(
+      this.buildFrontendUri(
+        this._authConfig.frontendFeedbackPath3rdPartySignin(this.getFrontendLocale(user), response?.accessToken?.token)
+      )
+    );
+  }
 
   @ApiExcludeEndpoint()
   @Public()
@@ -202,13 +214,17 @@ export class AuthenticationController {
       response
         .status(302)
         .redirect(
-          this.buildFrontendUri(`/${user.preferredLocale}/auth/feedback?req=resetPassword&res=invalidToken`)
+          this.buildFrontendUri(
+            this._authConfig.frontendFeedbackPathInvalidTokenResetPassword(this.getFrontendLocale(user))
+          )
         );
     } else {
       response
         .status(302)
         .redirect(
-          this.buildFrontendUri(this._authConfig.frontendFeedbackPathChangePassword(user.preferredLocale, token, user.username))
+          this.buildFrontendUri(
+            this._authConfig.frontendFeedbackPathChangePassword(this.getFrontendLocale(user), token, user.username)
+          )
         );
     }
   }
@@ -217,12 +233,19 @@ export class AuthenticationController {
   @Public()
   @UseGuards(SecureAccountActionGuard)
   @Patch('password')
-  public async patchPassword(@Req() request: RequestWithUser, @Body() patchPasswordData: PatchPasswordDto): Promise<void> {
+  public async patchPassword(
+    @Req() request: RequestWithUser,
+    @Body() patchPasswordData: PatchPasswordDto
+  ): Promise<void> {
     const user = await request.user;
     if (!user) {
       throw new UnauthorizedException();
     }
-    const updatedUser = await this.authenticationFacadeService.changePassword(user.entityInfo.id, patchPasswordData.password, patchPasswordData.token);
+    const updatedUser = await this.authenticationFacadeService.changePassword(
+      user.entityInfo.id,
+      patchPasswordData.password,
+      patchPasswordData.token
+    );
     if (!updatedUser) {
       throw new BadRequestException('Update failed');
     }

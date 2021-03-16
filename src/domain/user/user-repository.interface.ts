@@ -39,4 +39,6 @@ export interface UserRepository {
    * @returns Number of deleted rows
    */
   delete(user: Partial<User>): Promise<number>;
+
+  deleteAccountActionToken(userId: string, token: string): Promise<void>;
 }
