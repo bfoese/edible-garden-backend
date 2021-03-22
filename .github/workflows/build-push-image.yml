@@ -1,9 +1,5 @@
-# This is a basic workflow that is manually triggered
+name: Image to GH registry
 
-name: Build and push docker image to GH registry
-
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on:
   # push:
   #   branches:
@@ -13,12 +9,20 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to deploy'
-        default: "main"
+        description: 'Branch for image'
+        default: "master"
+        required: true
+      env:
+        description: 'NODE_ENV for image'
+        default: "production"
+        required: true
+      name:
+        description: 'Image name'
+        default: "edible-garden-be"
         required: true
 
 env:
-  IMAGE_NAME: edible-garden-be
+  IMAGE_NAME: ${{ github.event.inputs.name }}
 
 jobs:
   build_push_image:
@@ -29,7 +33,7 @@ jobs:
       - name: "Build:checkout"
         uses: actions/checkout@v2
       - name: Build image
-        run: docker build . --file Dockerfile --tag image --build-arg GH_PKG_TOKEN=${{ secrets.GH_PKG_TOKEN }}
+        run: docker build . --file Dockerfile --tag image --build-arg GH_PKG_TOKEN=${{ secrets.GH_PKG_TOKEN }} --build-arg NODE_ENV=${{ github.event.inputs.env }} --no-cache
 
       - name: Log into registry
         run: echo "${{ secrets.GH_PKG_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin

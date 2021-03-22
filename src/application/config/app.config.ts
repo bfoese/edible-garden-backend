@@ -16,6 +16,7 @@ export default registerAs('app', () => ({
   sslEnabled: (): boolean => process.env.BFEG_SSL_ENABLED === 'true',
 
   isProduction: (): boolean => process.env.NODE_ENV === 'production',
+  isQA: (): boolean => process.env.NODE_ENV === 'qa',
   serverUrl: (): string => process.env.SERVER_URL,
 
   enabledFrontendLocales: (): string[] => {

@@ -26,6 +26,7 @@
         "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
         "start": "nest start",
         "start:dev": "cross-env NODE_ENV=development nest start --watch",
+        "start:dev:qa": "cross-env NODE_ENV=qa nest start --watch",
         "start:dev:prod": "cross-env NODE_ENV=production nest start --watch",
         "start:debug": "nest start --debug --watch",
         "start:prod": "node dist/src/main",
@@ -92,11 +93,11 @@
         "pg": "^8.4.2",
         "redis": "^3.0.2",
         "reflect-metadata": "^0.1.13",
+        "replace-in-file": "^6.1.0",
         "rimraf": "^3.0.2",
         "rxjs": "^6.6.3",
-        "swagger-ui-express": "^4.1.4",
         "shx": "^0.3.3",
-        "replace-in-file": "^6.1.0"
+        "swagger-ui-express": "^4.1.4"
     },
     "devDependencies": {
         "@commitlint/cli": "9.1.1",

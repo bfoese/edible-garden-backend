@@ -1,0 +1,81 @@
+name: Auto Deploy Heroku Prod
+
+on:
+  push:
+    branches:
+      - prod
+  pull_request:
+    branches:
+      - prod
+
+env:
+  BRANCH: prod
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '15.x'
+        always-auth: true
+        registry-url: https://npm.pkg.github.com
+        scope: '@bfoese'
+    - name: Install Packages
+      run: |
+        echo "//npm.pkg.github.com/:_authToken=$NODE_AUTH_TOKEN" > ~/.npmrc
+        npm ci
+      env:
+        NODE_AUTH_TOKEN: ${{secrets.GH_PKG_TOKEN}}
+    - name: Lint
+      run: npm run lint
+    - name: Test
+      run: npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Branch name
+        run: |
+          echo $BRANCH
+      # akhileshns/heroku-deploy@v3.12.12
+      - uses: akhileshns/heroku-deploy@79ef2ae4ff9b897010907016b268fd0f88561820
+        with:
+          branch: $BRANCH
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.PROD_HEROKU_APP_NAME}}
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+          dontuseforce: false
+          usedocker: true
+          docker_heroku_process_type: web
+          region: eu
+          docker_build_args: |
+            GH_PKG_TOKEN
+            NODE_ENV
+          env_file: ".env.production"
+          healthcheck: "https://${{secrets.PROD_HEROKU_APP_NAME}}.herokuapp.com/edible-garden/health"
+          delay: 5
+          # Only variables prefixed with 'HD_' will be recognized by the action. The prefix will automatically be cropped from the name by the action.
+        env:
+          NODE_ENV: production
+          GH_PKG_TOKEN: ${{secrets.GH_PKG_TOKEN}}
+          HD_BFEG_CORS_ORIGINS: ${{secrets.PROD_BFEG_CORS_ORIGINS}}
+          #HD_DB_SSL_CA: ${{secrets.HEROKU_CA}}
+          HD_GH_PKG_TOKEN: ${{secrets.GH_PKG_TOKEN}}
+          HD_BFEG_AUTH_HASHING_PEPPER: ${{secrets.PROD_BFEG_AUTH_HASHING_PEPPER}}
+          HD_BFEG_JWT_SECRET: ${{secrets.PROD_BFEG_JWT_SECRET}}
+          HD_BFEG_JWT_REFRESH_SECRET: ${{secrets.PROD_BFEG_JWT_REFRESH_SECRET}}
+          HD_BFEG_JWT_ACCOUNT_ACTION_SECRET: ${{secrets.PROD_BFEG_JWT_ACCOUNT_ACTION_SECRET}}
+          HD_BFEG_COOKIE_SIGNATURE_SECRET: ${{secrets.PROD_BFEG_COOKIE_SIGNATURE_SECRET}}
+          HD_BFEG_EMAIL_TRANSPORT_URL: ${{secrets.EMAIL_TRANSPORT_URL}}
+          HD_BFEG_EMAIL_FROM: ${{secrets.EMAIL_FROM}}
+          HD_BFEG_PERSONAL_DATA_ENCRYPTION_KEY: ${{secrets.PROD_BFEG_PERSONAL_DATA_ENCRYPTION_KEY}}
+          HD_BFEG_AUTH_FRONTEND_URL: ${{secrets.PROD_BFEG_AUTH_FRONTEND_URL}}
+          HD_SERVER_URL: ${{secrets.PROD_BFEG_SERVER_URL}}
+          #HD_BFEG_CARDIAC_MASSAGE_DYNO_URLS: ${{secrets.PROD_BFEG_CARDIAC_MASSAGE_DYNO_URLS}}
+          HD_BFEG_GOOGLE_AUTH_CLIENT_ID: ${{secrets.GOOGLE_AUTH_CLIENT_ID}}
+          HD_BFEG_GOOGLE_AUTH_CLIENT_SECRET: ${{secrets.GOOGLE_AUTH_CLIENT_SECRET}}

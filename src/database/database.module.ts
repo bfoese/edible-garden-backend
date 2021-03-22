@@ -30,8 +30,12 @@ import { DomainSnakeCaseNamingStrategy } from './strategy/domain-snake-case-nami
           synchronize: _dbConfig.synchronize(),
           logging: _dbConfig.enableLogging(),
 
-          ...(_appConfig.isProduction() && {
-            ssl: <TlsOptions>{ ca: _dbConfig.sslCA(), rejectUnauthorized: false },
+          // Don't remember where I got the certificate from. Heroku docs do not imply that a certificate file is needed
+          // ...(_appConfig.isQA() && {
+          //   ssl: <TlsOptions>{ ca: _dbConfig.sslCA(), rejectUnauthorized: false },
+          // }),
+          ...((_appConfig.isQA() || _appConfig.isProduction()) && {
+            ssl: { rejectUnauthorized: false } as TlsOptions,
           }),
         },
     }),

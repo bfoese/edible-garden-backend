@@ -1,3 +1,7 @@
+# make sure to provide the env file and the private registry secret
+# $ docker-compose --env-file .env.container.dev build --build-arg GH_PKG_TOKEN="secret" [--build-arg NODE_ENV=developtment] --no-cache
+# $ docker-compose --env-file .env.container.dev up
+
 # docker-compose version: 3.7 supports multi-stage build
 version: '3.7'
 
@@ -9,10 +13,11 @@ services:
       # In the build config, we define the context, which tells Docker which files should be sent to the Docker daemon.
       # In our case, that’s our whole application, and so we pass in ., which means all of the current directory.
       context: .
+      dockerfile: Dockerfile.dev
       # We also define a target property and set it to development. Thanks to this property, Docker will now only build
       # the first part of our Dockerfile and completely ignore the production part of our build (it will stop before
       # the second FROM statement).
-      target: development
+      target: builder
 
     # A volume is a way to mount a host directory in a container, and we define two of them.
     # The first mounts our current directory (.) inside the Docker container (/usr/src/app). This way, when we change a
@@ -35,12 +40,6 @@ services:
 
     command: npm run start:dev
 
-    # When working with Node.js applications, we normally use the .env file to keep our environment variables in one
-    # place. Since we are using environment variables in our config (like we do above in ports), we also load the
-    # variables from the file just in case they were defined there.
-    env_file:
-      - .env.docker
-
     # Since each service has its own internal network (due to their being different containers), we also create our own
     # network that will make it possible for them to communicate.
     # Note that the network is defined at the bottom of the file; here we are just telling docker-compose to use it in this particular service.
@@ -57,6 +56,7 @@ services:
       - webnet
     ports:
       - ${REDIS_PORT}:${REDIS_PORT}
+
   postgres:
     container_name: edible-garden-db
     image: postgres:12
@@ -76,22 +76,23 @@ services:
       # The first part of the volume is not a directory, but rather a named volume that is defined at the bottom of the file
       - pgdata:/var/lib/edible-garden-db/data
 
-  pgadmin:
-    container_name: edible-garden-pgadmin
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    volumes:
-       - pgadmin:/root/.pgadmin
-    ports:
-      - ${PGADMIN_PORT}:80
-    networks:
-      - webnet
-    depends_on:
-      - postgres
-    restart: unless-stopped
-    tty: true
+  # Not used at this point in favor to other desktop database tool
+  # pgadmin:
+  #   container_name: edible-garden-pgadmin
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+  #   volumes:
+  #      - pgadmin:/root/.pgadmin
+  #   ports:
+  #     - ${PGADMIN_PORT}:80
+  #   networks:
+  #     - webnet
+  #   depends_on:
+  #     - postgres
+  #   restart: unless-stopped
+  #   tty: true
 
 networks:
   webnet:

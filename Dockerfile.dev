@@ -28,20 +28,4 @@ COPY . ./
 
 # build the app and remove the dev dependencies from node_modules
 # also apply patch script after pruning
-RUN npm run build --prod && npm prune --production && npm run postinstall
-
-# Create a second stage to make this a multi stage build: only the final build
-# will show up in the commit history of the docker image. With this second
-# stage, the secret $GH_PKG_TOKEN from previous stage is not going to be visible in
-# the commit history of the image.
-FROM node:14.15-alpine as production
-
-ARG NODE_ENV
-ENV NODE_ENV ${NODE_ENV}
-
-WORKDIR /usr/src/app
-
-# Copy the built /dist folder from the builder image
-COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/node_modules ./node_modules
-CMD ["node", "dist/src/main"]
+RUN npm run build --prod

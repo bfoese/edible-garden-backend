@@ -8,6 +8,10 @@ on:
   push:
     branches:
       - master
+      - 'feat-*'
+
+env:
+  BRANCH: master
 
 jobs:
   test:

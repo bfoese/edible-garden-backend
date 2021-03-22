@@ -9,8 +9,8 @@ An extended [Nest](https://github.com/nestjs/nest) framework TypeScript starter 
 <li>OpenAPI</li>
 <li>TypeORM with external schema definition</li>
 <li>Postgres</li>
-<li>Redis<li/>
-<li>Passport JWT<li/>
+<li>Redis</li>
+<li>Passport JWT</li>
 </ul>
 
 ## Installation & Running
@@ -31,10 +31,10 @@ $ npm run start:dev
 $ npm run start:prod
 
 # Start all Services & App with Docker Compose
-$ docker-compose --env-file .env.container.dev build --build-arg GH_PKG_TOKEN="secret"
+$ docker-compose --env-file .env.container.dev build --build-arg GH_PKG_TOKEN="secret" --build-arg NODE_ENV=production --no-cache
 $ docker-compose --env-file .env.container.dev up
 
-# Only start Database with Docker Compose
+# Only start databases with Docker Compose without the container for the app
 $ docker-compose start postgres redis
 ```
 
@@ -85,16 +85,17 @@ There are different options for debugging a NestJS app. The easiest seems to be 
 Priority of the files
 
 <ul>
-    <li>Dev: (npm start): .env.development.local, .env.development, .env.local, .env</li>
-    <li>Prod: (npm run build): .env.production.local, .env.production, .env.local, .env</li>
+    <li>Dev: (npm run start:dev): .env.development.local, .env.development, .env.local, .env</li>
+    <li>Dev: (npm run start:dev:qa): .env.qa.local, .env.qa, .env.local, .env</li>
+    <li>Prod: (npm run start:dev:prod): .env.production.local, .env.production, .env.local, .env</li>
 </ul>
 
 Conventions for this project:
 
 <ul>
-    <li>Properties which should be handled as a secret belong into the .env.{development|production}.local files. These files are on gitignore list and won't appear in the remote repository. These properties will be configured manually in the CI/CD pipeline tools</li>
+    <li>Properties which should be handled as a secret belong into the .env.{development|qa|production}.local files. These files are on gitignore list and won't appear in the remote repository. These properties will be configured manually in the CI/CD pipeline tools</li>
     <li>Secrets that are used both in development and production can go into the .env.local file, which is also on gitignore list</li>
-    <li>Properties which are not secret but rather used can go into the .env.{development|production} files. These files are not on gitignore list and therefore appear in the remote repository where they can be used to serve the CI/CD pipelines as a file import.</li>
+    <li>Properties which are not secret but rather used can go into the .env.{development|qa|production} files. These files are not on gitignore list and therefore appear in the remote repository where they can be used to serve the CI/CD pipelines as a file import.</li>
 </ul>
 
 ### API Documentation
@@ -185,23 +186,23 @@ Currently I use a patched version of TypeORM that supports embedded entities in 
 
 Sometimes it's useful to check Postgres state via CLI.
 
-Running postgres under user 'postgres':
-\$ docker exec -it <db-container-name> psql -U postgres
+```bash
+#Running postgres under user 'postgres':
+$ docker exec -it <db-container-name> psql -U postgres
 
-Connecting to a database:
-\$ \c <databaseName>
+# Connecting to a database:
+$ \c <databaseName>
 
-List all tables:
-\$ \d
+#List all tables:
+$ \d
 
-Details of a specific table:
+# Details of a specific table:
 \d+ <table_name>
 
-Exit the container:
+# Exit the container:
 \q
 
-Restart with clean local database:
-```bash
+# Restart with clean local database:
 $ docker-compose down --volumes
 ```
 
@@ -230,7 +231,7 @@ In the application code, the resolved locale can be accessed like this:
 ```
 
 Outside of a controller you need to considrate whether the code runs inside or outside the context of a request.
-Eg18nService has to methods which can be used for each of both cases.
+Eg18nService has two methods which can be used for each of both cases.
 
 ### Bulls Queue
 
@@ -325,25 +326,19 @@ $ heroku login
 $ heroku releases
 $ heroku releases:output <release number>
 
-```
-See environment variable names with their values
-```bash
+# Restart app
+$ heroku restart --app <app-name>
+
+# See environment variable names with their values
 $ heroku config --app <app-name>
 
-```
-
-Reset Database
-```bash
+# Reset Database
 heroku pg:reset DATABASE --app <app-name>
-```
 
-See server logs
-```bash
+#See server logs
 $ heroku logs --app <app-name> --tail -n <lines count>
-```
 
-See files on server
-```bash
+# See files on server
 $ heroku run bash --app <app-name>
 $ cd <app-name>
 $ dir
@@ -374,16 +369,13 @@ server is quickly running under https://localhost.
 
 ```bash
 # creates localhost.pem and localhost-key.pem
-$mkcert localhost
+$ mkcert localhost
 # Show path of root certificate
-$mkcert -CAROOT
+$ mkcert -CAROOT
 # Concatenate root certificate and localhost certifiate into one file
 cat localhost.pem > localhost-fullchain.pem
 cat "$(mkcert -CAROOT)/rootCA.pem" >> localhost-fullchain.pem
 ```
-
-
-
 
 ## Reading
 <ul>
@@ -450,7 +442,7 @@ must be done explicitly as described above. So workflow would be:
 <li>perform validation on domain class instance</li></ol>
 
 The domain objects must be validated manually, by calling the validation functions, e.g.
-```bash
+```typescript
 const newData = {...} as User;
 await validateOrReject(plainToClass(User, newData)).catch((error) => throw new ValidationException(error))
 ```
