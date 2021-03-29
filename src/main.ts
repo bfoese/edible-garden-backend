@@ -1,4 +1,8 @@
+import { E2EModule } from '@eg-app/e2e/e2e.module';
 import { LoggerService } from '@eg-app/logger/logger.service';
+import { AuthModule } from '@eg-auth/auth.module';
+import { EdibleGardenRestApiModule } from '@eg-rest-api/edible-garden/edible-garden-rest-api.module';
+import { SeedSharingRestApiModule } from '@eg-rest-api/seed-sharing/seed-sharing-rest-api.module';
 import {
   INestApplication,
   NestApplicationOptions,
@@ -18,7 +22,6 @@ import dotenvExpand = require('dotenv-expand');
 import RateLimit = require('express-rate-limit');
 import fs = require('fs');
 import cookieParser = require('cookie-parser');
-
 async function bootstrap(): Promise<void> {
   initEnvironmenVariables();
 
@@ -91,11 +94,26 @@ function getHttpsOptions(): HttpsOptions {
  * @param configService -
  */
 function initSwagger(app: INestApplication): void {
-  const document = SwaggerModule.createDocument(
+
+  SwaggerModule.setup('api', app, SwaggerModule.createDocument(
     app,
-    new DocumentBuilder().setTitle('Edible Garden API').setDescription('').setVersion('1.0').build()
-  );
-  SwaggerModule.setup('api', app, document);
+
+    new DocumentBuilder().setTitle('Edible Garden API').setDescription('').setVersion('1.0').build(),
+    {
+      include: [AuthModule, SeedSharingRestApiModule, EdibleGardenRestApiModule]
+    }
+  ));
+
+  if (process.env.NODE_ENV !== 'production') {
+    SwaggerModule.setup('api/e2e', app, SwaggerModule.createDocument(
+      app,
+
+      new DocumentBuilder().setTitle('Edible Garden E2E API').setDescription('').setVersion('1.0').build(),
+      {
+        include: [E2EModule]
+      }
+    ));
+  }
 }
 
 bootstrap();

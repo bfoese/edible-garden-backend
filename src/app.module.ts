@@ -4,6 +4,7 @@ import dbConfig from '@eg-app-config/db.config';
 import emailConfig from '@eg-app-config/email.config';
 import redisConfig from '@eg-app-config/redis.config';
 import healthConfig from '@eg-app/config/health.config';
+import { E2EModule } from '@eg-app/e2e/e2e.module';
 import { EgI18nModule } from '@eg-app/i18n/eg-i18n.module';
 import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
 import { EdibleGardenRestApiModule } from '@eg-rest-api/edible-garden/edible-garden-rest-api.module';
@@ -36,6 +37,7 @@ import { MailModule } from './mail/mail.module';
     SeedSharingRestApiModule,
     HealthModule,
     AuthModule,
+    E2EModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       inject: [redisConfig.KEY],

@@ -268,6 +268,10 @@ avoid exploitation.
 Its a good idea to have a counter for the apps mail sending queue to not run
 into that limit by delaying mails above the limit for a few hours.
 
+To fetch emails from a Gmail Account via IMAP or POP3, you need to explicitly
+activiate these services in Gmail Account > Settings > All Settings > Tab
+POP/IMAP
+
 #### Gandi
 SMTP
 https://docs.gandi.net/en/simple_hosting/common_operations/smtp.html
@@ -286,7 +290,6 @@ It is also not very handy to create translations for text within a html tag (e.g
 As a sidenote, I started to create a handlebar helper function that could be used to translate a key within a template by reusing the apps i18n service. But this helper would have been asynchron and according to this post https://stackoverflow.com/a/23939596/11964644 it is not possible to define an asnychronous handlebars helper function (the post is rather old, might have changed, but not high priority right now to further investigate).
 
 So best idea at this point is to duplicate the email templates for each language. This offers the benefit of customized templates per locale with the disadvantage of some overhead when template variables etc. need to be changed.
-
 
 ## Heroku
 

@@ -23,6 +23,24 @@ export class StringUtil {
     return str === null || str === undefined || str === '';
   }
 
+  public static compare(str1: string, str2: string): -1 | 0 | 1 {
+    if (!str1 && str2) {
+      return 1;
+    }
+    if (str1 && !str2) {
+      return -1;
+    }
+
+    if (str1 > str2) {
+      return 1;
+    }
+    if (str1 < str2) {
+      return -1;
+    }
+
+    return 0;
+  }
+
   public static range(
     lowerBound: number | string | undefined,
     upperBound: number | string | undefined,
@@ -51,14 +69,14 @@ export class StringUtil {
 
   /**
    * Replaces placeholders within a string with the values from a placeholder map.
-   * 
+   *
    * @param str - A string containing placeholders in curly braces. Placeholders
    * can be named or numbered.
    * @param args - An object containing the values for the placeholders of the
    * message pattern. The object keys must be the names/numbers of the
    * placeholders.
    */
-  public static parseMessageFormat(messagePattern: string, args: { [key in string | number]: string; }): string {
+  public static parseMessageFormat(messagePattern: string, args: { [key in string | number]: string }): string {
     if (messagePattern && args) {
       for (const key in args) {
         // eslint-disable-next-line security/detect-non-literal-regexp
