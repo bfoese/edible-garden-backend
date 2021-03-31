@@ -73,32 +73,37 @@ There are different options for debugging a NestJS app. The easiest seems to be 
 
 <li>Click Ctrl+Shift+P and search for "Debug: Toggle Auto Attach". There are different options. When you choose 'disable', your debugger won't connect to the application. When you choose 'Only with Flag...', you have to start your app with '--inspect' flag otherwise the debugger won't connect to it. At the beginning you can choose 'Always'</li>
 
-<li>Start the application as you normally do, for example: nest start --watch. Basically, you can use your normal startup script. Except when you choose 'Only with flag' in the previous step, then you also have to include the option '--inspect'</li>
+<li>Start the application as you normally do, for example: `nest start --watch`. Basically, you can use your normal startup script. Except when you choose 'Only with flag' in the previous step, then you also have to include the option `--inspect`</li>
 <li>Open the debug view: Ctrl+Shift+D. In the top you can choose between existing launch configs. They are named and the name is defined in the property 'name' within the launch config json. Just select the one which belongs to the launch.json you created two steps earlier. Then click F5. In the top of the screen a small window will open where you can see your currently running node.js processes. Chose the process of your running application. And thats it: the debugger will connect to that instance.</li>
 <li>Debugger can be disconnected in den debug view under 'Call stack'</li>
 </ul>
 
 
 ## Application Specifics
+### Dependency Graph
+<img src="./dependencygraph.svg" width="150px" height="300px">
+
+[View full size](https://github.com/bfoese/edible-garden-backend/raw/master/dependencygraph.svg)
+
 ### DOTENV Files
 
 Priority of the files when running the project locally for one of the following environments:
 
 <ul>
     <li>Dev: (npm run start:dev): .env.development.local, .env.development, .env</li>
-    <li>Dev: (npm run start:dev:qa): .env.qa.local, .env.qa, .env</li>
+    <li>QA: (npm run start:dev:qa): .env.qa.local, .env.qa, .env</li>
     <li>Prod: (npm run start:dev:prod): .env.production.local, .env.production, .env</li>
 </ul>
 
 Conventions for this project:
 
 <ul>
-    <li>Properties which should be handled as a secret belong into the .env.{development|qa|production}.local files. These files are on gitignore list and won't appear in the remote repository. These properties will be configured manually in the CI/CD pipeline tools</li>
-    <li>Secrets that are used both in development and production can go into the .env.local file, which is also on gitignore list</li>
-    <li>Properties which are not secret but rather used can go into the .env.{development|qa|production} files. These files are not on gitignore list and therefore appear in the remote repository where they can be used to serve the CI/CD pipelines as a file import.</li>
+    <li>Properties which should be handled as a secret belong into the `.env.{development|qa|production}.local` files. These files are on gitignore/dockerignore list and won't appear in the remote repository. These properties will be configured manually in the CI/CD pipeline tools</li>
+    <li>Secrets that are used both in development and production can go into the `.env.local` file, which is also on gitignore list</li>
+    <li>Properties which are not secret can go into the `.env.{development|qa|production}` files. These files are not on gitignore/dockerignore list and therefore appear in the remote repository where they can be used to serve the CI/CD pipelines as a file import.</li>
+    <li>Propertie which are not secret and common for all environments could go into the `.env` file, but this is currently only a solution for local development. The Github Action for the Heroku deployment only allows to provide ONE env file. This will be either `.env.qa` or `.env.prod` depending on the deployment server. So the `.env` file is actually only being used when running the app locally, but not when deployed on Heroku. Docker run would allow multiple env files, so an investigation would be necessary to see whether the single env file is an limitation of Heroku or the Heroku deployment action.
+    </li>
 </ul>
-
-The Github Action for the Heroku deployment only allows to provide ONE env file. This will be either `.env.qa` or `.env.prod` depending on the deployment server. So the `.env` file is actually only being used when running the app locally, but not when deployed on Heroku. Docker run would allow multiple env files, so an investigation would be necessary to see whether the single env file is an limitation of Heroku or the Heroku deployment action.
 
 Important:
 
@@ -113,14 +118,16 @@ seems to work only locally, not when deployed to Heroku.
 
 ### API Documentation
 
-API endpoint is currently only available in ENV development.
+API Documentation and JSON endpoints are currently only exposed in ENV development.
 
 ```bash
-# Browsing the Swagger Documentation of the exposed endpoints
-http://localhost:3000/api
+# Main API
+https://localhost:3001/api
+https://localhost:3001/api-json
 
-# Downloadable JSON File of the endpoints
-http://localhost:3000/api-json
+# E2E API
+https://localhost:3001/api/e2e/
+https://localhost:3001/api/e2e-json
 ```
 
 ### Database & ORM
@@ -328,10 +335,7 @@ NodeJS apps kann be deployed to Heroku via the NodeJS buildback or as a containe
 <li>package.json contains some scripts prefixed with "heroku:" these are not used by Heroku, as we provide a Container. However, you can manually call them from heroku.yaml or the Dockerfile</li>
 </ul>
 
-
-
 There are two Github Actions defined for deployment: one for deploying as NodeJS app and one for deploying as containerized NodeJS app.
-
 
 ### CLI
 
@@ -379,9 +383,9 @@ server is quickly running under https://localhost.
 <ol>
 <li>Install mkcert</li>
 <li>Create certificate and key for desired domain</li>
-<li>Concatenate the root certificate and the certificate of the domain into one file (fullchain)<li>
+<li>Concatenate the root certificate and the certificate of the domain into one file (fullchain)</li>
 <li>start NestJS by providing the fullchain certificate and the key file of the domain</li>
-<ol>
+</ol>
 
 ```bash
 # creates localhost.pem and localhost-key.pem
@@ -392,13 +396,6 @@ $ mkcert -CAROOT
 cat localhost.pem > localhost-fullchain.pem
 cat "$(mkcert -CAROOT)/rootCA.pem" >> localhost-fullchain.pem
 ```
-
-## Reading
-<ul>
-<li>https://whuysentruit.medium.com/securing-your-single-page-application-anno-2019-754bc4c29119</li></ul>
-
-
-
 
 ## Lib Optimization
 
@@ -416,14 +413,6 @@ https://medium.com/dev-genius/nodejs-using-es-modules-instead-of-commonjs-9c6e80
 
 
 ## NestJS Notes
-
-<ul>
-<li>https://dev.to/nestjs/advanced-nestjs-how-to-build-completely-dynamic-nestjs-modules-1370</li>
-</ul>
-
-### Logging
-https://www.datadoghq.com/blog/node-logging-best-practices/
-
 ### Cron Jobs
 
 Cron Jobs which reside in a service will run automagically when the service is
@@ -466,5 +455,3 @@ Notice that the object must be transformed to a class, otherwise no validation
 is being transformed.
 
 Global DTO validation is still turned on and could be used for some edge cases.
-
-

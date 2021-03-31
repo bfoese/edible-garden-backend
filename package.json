@@ -46,9 +46,10 @@
         "schema:drop": "npm run typeorm:cli -- schema:drop",
         "migration:show": "npm run typeorm:cli -- migration:show",
         "heroku:migration": "typeorm migration:run -f dist/src/database/config/ormconfig.js",
-        "patch:lib": "cd libs/eg-backend-contract && npm version patch",
-        "publish:lib": "cd libs/eg-backend-contract && npm publish",
-        "create:npmrc": "node scripts/create-npmrc.js"
+        "patch:lib": "npm version patch --prefix libs/eg-backend-contract",
+        "publish:lib": "npm publish --prefix libs/eg-backend-contract",
+        "deptree:gen": "depcruise --prefix /node_modules/.bin --include-only '^src' --exclude 'mock\\.factory\\.ts$|mock\\.ts$|\\.config\\.ts$|\\.spec\\.ts$' --output-type dot src | graphviz -Tsvg > dependencygraph.svg",
+        "postdeptree:gen": "git add dependencygraph.svg"
     },
     "dependencies": {
         "@bfoese/eg-be-contract": "^0.0.25-snapshot",
@@ -121,6 +122,7 @@
         "commitizen": "^4.2.2",
         "cross-env": "^7.0.2",
         "cz-conventional-changelog": "^3.3.0",
+        "dependency-cruiser": "^9.24.0",
         "eslint": "^7.12.1",
         "eslint-config-prettier": "^6.15.0",
         "eslint-plugin-import": "^2.20.2",
@@ -128,6 +130,7 @@
         "eslint-plugin-prettier": "^3.1.4",
         "eslint-plugin-security": "^1.4.0",
         "eslint-plugin-tsdoc": "^0.2.4",
+        "graphviz-cli": "^1.0.0",
         "husky": "^4.3.6",
         "jest": "^26.6.3",
         "lint-staged": "^10.5.3",
@@ -142,7 +145,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "lint-staged",
+            "pre-commit": "lint-staged && npm run deptree:gen",
             "pre-push": "npm run test",
             "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
         }
