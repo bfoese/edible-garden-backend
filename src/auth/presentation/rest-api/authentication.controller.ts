@@ -130,7 +130,7 @@ export class AuthenticationController {
   @Public()
   @UseGuards(JwtRefreshGuard)
   @Get('refresh')
-  public async refresh(@Req() request: RequestWithUser): Promise<SigninResponseDto | void> {
+  public async refresh(@Req() request: RequestWithUser): Promise<SigninResponseDto> {
     const user = await request.user;
     return await this.authenticationFacadeService.refresh(request, user);
   }

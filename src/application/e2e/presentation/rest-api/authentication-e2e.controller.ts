@@ -1,5 +1,5 @@
 import { Public } from '@eg-auth/decorators/public-endpoint.decorator';
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { AuthenticationE2EFacadeService } from '../facade/authentication-e2e-facade.service';
@@ -15,12 +15,35 @@ export class AuthenticationE2EController {
   @ApiQuery({
     name: 'since',
     required: false,
-    type: Date
+    type: 'date',
+    example: '2021-01-30',
+    description:
+      'Filters emails whose internal date (disregarding time and timezone) is within or later than the specified date. Provided time/timezone are being completely ignored.',
   })
   public async findEmails(
     @Query('recipientEmail') recipientEmail: string,
     @Query('since') since: Date
   ): Promise<E2EEmailDto[]> {
     return this.authenticationE2EFacadeService.fetchWorkflowEmails(recipientEmail, since);
+  }
+
+  @ApiQuery({
+    name: 'email',
+    required: false,
+    type: 'string',
+  })
+  @ApiQuery({
+    name: 'username',
+    required: false,
+    type: 'string',
+  })
+  @Public()
+  @HttpCode(200)
+  @Delete('account')
+  public async deleteAccountWithoutAuthentication(
+    @Query('email') email: string,
+    @Query('username') username: string
+  ): Promise<any> {
+    return this.authenticationE2EFacadeService.deleteAccount(email ?? username);
   }
 }

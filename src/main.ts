@@ -94,25 +94,32 @@ function getHttpsOptions(): HttpsOptions {
  * @param configService -
  */
 function initSwagger(app: INestApplication): void {
-
-  SwaggerModule.setup('api', app, SwaggerModule.createDocument(
+  SwaggerModule.setup(
+    'api',
     app,
-
-    new DocumentBuilder().setTitle('Edible Garden API').setDescription('').setVersion('1.0').build(),
-    {
-      include: [AuthModule, SeedSharingRestApiModule, EdibleGardenRestApiModule]
-    }
-  ));
-
-  if (process.env.NODE_ENV !== 'production') {
-    SwaggerModule.setup('api/e2e', app, SwaggerModule.createDocument(
+    SwaggerModule.createDocument(
       app,
 
-      new DocumentBuilder().setTitle('Edible Garden E2E API').setDescription('').setVersion('1.0').build(),
+      new DocumentBuilder().setTitle('Edible Garden API').setDescription('').setVersion('1.0').build(),
       {
-        include: [E2EModule]
+        include: [AuthModule, SeedSharingRestApiModule, EdibleGardenRestApiModule],
       }
-    ));
+    )
+  );
+
+  if (process.env.NODE_ENV !== 'production') {
+    SwaggerModule.setup(
+      'api/e2e',
+      app,
+      SwaggerModule.createDocument(
+        app,
+
+        new DocumentBuilder().setTitle('Edible Garden E2E API').setDescription('').setVersion('1.0').build(),
+        {
+          include: [E2EModule],
+        }
+      )
+    );
   }
 }
 
