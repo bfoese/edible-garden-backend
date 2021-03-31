@@ -82,12 +82,12 @@ There are different options for debugging a NestJS app. The easiest seems to be 
 ## Application Specifics
 ### DOTENV Files
 
-Priority of the files
+Priority of the files when running the project locally for one of the following environments:
 
 <ul>
-    <li>Dev: (npm run start:dev): .env.development.local, .env.development, .env.local, .env</li>
-    <li>Dev: (npm run start:dev:qa): .env.qa.local, .env.qa, .env.local, .env</li>
-    <li>Prod: (npm run start:dev:prod): .env.production.local, .env.production, .env.local, .env</li>
+    <li>Dev: (npm run start:dev): .env.development.local, .env.development, .env</li>
+    <li>Dev: (npm run start:dev:qa): .env.qa.local, .env.qa, .env</li>
+    <li>Prod: (npm run start:dev:prod): .env.production.local, .env.production, .env</li>
 </ul>
 
 Conventions for this project:
@@ -97,6 +97,19 @@ Conventions for this project:
     <li>Secrets that are used both in development and production can go into the .env.local file, which is also on gitignore list</li>
     <li>Properties which are not secret but rather used can go into the .env.{development|qa|production} files. These files are not on gitignore list and therefore appear in the remote repository where they can be used to serve the CI/CD pipelines as a file import.</li>
 </ul>
+
+The Github Action for the Heroku deployment only allows to provide ONE env file. This will be either `.env.qa` or `.env.prod` depending on the deployment server. So the `.env` file is actually only being used when running the app locally, but not when deployed on Heroku. Docker run would allow multiple env files, so an investigation would be necessary to see whether the single env file is an limitation of Heroku or the Heroku deployment action.
+
+Important:
+
+The interpolation feature in the env files (provided by `dotenv-expand`), e.g.
+```bash
+BFEG_EMAIL_TRANSPORT_URL=smtps://${BFEG_APP_EMAIL_ACCOUNT_ADDRESS}:${BFEG_APP_EMAIL_ACCOUNT_CREDENTIALS}@${BFEG_APP_EMAIL_ACCOUNT_SMTP_HOST})
+
+# results in Heroku config var (even though all variables for interpolation are set):
+BFEG_EMAIL_TRANSPORT_URL=smtps://:@
+```
+seems to work only locally, not when deployed to Heroku.
 
 ### API Documentation
 

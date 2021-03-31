@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
 
 export default registerAs('email', () => ({
-  transportUrl: (): string => process.env.BFEG_EMAIL_TRANSPORT_URL,
+  transportUrl: (): string => `smtps://${process.env.BFEG_APP_EMAIL_ACCOUNT_ADDRESS}:${process.env.BFEG_APP_EMAIL_ACCOUNT_CREDENTIALS}@${process.env.BFEG_APP_EMAIL_ACCOUNT_SMTP_HOST}`,
   enabled: (): boolean => process.env.BFEG_EMAIL_ENABLED === 'true',
   from: (): string => `Krautland <${process.env.BFEG_APP_EMAIL_ACCOUNT_ADDRESS}>`,
 
