@@ -5,7 +5,7 @@ export class UserValidation {
       maxLength: 20,
     },
     password: {
-      pattern: /^(?=.*[\S])(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zßA-Z\d"'|~+-@$!%*?&\\/§\[\]\{\}\(\)]{8,}$/ as RegExp,
+      pattern: /^(?=.*[\S])(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zßA-Z\d"'|~_+-@$!%*?&\\/§\[\]\{\}\(\)]{8,}$/ as RegExp,
     },
   };
 
