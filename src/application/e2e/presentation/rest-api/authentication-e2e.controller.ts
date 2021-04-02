@@ -15,7 +15,7 @@ export class AuthenticationE2EController {
   @ApiQuery({
     name: 'since',
     required: false,
-    type: 'date',
+    type: Date,
     example: '2021-01-30',
     description:
       'Filters emails whose internal date (disregarding time and timezone) is within or later than the specified date. Provided time/timezone are being completely ignored.',

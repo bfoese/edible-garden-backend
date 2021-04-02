@@ -26,7 +26,7 @@ export class ImapSearchOptions {
   /**
    * @returns Parsed result can be provided for imap.search()
    */
-  public static parseForApi(opts: ImapSearchOptions): [[string, string|Date]] | undefined {
+  public static parseForApi(opts: ImapSearchOptions): [[string, string]] | undefined {
     const result = [];
     if (!opts) {
       return undefined;
@@ -44,13 +44,12 @@ export class ImapSearchOptions {
       return undefined;
     };
 
-    Object.keys(opts)
-      .forEach((key) => {
-        const value = opts[key];
-        if (value !== undefined && value !== null && (typeof value !== 'string' || !StringUtil.isEmpty(value))) {
-          result.push([mapKeyword(key), opts[key]]);
-        }
-      });
+    Object.keys(opts).forEach((key) => {
+      const value = opts[key];
+      if (value !== undefined && value !== null && (typeof value !== 'string' || !StringUtil.isEmpty(value))) {
+        result.push([mapKeyword(key), opts[key]]);
+      }
+    });
 
     return result && result.length > 0 ? (result as any) : undefined;
   }
