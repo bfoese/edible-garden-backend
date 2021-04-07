@@ -2,6 +2,7 @@ import { BotanicalNodeService } from '@eg-data-access/botanical-node/service/bot
 import { BotanicalNode } from '@eg-domain/botanical-node/botanical-node';
 import { BotanicalNodeDto } from '@eg-presentation-facade/botanical-node/dto/botanical-node.dto';
 import { Injectable } from '@nestjs/common';
+
 import { BotanicalTreeNodeDto } from './dto/botanical-tree-node.dto';
 import { BotanicalNodeMapper } from './mapper/botanical-node.mapper';
 import { BotanicalTreeNodeMapper } from './mapper/botanical-tree-node.mapper';
@@ -20,9 +21,9 @@ export class BotanicalNodeFacadeService {
       .then((entity: BotanicalNode) => this.botanicalNodeMapper.toDto(entity));
   }
 
-  public getTree(): Promise<BotanicalTreeNodeDto[]> {
+  public getTree(i18nLang: string): Promise<BotanicalTreeNodeDto[]> {
     return this.botanicalNodeService
-      .getTree()
+      .getTree(i18nLang)
       .then((entities: BotanicalNode[]) =>
         entities.map((entity: BotanicalNode) => this.botanicalTreeNodeMapper.toDto(entity))
       );

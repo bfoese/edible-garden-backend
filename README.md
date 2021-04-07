@@ -234,6 +234,32 @@ During development with TypeORM sync mode turned on, exceptions from postgres ca
     <li>Exceptions concerning enum types - enum types are stored in 'pg_catalog.pg_enum' and can be deleted with: 'drop type <enumType> cascade;'</li>
 </ul>
 
+#### Request Caching
+
+##### Redis
+
+For request caching, the Redis database will be used
+
+<ul><li>Using multiple database feature is discouraged by Redis owner. Recommendation is to use a single database and namespace the keys. Another database could be used for tests though.</li><li>Redis is single-threaded, even when used with multiple database feature. Multi threading can only be accomplished with multiple Redis instances.</li></ul>
+
+##### Cache Keys
+
+NestJS uses the request URL or the custom cache key (set
+through the @CacheKey() decorator) as a key for the cached records.
+
+```javascript
+// @UseInterceptors(CacheInterceptor) // applied cache key: '/edible-garden/v1/botanical-node/tree'
+@UseInterceptors(I18nLangCacheInterceptor) // applied cache key: '/edible-garden/v1/botanical-node/tree?i18nLang=foo'
+@Get('tree')
+public getTree(@I18nLang() languageCode: string): Promise<BotanicalTreeNodeDto[]> {}
+```
+Given this example, the I18nLang decorator is a handle to the resolved locale of
+the request. The locale resolving strategy includes lookup of HTTP Header
+values, Cookie values, Query parameter values.... The languageCode parameter is
+not reflected in the URL as path or query param. In cases like this, where the
+cache key needs to include other parameters, e.g. the resolved locale, a custom
+cache key is required and can be implemented by extending CacheInterceptor
+
 ### i18n
 
 Docs: https://github.com/ToonvanStrijp/nestjs-i18n
@@ -246,7 +272,7 @@ without user context. And last preference would be the accept language of the
 users browser agent.
 In the application code, the resolved locale can be accessed like this:
 
-```bash
+```javascript
   @Get() sample(@I18nLang() lang: string) {}
 ```
 
