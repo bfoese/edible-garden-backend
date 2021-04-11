@@ -3,14 +3,14 @@ import { IncomingMessage } from 'http';
 
 /**
  * By default, Nest uses the request URL (in an HTTP app) or cache key (set
- * through the @CacheKey() decorator) to associate cache records with your
+ * through the "\@CacheKey()" decorator) to associate cache records with your
  * endpoints. This interceptor enhances the cache key with the i18nLang code
  * which was resolved for the given request by EgI18nModule.
  */
 @Injectable()
 export class I18nLangCacheInterceptor extends CacheInterceptor {
   /**
-   * @param context
+   * @param context -
    * @returns Cache key in the form of 'foo/bar/baz?i18nLang=de' if an i18nLang
    * is given, otherwise it falls back to the super implementation which is only
    * the URL of the request.
@@ -30,7 +30,7 @@ export class I18nLangCacheInterceptor extends CacheInterceptor {
    * @returns Cache key enhanced with i18nLang or defaultKey if no i18nLang
    * value is given.
    */
-  private buildCacheKey(defaultKey: string, i18nLang: string | undefined) {
+  private buildCacheKey(defaultKey: string, i18nLang: string | undefined): string {
     if (!defaultKey || !i18nLang) {
       return defaultKey;
     }
@@ -40,7 +40,7 @@ export class I18nLangCacheInterceptor extends CacheInterceptor {
   /**
    * Extract the i18nLang value from the context.
    *
-   * @param context
+   * @param context -
    * @returns I18nLang value or undefined, if not present in the context
    */
   private getI18nLang(context: ExecutionContext): string | undefined {
