@@ -44,7 +44,7 @@ export class UserService {
 
   public async create(user: User): Promise<User> | never {
     const errors: ValidationError[] = await validate(user, <ValidatorOptions>{
-      groups: [user.extAuthProvider ? UserValidation.groups.userExtAuthProviderRegistration : UserValidation.groups.userRegistration],
+      groups: [ArrayUtils.isNotEmpty(user.accountAuthProviders) ? UserValidation.groups.userExtAuthProviderRegistration : UserValidation.groups.userRegistration],
     });
 
     if (!ArrayUtils.isEmpty(errors)) {

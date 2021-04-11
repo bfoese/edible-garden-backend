@@ -40,15 +40,13 @@ export class UserRepositoryTypeOrmAdapter implements UserRepository {
   ): Promise<User> {
     const qb = this.userRepository
       .createQueryBuilder('user')
-      .where('user.extAuthProviderUserId=:externalUserId')
-      .andWhere('user.extAuthProvider=:extAuthProvider')
+      .where(`user.id IN (Select id FROM "eg_user" u, jsonb_array_elements(u.account_Auth_Providers) providers WHERE (providers->>'extAuthProvider'=:extAuthProvider AND providers->>'extUserId'=:externalUserId))`)
       .setParameters({
         externalUserId: externalUserId,
         extAuthProvider: provider,
       });
 
     this.enhanceSelect(qb, opts);
-
     const result = await qb.getOne().then(this.plainToClass);
     return result;
   }

@@ -2,8 +2,10 @@ import { ApplicationErrorRegistry } from '@eg-app/error/application-error-regist
 import { ValidationException } from '@eg-app/exception/validation.exception';
 import { AccountActionPurpose } from '@eg-auth/constants/account-action-purpose';
 import { JwtAccountActionTokenPayload } from '@eg-auth/token-payload/jwt-account-action-token-payload.interface';
+import { ArrayUtils } from '@eg-common/util/array.utils';
 import { JwtUtil } from '@eg-common/util/jwt.util';
 import { UserService } from '@eg-data-access/user/user.service';
+import { AccountAuthProvider } from '@eg-domain/user/account-auth-provider';
 import { ExternalAuthProvider } from '@eg-domain/user/external-auth-provider.enum';
 import { User } from '@eg-domain/user/user';
 import { UserFindOptions } from '@eg-domain/user/user-find-options';
@@ -164,14 +166,13 @@ export class AuthenticationService {
       }
       if (Object.keys(changedFields).length > 0) {
         const newData = { entityInfo: { id: user.entityInfo.id }, ...changedFields } as User;
-        await this.userService.save(newData);
+        return await this.userService.save(newData);
       }
       return user;
     } else {
       const user = new User();
       user.email = email;
-      user.extAuthProvider = extAuthProvider;
-      user.extAuthProviderUserId = externalUserId;
+      user.accountAuthProviders
       user.username = username;
       user.preferredLocale = preferredLocale;
 
@@ -180,9 +181,12 @@ export class AuthenticationService {
       // auth provider as being verified
       user.isEmailVerified = true;
 
-      this.userService.create(user);
+      const updatedAuthProviders = user.accountAuthProviders ? user.accountAuthProviders.filter((provider) => provider.extAuthProvider !== extAuthProvider) : [];
+      updatedAuthProviders.push({ extAuthProvider: extAuthProvider, extUserId: externalUserId } as AccountAuthProvider)
+      user.accountAuthProviders = updatedAuthProviders;
+
+      return await this.userService.create(user);
     }
-    return user;
   }
 
   /**
@@ -220,7 +224,8 @@ export class AuthenticationService {
         }
       }
 
-      if (purpose === 'ResetPassword' && user.extAuthProvider) {
+      // this is negotiable: users who registered with an external auth provider could also create a passwort to sign in with that
+      if (purpose === 'ResetPassword' && ArrayUtils.isNotEmpty(user.accountAuthProviders)) {
         throw new HttpException('Not allowed for third party auth provider account', HttpStatus.BAD_REQUEST);
       }
 

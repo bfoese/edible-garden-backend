@@ -1,5 +1,4 @@
 import { IsLocaleEnabled } from '@eg-app/validation/validators/is-locale-enabled.validator';
-import { IsNotEmptyIfExtAuthProvider } from '@eg-app/validation/validators/is-not-empty-if-ext-auth-provider.validator';
 import { Address } from '@eg-domain/shared/adress';
 import { EntityInfo } from '@eg-domain/shared/entity-info';
 import { PhoneNumber } from '@eg-domain/shared/phone-number';
@@ -8,7 +7,6 @@ import {
   Allow,
   IsBoolean,
   IsEmail,
-  IsEnum,
   IsNotEmpty,
   IsString,
   Length,
@@ -16,7 +14,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-import { ExternalAuthProvider } from './external-auth-provider.enum';
+import { AccountAuthProvider } from './account-auth-provider';
 import { UserValidation } from './user-validation';
 
 export class User {
@@ -76,29 +74,13 @@ export class User {
   @Matches(UserValidation.constraints.password.pattern, { message: 'password too weak' })
   public password: string;
 
+  @ValidateNested({ each: true })
   @IsNotEmpty({
     groups: [UserValidation.groups.userExtAuthProviderRegistration],
   })
-  @IsEnum(ExternalAuthProvider, {
-    groups: [UserValidation.groups.userExtAuthProviderRegistration]
-  })
-  public extAuthProvider: undefined | ExternalAuthProvider;
-
-  /**
-   * The userId from the external auth provier. Is only required when the user registered with an external auth provider.
-   */
-  @IsNotEmptyIfExtAuthProvider('extAuthProvider', {
-    //groups: [UserValidation.groups.userRegistration],
-  })
-  public extAuthProviderUserId: string;
-
-  /**
-   * The username (display name) from the external auth provier. Is only required when the user registered with an external auth provider.
-   */
-  @IsNotEmptyIfExtAuthProvider('extAuthProvider', {
-    // groups: [UserValidation.groups.userRegistration],
-  })
-  public extAuthProviderUsername: string;
+  // @Allow()
+  @Type(() => AccountAuthProvider)
+  public accountAuthProviders: undefined | AccountAuthProvider[];
 
   @ValidateNested({ each: true })
   @Type(() => Address)

@@ -1,5 +1,4 @@
 import { EntitySchemaUniqueOptions } from '@bfoese/typeorm/entity-schema/EntitySchemaUniqueOptions';
-import { ExternalAuthProvider } from '@eg-domain/user/external-auth-provider.enum';
 import { User } from '@eg-domain/user/user';
 import { AddressSchema } from '@eg-persistence/shared/schema/address.embed';
 import { EntityInfoSchema } from '@eg-persistence/shared/schema/entity-info.embed';
@@ -13,9 +12,8 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
   name: 'user',
 
   uniques: [
-    { name: 'UQ_username', columns: ['username', 'extAuthProvider'] } as EntitySchemaUniqueOptions,
-    { name: 'UQ_email', columns: ['email', 'extAuthProvider'] }  as EntitySchemaUniqueOptions,
-    { name: 'UQ_extUserid', columns: ['extAuthProviderUserId', 'extAuthProvider'] }  as EntitySchemaUniqueOptions,
+    { name: 'UQ_username', columns: ['username'] } as EntitySchemaUniqueOptions,
+    { name: 'UQ_email', columns: ['email'] }  as EntitySchemaUniqueOptions,
   ],
 
   embeddeds: {
@@ -71,16 +69,9 @@ export const UserSchema = new EntitySchema<User>(<EntitySchemaOptions<User>>{
       select: false // vulnerable information; only needed for few use cases
     } as EntitySchemaColumnOptions,
 
-    extAuthProvider: {
-      type: 'enum',
-      enum: ExternalAuthProvider,
+    accountAuthProviders: {
+      type: 'jsonb',
       nullable: true,
-    } as EntitySchemaColumnOptions,
-
-    extAuthProviderUserId: {
-      type: 'varchar',
-      nullable: true,
-      default: null
     } as EntitySchemaColumnOptions,
 
     preferredLocale: {
