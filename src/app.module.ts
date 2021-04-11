@@ -10,7 +10,7 @@ import { EgI18nModule } from '@eg-app/i18n/eg-i18n.module';
 import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
 import { EdibleGardenRestApiModule } from '@eg-rest-api/edible-garden/edible-garden-rest-api.module';
 import { SeedSharingRestApiModule } from '@eg-rest-api/seed-sharing/seed-sharing-rest-api.module';
-import { Module } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -48,4 +48,12 @@ import { MailModule } from './mail/mail.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule {
+  public constructor(@Inject(CACHE_MANAGER) cacheManager: any) {
+    // The cache error handler ensures, that the application will startup, even when Redis cache is not available
+    const client = cacheManager.store.getClient();
+    client.on('error', (error) => {
+      console.error(error);
+    });
+  }
+}
