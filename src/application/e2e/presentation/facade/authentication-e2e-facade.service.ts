@@ -22,4 +22,8 @@ export class AuthenticationE2EFacadeService {
   public deleteAccount(usernameOrEmail: string): Promise<boolean> {
     return this.authenticationE2eService.deleteAccount(usernameOrEmail);
   }
+
+  public fakeVerifyEmailAddress(usernameOrEmail: string): Promise<void> {
+    return this.authenticationE2eService.fakeVerifyEmailAddress(usernameOrEmail);
+  }
 }

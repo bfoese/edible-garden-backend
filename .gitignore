@@ -401,3 +401,4 @@ dist
 notizen.txt
 .vscode/
 .npmrc
+test-results/

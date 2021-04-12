@@ -22,9 +22,9 @@ export class AuthenticationFacadeService {
     return this.accountActionEmailService.sendAccountActionEmail(dto.purpose, dto.email);
   }
 
-  public async signup(dto: SignupUserDto): Promise<boolean> {
+  public async signup(dto: SignupUserDto): Promise<User> {
     const user = await this.authenticationService.signup(dto.username, dto.email, dto.password, dto.preferredLocale);
-    return Promise.resolve(user ? true : false);
+    return Promise.resolve(user);
   }
 
   public signupOrUpdateExtAuthProviderUser(

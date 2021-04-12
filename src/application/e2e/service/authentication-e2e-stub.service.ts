@@ -19,4 +19,9 @@ export class AuthenticationE2EServiceStub implements AuthenticationE2EService {
   public async deleteAccount(_usernameOrEmail: string): Promise<boolean> {
     return Promise.resolve(false);
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async fakeVerifyEmailAddress(_usernameOrEmail: string): Promise<void> {
+    // intended to be empty
+  }
 }

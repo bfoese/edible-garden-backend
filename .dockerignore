@@ -18,3 +18,4 @@ import-sorter.json
 commitlint.*
 .prettierrc
 .eslintrc
+test-results/

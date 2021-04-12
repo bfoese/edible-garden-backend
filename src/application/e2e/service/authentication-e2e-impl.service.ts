@@ -3,7 +3,7 @@ import { FetchedEmail } from '@eg-app/imap/fetched-email';
 import { ImapSearchOptions } from '@eg-app/imap/imap-search-options';
 import { ImapService } from '@eg-app/imap/imap.service';
 import { UserService } from '@eg-data-access/user/user.service';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { Builder } from 'builder-pattern';
 
@@ -39,5 +39,13 @@ export class AuthenticationE2EServiceImpl implements AuthenticationE2EService {
       throw new NotFoundException();
     }
     return this.userService.deleteAccountPermanently(user.entityInfo.id);
+  }
+
+  public async fakeVerifyEmailAddress(usernameOrEmail: string): Promise<void> {
+    const user = await this.userService.findByUsernameOrEmail(usernameOrEmail);
+    if (!user) {
+      throw new BadRequestException();
+    }
+    await this.userService.verifyEmail(user.entityInfo.id);
   }
 }

@@ -1,5 +1,5 @@
 import { Public } from '@eg-auth/decorators/public-endpoint.decorator';
-import { Controller, Delete, Get, HttpCode, Query } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Patch, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { AuthenticationE2EFacadeService } from '../facade/authentication-e2e-facade.service';
@@ -45,5 +45,25 @@ export class AuthenticationE2EController {
     @Query('username') username: string
   ): Promise<any> {
     return this.authenticationE2EFacadeService.deleteAccount(email ?? username);
+  }
+
+  @ApiQuery({
+    name: 'email',
+    required: false,
+    type: 'string',
+  })
+  @ApiQuery({
+    name: 'username',
+    required: false,
+    type: 'string',
+  })
+  @Public()
+  @HttpCode(200)
+  @Patch('verify-email-address')
+  public async fakeVerifyEmailAddress(
+    @Query('email') email: string,
+    @Query('username') username: string
+  ): Promise<any> {
+    return this.authenticationE2EFacadeService.fakeVerifyEmailAddress(email ?? username);
   }
 }

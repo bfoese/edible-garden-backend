@@ -8,4 +8,5 @@ export namespace AuthenticationE2EService {
 export interface AuthenticationE2EService {
   fetchWorkflowEmails(recipientEmail: string, since: Date | string): Promise<FetchedEmail[]>;
   deleteAccount(usernameOrEmail: string): Promise<boolean>;
+  fakeVerifyEmailAddress(usernameOrEmail: string): Promise<void>;
 }

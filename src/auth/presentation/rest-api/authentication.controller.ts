@@ -60,10 +60,11 @@ export class AuthenticationController {
    * Register a new user account
    * @param dto - user data
    */
+  @HttpCode(201)
   @Public()
   @Post('signup')
-  public signup(@Body() dto: SignupUserDto): Promise<boolean> {
-    return this.authenticationFacadeService.signup(dto);
+  public async signup(@Body() dto: SignupUserDto): Promise<void> {
+    await this.authenticationFacadeService.signup(dto);
   }
 
   @Public()
@@ -179,6 +180,7 @@ export class AuthenticationController {
     const user = await request.user;
     let response: SigninResponseDto | undefined;
     if (!user) {
+      throw new UnauthorizedException();
     } else {
       try {
         response = await this.authenticationFacadeService.signin(request, user);

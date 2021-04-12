@@ -1,0 +1,846 @@
+{
+	"info": {
+		"_postman_id": "b0aa4fc7-37dd-476d-adac-8280ff92c622",
+		"name": "edible-garden-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "AuthController",
+			"item": [
+				{
+					"name": "Signup",
+					"item": [
+						{
+							"name": "[Signup] preferredLocale missing",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Body has message indicating missing preferredLocale\", function () {\r",
+											"    pm.expect(pm.response.text()).to.include(`preferredLocale should not be empty`);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{userName}}\",\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": \"{{userEmail}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[Signup] preferredLocale invalid",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Body has message indicating missing preferredLocale\", function () {\r",
+											"    pm.expect(pm.response.text()).to.include(`preferredLocale: Invalid locale`);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{userName}}\",\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": \"{{userEmail}}\",\r\n    \"preferredLocale\": \"foo\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[Signup] User created",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.sendRequest({\r",
+											"    url: pm.environment.get(\"baseUrl\") + `/edible-garden/v1/e2e/auth/account?username=${encodeURIComponent(pm.variables.get(\"userName\"))}`,\r",
+											"    method: 'DELETE'\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{userName}}\",\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": \"{{userEmail}}\",\r\n    \"preferredLocale\": \"{{userPreferredLocale}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[Signup] Duplicate User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Body has message Error 2001\", function () {\r",
+											"    pm.expect(pm.response.text()).to.include(`[Error 2001] ActionDeniedConsultEmailAccount`);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{userName}}\",\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": \"{{userEmail}}\",\r\n    \"preferredLocale\": \"{{userPreferredLocale}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[Signup] Duplicate username  with different email",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Body has message indicating UniqueKeyConstraintViolation\", function () {\r",
+											"    pm.expect(pm.response.text()).to.include(`[Error 1000] UniqueKeyConstraintViolation`);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{userName}}\",\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": \"carnica.dev+Postman-Test-Alternate@gmail.com\",\r\n    \"preferredLocale\": \"{{userPreferredLocale}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[Signup] Duplicate email with different username",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Body has message indicating [Error 2001]\", function () {\r",
+											"    pm.expect(pm.response.text()).to.include(`[Error 2001] ActionDeniedConsultEmailAccount`);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"\r",
+											"pm.sendRequest({\r",
+											"    url: pm.environment.get(\"baseUrl\") + `/edible-garden/v1/e2e/auth/account?username=${encodeURIComponent(pm.variables.get(\"userNameAlternate\"))}`,\r",
+											"    method: 'DELETE'\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{userNameAlternate}}\",\r\n    \"password\": \"{{userPassword}}\",\r\n    \"email\": \"{{userEmail}}\",\r\n    \"preferredLocale\": \"{{userPreferredLocale}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Signin",
+					"item": [
+						{
+							"name": "[Signin] Unauthorized if email not verified",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 401\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Body has message indicating [Error 2004] EmailNotVerified\", function () {\r",
+											"    pm.expect(pm.response.text()).to.include(`[Error 2004] EmailNotVerified`);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{userName}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"signin"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[Signin] Successful with valid username and password",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Body has access token and user data\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.accessToken.token).to.not.be.undefined;\r",
+											"    pm.expect(jsonData.user.id).to.not.be.undefined;\r",
+											"    pm.expect(jsonData.user.username).to.eql(pm.variables.get(\"userName\"));\r",
+											"    pm.expect(jsonData.user.preferredLocale).to.eql(pm.variables.get(\"userPreferredLocale\"));\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.sendRequest({\r",
+											"    url: pm.environment.get(\"baseUrl\") + `/edible-garden/v1/e2e/auth/verify-email-address?email=${encodeURIComponent(pm.variables.get(\"userEmail\"))}`,\r",
+											"    method: 'PATCH'\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{userName}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"signin"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[Signin] Successful with valid email and password",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Body has access token and user data\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.accessToken.token).to.not.be.undefined;\r",
+											"    pm.expect(jsonData.user.id).to.not.be.undefined;\r",
+											"    pm.expect(jsonData.user.username).to.eql(pm.variables.get(\"userName\"));\r",
+											"    pm.expect(jsonData.user.preferredLocale).to.eql(pm.variables.get(\"userPreferredLocale\"));\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{userEmail}}\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"signin"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[Signin] Invalid password",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 401\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Body has message indicating [Error 2002] InvalidUsernameOrPassword\", function () {\r",
+											"    pm.expect(pm.response.text()).to.include(`[Error 2002] InvalidUsernameOrPassword`);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{userName}}\",\r\n    \"password\": \"foo\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"signin"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[Signin] Invalid username",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 401\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Body has message indicating [Error 2002] InvalidUsernameOrPassword\", function () {\r",
+											"    pm.expect(pm.response.text()).to.include(`[Error 2002] InvalidUsernameOrPassword`);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"foo\",\r\n    \"password\": \"{{userPassword}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/signin",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"signin"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Refresh",
+					"item": [
+						{
+							"name": "[Refresh] Valid request",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Body has access token and user data\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.accessToken.token).to.not.be.undefined;\r",
+											"    pm.expect(jsonData.user.id).to.not.be.undefined;\r",
+											"    pm.expect(jsonData.user.username).to.eql(pm.variables.get(\"userName\"));\r",
+											"    pm.expect(jsonData.user.preferredLocale).to.eql(pm.variables.get(\"userPreferredLocale\"));\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.sendRequest({\r",
+											"    url: pm.environment.get(\"baseUrl\") + '/edible-garden/auth/signin',\r",
+											"    method: 'POST',\r",
+											"    body: {\r",
+											"        mode: 'raw',\r",
+											"        raw: JSON.stringify({\r",
+											"            \"username\": pm.variables.get(\"userName\"),\r",
+											"            \"password\": pm.variables.get(\"userPassword\")\r",
+											"        })\r",
+											"    }\r",
+											"}, function (err, res) {\r",
+											"    console.log(res);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/refresh",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"refresh"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[Refresh] Unauthorized without cookie",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 401\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const jar = pm.cookies.jar();\r",
+											"jar.clear(pm.request.url, (err, cookie) => {\r",
+											"    console.log(err, cookie)\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/auth/refresh",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"auth",
+										"refresh"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[Cleanup] Delete test user",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var encoded = encodeURIComponent(pm.variables.get(\"userEmail\"));\r",
+											"pm.variables.set(\"userEmail\", encoded);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/edible-garden/v1/e2e/auth/account?email={{userEmail}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"edible-garden",
+										"v1",
+										"e2e",
+										"auth",
+										"account"
+									],
+									"query": [
+										{
+											"key": "email",
+											"value": "{{userEmail}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "userName",
+			"value": "Postman-Test"
+		},
+		{
+			"key": "userPassword",
+			"value": "PostmanTest1234"
+		},
+		{
+			"key": "userEmail",
+			"value": "carnica.dev+Postman-Test@gmail.com"
+		},
+		{
+			"key": "userPreferredLocale",
+			"value": "en"
+		},
+		{
+			"key": "userNameAlternate",
+			"value": "Postman-Test-Alternate"
+		}
+	]
+}

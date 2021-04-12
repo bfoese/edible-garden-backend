@@ -37,6 +37,8 @@
         "test:cov": "jest --coverage",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
         "test:e2e": "jest --config ./test/jest-e2e.json",
+        "test:api": "newman run test/api/edible-garden-api.postman_collection.json --insecure -r htmlextra --reporter-htmlextra-export test-results/edible-garden-api-newman-report.html --reporter-htmlextra-lightTheme",
+        "test:api:dev": "npm run test:api -- --env-var baseUrl=https://localhost:3001",
         "typeorm:cli": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli -f dist/src/database/config/ormconfig.js",
         "migration:create": "npm run typeorm:cli -- migration:create",
         "migration:generate": "npm run build && npm run typeorm:cli -- migration:generate",
@@ -134,6 +136,8 @@
         "husky": "^4.3.6",
         "jest": "^26.6.3",
         "lint-staged": "^10.5.3",
+        "newman": "^5.2.2",
+        "newman-reporter-htmlextra": "^1.20.3",
         "prettier": "^2.1.2",
         "standard-version": "^9.0.0",
         "supertest": "^6.0.1",
@@ -145,7 +149,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "lint-staged && npm run deptree:gen",
+            "pre-commit": "npm run test:api:dev && lint-staged && npm run deptree:gen",
             "pre-push": "npm run test",
             "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
         }
