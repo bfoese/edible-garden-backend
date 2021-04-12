@@ -41,6 +41,7 @@ jobs:
     - name: Test
       run: npm test
 
+
   deploy:
     # for now, passing tests not required for QA deployment
     runs-on: ubuntu-latest
@@ -84,3 +85,30 @@ jobs:
           HD_BFEG_APP_EMAIL_ACCOUNT_ADDRESS: ${{secrets.QA_BFEG_APP_EMAIL_ACCOUNT_ADDRESS}}
           HD_BFEG_APP_EMAIL_ACCOUNT_CREDENTIALS: ${{secrets.QA_BFEG_APP_EMAIL_ACCOUNT_CREDENTIALS}}
           HD_BFEG_APP_EMAIL_ACCOUNT_SMTP_HOST: ${{secrets.QA_BFEG_APP_EMAIL_ACCOUNT_SMTP_HOST}}
+
+  test-api:
+    needs: deploy
+    name: Integration Test - API
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '15.x'
+    - name: Install newman
+      run: |
+        npm install -g newman
+        npm install -g newman-reporter-htmlextra
+    - name: Run Postman tests
+      run: |
+        npm run test:api -- --env-var baseUrl=https://${{secrets.QA_HEROKU_APP_NAME}}.herokuapp.com --suppress-exit-code
+    - name: Deploy report page
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        publish_branch: gh-pages
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./test-results/
+        destination_dir: test-results
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'

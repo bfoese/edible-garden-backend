@@ -62,7 +62,15 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
+
+# integration test for API
+$ npm run test:api:dev
 ```
+
+### Test Reports
+
+[CI Test Report: API](https://bfoese.github.io/edible-garden-backend/test-results/edible-garden-api-newman-report.html)
+
 
 ## Debugging in VSCode
 
