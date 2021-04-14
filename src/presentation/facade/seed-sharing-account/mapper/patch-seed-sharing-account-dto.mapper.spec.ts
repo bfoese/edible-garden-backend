@@ -44,6 +44,15 @@ describe('PatchSeedSharingAccountDtoMapper', () => {
       );
     });
 
+    it('should not contain fields which are missing in source', () => {
+      const dto = plainToClass(PatchSeedSharingAccountDto, {} as PatchSeedSharingAccountDto);
+      const entity = mapper.ontoEntity(dto, plainToClass(User, {}));
+      const dtoKeys = Object.keys(dto);
+      const entityKeys = Object.keys(entity);
+      const intersectedProperties = dtoKeys.filter((value) => entityKeys.includes(value));
+      expect(intersectedProperties.length).toBe(0);
+    });
+
     it('should override only provided fields', () => {
       const patchDto = plainToClass(PatchSeedSharingAccountDto, {
         preferredLocale: 'de',

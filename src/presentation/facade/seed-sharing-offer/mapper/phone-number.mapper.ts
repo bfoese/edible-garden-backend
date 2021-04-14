@@ -13,8 +13,12 @@ export class PhoneNumberMapper
       return undefined;
     }
     const dto = new PhoneNumberDto();
-    dto.phoneNo = entity.phoneNo ?? undefined;
-    dto.countryCode = entity.countryCode ?? undefined;
+    if ('phoneNo' in entity) {
+      dto.phoneNo = entity.phoneNo;
+    }
+    if ('countryCode' in entity) {
+      dto.countryCode = entity.countryCode;
+    }
     return dto;
   }
 
@@ -25,8 +29,12 @@ export class PhoneNumberMapper
     if (!entity) {
       entity = new PhoneNumber();
     }
-    entity.phoneNo = dto.phoneNo;
-    entity.countryCode = dto.countryCode;
+    if ('phoneNo' in dto) {
+      entity.phoneNo = dto.phoneNo;
+    }
+    if ('countryCode' in dto) {
+      entity.countryCode = dto.countryCode;
+    }
     return entity;
   }
 }

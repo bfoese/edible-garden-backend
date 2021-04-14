@@ -1,8 +1,10 @@
+import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { IsPositive, IsString, IsUUID } from 'class-validator';
 
 /**
  * Base class for the database entities with common properties.
  */
+@ObjectType()
 export class EntityInfo {
   @IsString()
   @IsUUID('all')
@@ -19,6 +21,7 @@ export class EntityInfo {
     this._id = id;
   }
 
+  @Field(() => ID)
   public get id(): string {
     return this._id;
   }
@@ -35,6 +38,7 @@ export class EntityInfo {
     this._created = created;
   }
 
+  @Field({ nullable: true })
   public get created(): Date {
     return this._created;
   }
@@ -43,6 +47,7 @@ export class EntityInfo {
     this._lastChanged = lastChanged;
   }
 
+  @Field({ nullable: true })
   public get lastChanged(): Date {
     return this._lastChanged;
   }

@@ -1,0 +1,50 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AddressType {
+  line1: String
+  postalCode: String
+  city: String
+  countryCode: String
+}
+
+type PhoneNumberType {
+  phoneNo: String
+  countryCode: Float
+}
+
+type SeedSharingAccountDto {
+  userId: ID!
+  username: String
+  email: String
+  preferredLocale: String
+  address: AddressType
+  phoneNumber: PhoneNumberType
+}
+
+input AddressInput {
+  line1: String
+  postalCode: String
+  city: String
+  countryCode: String
+}
+
+input PhoneNumberInput {
+  phoneNo: String
+  countryCode: Float
+}
+
+type Query {
+  accountSettings: SeedSharingAccountDto!
+}
+
+type Mutation {
+  patchAccountSettings(patchData: PatchSeedSharingAccountDto!): SeedSharingAccountDto!
+}
+
+input PatchSeedSharingAccountDto {
+  preferredLocale: String
+  address: AddressInput
+  phoneNumber: PhoneNumberInput
+}

@@ -31,6 +31,15 @@ describe('AddressMapper', () => {
       dtoKeys.forEach((dtoKey: string) => expect(dto[dtoKey]).toBeDefined());
       dtoKeys.forEach((dtoKey: string) => expect(dto[dtoKey]).toBe(addressEntity[dtoKey]));
     });
+
+    it('should not contain fields which are missing in source', () => {
+      const addressEntity = plainToClass(Address, {} as Address);
+      const dto = addressMapper.toDto(addressEntity);
+      const dtoKeys = Object.keys(dto);
+      const entityKeys = Object.keys(addressEntity);
+      const intersectedProperties = dtoKeys.filter((value) => entityKeys.includes(value));
+      expect(intersectedProperties.length).toBe(0);
+    });
   });
 
   describe('ontoEntity', () => {
@@ -68,6 +77,15 @@ describe('AddressMapper', () => {
             expect(entity[key]).toBeUndefined();
         }
       });
+    });
+
+    it('should not contain fields which are missing in source', () => {
+      const dto = plainToClass(AddressDto, {} as AddressDto);
+      const entity = addressMapper.ontoEntity(dto, plainToClass(Address, {} as Address));
+      const dtoKeys = Object.keys(dto);
+      const entityKeys = Object.keys(entity);
+      const intersectedProperties = dtoKeys.filter((value) => entityKeys.includes(value));
+      expect(intersectedProperties.length).toBe(0);
     });
   });
 });

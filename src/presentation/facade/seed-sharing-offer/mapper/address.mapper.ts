@@ -12,10 +12,18 @@ export class AddressMapper implements DtoMapper<AddressDto, Address>, OntoEntity
       return undefined;
     }
     const dto = new AddressDto();
-    dto.line1 = entity.line1 ?? undefined;
-    dto.city = entity.city ?? undefined;
-    dto.postalCode = entity.postalCode ?? undefined;
-    dto.countryCode = entity.countryCode ?? undefined;
+    if ('line1' in entity) {
+      dto.line1 = entity.line1;
+    }
+    if ('city' in entity) {
+      dto.city = entity.city;
+    }
+    if ('postalCode' in entity) {
+      dto.postalCode = entity.postalCode;
+    }
+    if ('countryCode' in entity) {
+      dto.countryCode = entity.countryCode;
+    }
     return dto;
   }
 
@@ -26,10 +34,18 @@ export class AddressMapper implements DtoMapper<AddressDto, Address>, OntoEntity
     if (!entity) {
       entity = new Address();
     }
-    entity.city = dto.city;
-    entity.countryCode = dto.countryCode;
-    entity.line1 = dto.line1;
-    entity.postalCode = dto.postalCode;
+    if ('city' in dto) {
+      entity.city = dto.city;
+    }
+    if ('countryCode' in dto) {
+      entity.countryCode = dto.countryCode;
+    }
+    if ('line1' in dto) {
+      entity.line1 = dto.line1;
+    }
+    if ('postalCode' in dto) {
+      entity.postalCode = dto.postalCode;
+    }
     return entity;
   }
 }

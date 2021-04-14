@@ -22,6 +22,7 @@ import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { DomainModule } from './domain/domain.module';
 import { MailModule } from './mail/mail.module';
+import { SeedSharingGraphqlModule } from './presentation/graphql-api/seed-sharing/seed-sharing-graphql.module';
 
 @Module({
   imports: [
@@ -48,14 +49,14 @@ import { MailModule } from './mail/mail.module';
       useFactory: async (_appConfig: ConfigType<typeof appConfig>) => ({
         // provide the right context for i18n
         // eslint-disable-next-line @typescript-eslint/ban-types
-        context: ({ req, connection }): object => connection ? { req: connection.context } : { req },
+        context: ({ req, connection }): object => (connection ? { req: connection.context } : { req }),
         autoSchemaFile: 'edible-garden-schema.gql',
         path: _appConfig.endpointPath(),
         cors: {
           credentials: true,
           origin: true,
         },
-        ...(!(_appConfig.isProduction()) && {
+        ...(!_appConfig.isProduction() && {
           playground: {
             endpoint: 'graphql-play',
             settings: {
@@ -65,9 +66,11 @@ import { MailModule } from './mail/mail.module';
         }),
       }),
     }),
+    SeedSharingGraphqlModule,
   ],
   providers: [
-    { // globally secure endpoints with JwtAuthGuard
+    {
+      // globally secure endpoints with JwtAuthGuard
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
