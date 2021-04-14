@@ -7,6 +7,7 @@ An extended [Nest](https://github.com/nestjs/nest) framework TypeScript starter 
 <ul>
 <li>NestJS</li>
 <li>OpenAPI</li>
+<li>GraphQL</li>
 <li>TypeORM with external schema definition</li>
 <li>Postgres</li>
 <li>Redis</li>
@@ -124,9 +125,20 @@ BFEG_EMAIL_TRANSPORT_URL=smtps://:@
 ```
 seems to work only locally, not when deployed to Heroku.
 
-### API Documentation
+### REST & GraphQL
 
-API Documentation and JSON endpoints are currently only exposed in ENV development.
+REST API and GraphQL endpoint are being served under the same path
+`edible-garden/`. Changing this path for one of them, would require adaptions of
+frontend and NGINX reverse proxy configuration. In the frontend this path is
+whitelisted for sending an authorization header with bearer token and for
+non-dev environment all frontend requests to this path will be reverse proxied
+to the backend.
+
+#### REST
+
+REST Endpoint: `https://localhost:3001/edible-garden/v1/`
+
+Swagger Documentation and JSON endpoints are currently only exposed for `NODE_ENV=development`:
 
 ```bash
 # Main API
@@ -137,6 +149,11 @@ https://localhost:3001/api-json
 https://localhost:3001/api/e2e/
 https://localhost:3001/api/e2e-json
 ```
+
+#### GraphQL
+
+Endpoint: `https://localhost:3001/edible-garden/graphql`
+Playground: `https://localhost:3001/edible-garden/graphql-playground`
 
 ### Database & ORM
 
@@ -349,16 +366,11 @@ So best idea at this point is to duplicate the email templates for each language
 
 ### Deployment
 
-NodeJS apps kann be deployed to Heroku via the NodeJS buildback or as a containerized application. These solutions need slightly differen configuration.
+NodeJS apps kann be deployed to Heroku via the NodeJS buildback or as a containerized application. These solutions need slightly different configuration.
 
 #### Deployment with NodeJS Buildpack
 
-<ul>
-<li>See GitHub Action "deploy-nodejs-prod"</li>
-<li>Does NOT require the "heroku.yml" File. And I haven't testet, if the file has a negative effect.</li>
-<li>Requires the Procfile file it would only be used as a fallback when no heroku.yml file exists</li>
-<li>package.json contains some scripts prefixed with "heroku:" these are not used by Heroku, as we provide a Container. However, you can manually call them from heroku.yaml or the Dockerfile</li>
-</ul>
+See https://gist.github.com/bfoese/b57f96c69e1f945b2e92449d404bdbe7
 
 ### Deployment as Container
 
@@ -447,6 +459,33 @@ https://medium.com/dev-genius/nodejs-using-es-modules-instead-of-commonjs-9c6e80
 
 
 ## NestJS Notes
+
+### Centralized App Guards
+
+NestJS offers the DI token `APP_GUARD` to declare a global guard. This can be
+used to globally install a JWT guard for example wich guards all endpoints
+automatically without the need to decorate them specifically.
+
+However, there might be the need for a centralized guard within a module instead
+of a global guard. For example a centralized guard within the REST API module
+and a centralized guard within the GraphQL module. But at this point, it is not
+possible to declare such a centralized guard on module level. The next
+centralization level would be the controller.
+
+Declaring a controller wide guard:
+```javascript
+@Injectable()
+export class CentralizedGuard implements CanActivate {
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    return true;
+  }
+}
+```
+
+This guard can be applied to a controller via `@UseGuards(CentralizedGuard)`
+
 ### Cron Jobs
 
 Cron Jobs which reside in a service will run automagically when the service is

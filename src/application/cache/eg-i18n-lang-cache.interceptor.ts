@@ -16,8 +16,12 @@ export class I18nLangCacheInterceptor extends CacheInterceptor {
    * the URL of the request.
    */
   public trackBy(context: ExecutionContext): string | undefined {
-    const key = this.buildCacheKey(super.trackBy(context), this.getI18nLang(context));
-    return key;
+    try {
+      return this.buildCacheKey(super.trackBy(context), this.getI18nLang(context));
+    } catch(error) {
+      // Error is expected for GraphQL requests. In GraphQl caching must be done differently: https://github.com/nestjs/graphql/issues/443#issuecomment-599445224
+    }
+    return undefined;
   }
 
   /**

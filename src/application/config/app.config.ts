@@ -24,4 +24,6 @@ export default registerAs('app', () => ({
     return envValue.split(',');
   },
   productName: (): string => 'Krautland',
+
+  endpointPath: (): string => process.env.BFEG_ENDPOINT_PATH
 }));

@@ -21,6 +21,9 @@ export class EgI18nUserLocaleResolver implements I18nResolver {
       case 'http':
         req = context.switchToHttp().getRequest();
         break;
+      case 'graphql':
+        [, , { req }] = context.getArgs();
+        break;
     }
 
     if (req) {

@@ -11,8 +11,9 @@ import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
 import { EdibleGardenRestApiModule } from '@eg-rest-api/edible-garden/edible-garden-rest-api.module';
 import { SeedSharingRestApiModule } from '@eg-rest-api/seed-sharing/seed-sharing-rest-api.module';
 import { CACHE_MANAGER, Inject, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { GraphQLModule } from '@nestjs/graphql';
 import { ScheduleModule } from '@nestjs/schedule';
 
 import { HealthModule } from './application/health/health.module';
@@ -40,15 +41,40 @@ import { MailModule } from './mail/mail.module';
     AuthModule,
     E2EModule,
     ScheduleModule.forRoot(),
+    // enable GraphQL caching: https://github.com/nestjs/graphql/issues/443#issuecomment-599445224
+    GraphQLModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [appConfig.KEY],
+      useFactory: async (_appConfig: ConfigType<typeof appConfig>) => ({
+        // provide the right context for i18n
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        context: ({ req, connection }): object => connection ? { req: connection.context } : { req },
+        autoSchemaFile: 'edible-garden-schema.gql',
+        path: _appConfig.endpointPath(),
+        cors: {
+          credentials: true,
+          origin: true,
+        },
+        ...(!(_appConfig.isProduction()) && {
+          playground: {
+            endpoint: 'graphql-play',
+            settings: {
+              'request.credentials': 'same-origin',
+            },
+          },
+        }),
+      }),
+    }),
   ],
   providers: [
-    {
+    { // globally secure endpoints with JwtAuthGuard
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
   ],
 })
 export class AppModule {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public constructor(@Inject(CACHE_MANAGER) cacheManager: any) {
     // The cache error handler ensures, that the application will startup, even when Redis cache is not available
     const client = cacheManager.store.getClient();

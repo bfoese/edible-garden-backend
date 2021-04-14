@@ -44,18 +44,19 @@ async function bootstrap(): Promise<void> {
       credentials: true,
     });
   }
-
-  app.setGlobalPrefix('edible-garden');
+  app.setGlobalPrefix(process.env.BFEG_ENDPOINT_PATH);
 
   app.useGlobalPipes(new ValidationPipe());
 
-  app.use(
-    RateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100, // limit each IP to 100 requests per windowMs
-      message: 'We detected unusually high traffic from your IP. Your address will be blocked for 15 minutes.',
-    })
-  );
+  if (process.env.NODE_ENV !== 'development') {
+    app.use(
+      RateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100, // limit each IP to 100 requests per windowMs
+        message: 'We detected unusually high traffic from your IP. Your address will be blocked for 15 minutes.',
+      })
+    );
+  }
 
   if (process.env.BFEG_SWAGGER_ENABLED === 'true') {
     initSwagger(app);

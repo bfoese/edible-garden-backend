@@ -1,12 +1,12 @@
 import authConfig from '@eg-app/config/auth.config';
 import { AuthRouteConstants } from '@eg-auth/constants/auth-route-constants';
+import { CurrentUser } from '@eg-auth/decorators/current-user.decorator';
 import { Public } from '@eg-auth/decorators/public-endpoint.decorator';
 import { GoogleAuthGuard } from '@eg-auth/guards/google-auth.guard';
 import { JwtAuthGuard } from '@eg-auth/guards/jwt-auth.guard';
 import { JwtRefreshGuard } from '@eg-auth/guards/jwt-refresh.guard';
 import { LocalAuthenticationGuard } from '@eg-auth/guards/local-authentication.guard';
 import { SecureAccountActionGuard } from '@eg-auth/guards/secure-account-action.guard';
-import { RequestWithUser } from '@eg-auth/strategies/request-with-user';
 import { User } from '@eg-domain/user/user';
 import {
   BadRequestException,
@@ -25,7 +25,7 @@ import {
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 import { AuthenticationFacadeService } from '../facade/authentication-facade.service';
 import { PatchPasswordDto } from '../facade/dto/patch-password.dto';
@@ -72,12 +72,10 @@ export class AuthenticationController {
   @Get(AuthRouteConstants.Path_VerifyEmail)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async verifyEmail(
-    @Req() request: RequestWithUser,
+    @CurrentUser() user: User,
     @Query(AuthRouteConstants.QueryParam_Token) _token: string,
     @Res() response: Response
   ): Promise<any> {
-    const user = await request.user;
-
     if (!user) {
       response
         .status(302)
@@ -112,11 +110,10 @@ export class AuthenticationController {
   @Get(AuthRouteConstants.Path_DeleteAccount)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async deleteAccount(
-    @Req() request: RequestWithUser,
+    @CurrentUser() user: User,
     @Query(AuthRouteConstants.QueryParam_Token) _token: string,
     @Res() response: Response
   ): Promise<any> {
-    const user = await request.user;
     // in case of token validation errors, the user will be user=false
     const accountDeleted = user ? await this.authenticationFacadeService.deleteAccount(user) : false;
     response
@@ -131,8 +128,7 @@ export class AuthenticationController {
   @Public()
   @UseGuards(JwtRefreshGuard)
   @Get('refresh')
-  public async refresh(@Req() request: RequestWithUser): Promise<SigninResponseDto> {
-    const user = await request.user;
+  public async refresh(@CurrentUser() user: User, @Req() request: Request): Promise<SigninResponseDto> {
     return await this.authenticationFacadeService.refresh(request, user);
   }
 
@@ -141,16 +137,14 @@ export class AuthenticationController {
   @UseGuards(LocalAuthenticationGuard)
   @Post('signin')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async signin(@Req() request: RequestWithUser, @Body() _signinData: SigninUserDto): Promise<SigninResponseDto> {
-    const user = await request.user;
+  public async signin(@CurrentUser() user: User, @Req() request: Request, @Body() _signinData: SigninUserDto): Promise<SigninResponseDto> {
     return await this.authenticationFacadeService.signin(request, user);
   }
 
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @Post('signout')
-  public async signout(@Req() req: RequestWithUser, @Res() response: Response): Promise<void> {
-    const user = await req.user;
+  public async signout(@CurrentUser() user: User, @Req() req: Request, @Res() response: Response): Promise<void> {
     await this.authenticationFacadeService.signout(req, user, response);
   }
 
@@ -176,8 +170,7 @@ export class AuthenticationController {
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get('google/redirect')
-  public async signinWithGoogleCallback(@Req() request: RequestWithUser): Promise<any> {
-    const user = await request.user;
+  public async signinWithGoogleCallback(@CurrentUser() user: User, @Req() request: Request): Promise<any> {
     let response: SigninResponseDto | undefined;
     if (!user) {
       throw new UnauthorizedException();
@@ -206,11 +199,10 @@ export class AuthenticationController {
   @Get(AuthRouteConstants.Path_ResetPassword)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async resetPassword(
-    @Req() request: RequestWithUser,
+    @CurrentUser() user: User,
     @Query(AuthRouteConstants.QueryParam_Token) token: string,
     @Res() response: Response
   ): Promise<any> {
-    const user = await request.user;
 
     if (!user) {
       response
@@ -236,10 +228,9 @@ export class AuthenticationController {
   @UseGuards(SecureAccountActionGuard)
   @Patch('password')
   public async patchPassword(
-    @Req() request: RequestWithUser,
+    @CurrentUser() user: User,
     @Body() patchPasswordData: PatchPasswordDto
   ): Promise<void> {
-    const user = await request.user;
     if (!user) {
       throw new UnauthorizedException();
     }
