@@ -11,6 +11,7 @@ import {
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { HttpsOptions } from '@nestjs/common/interfaces/external/https-options.interface';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
 import * as path from 'path';
@@ -26,10 +27,12 @@ async function bootstrap(): Promise<void> {
   initEnvironmenVariables();
 
   const httpsOptions = getHttpsOptions();
-  const app: INestApplication = await NestFactory.create(AppModule, {
+  const app: NestExpressApplication = await NestFactory.create<NestExpressApplication>(AppModule, {
     httpsOptions,
     logger: new LoggerService(),
   } as NestApplicationOptions);
+
+  disableDisallowedHeaders(app);
 
   // this is needed to be able to define class-validators with service dependencies
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
@@ -62,6 +65,16 @@ async function bootstrap(): Promise<void> {
     initSwagger(app);
   }
   await app.listen(process.env.PORT || 8);
+}
+
+/**
+ * Disable disallowed headers
+ *
+ * @see https://webhint.io/docs/user-guide/hints/hint-no-disallowed-headers/?source=devtools
+ */
+function disableDisallowedHeaders(app: NestExpressApplication): void {
+  app.disable('x-powered-by');
+  app.disable('via');
 }
 
 function initEnvironmenVariables(): void {
